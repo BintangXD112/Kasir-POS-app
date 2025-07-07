@@ -26,14 +26,19 @@ class PasswordController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
+            'current_kode_user' => ['required', 'string'],
+            'kode_user' => ['required', 'string', 'confirmed'],
         ]);
+
+        // Pastikan kode_user lama benar
+        if ($request->user()->kode_user !== $validated['current_kode_user']) {
+            return back()->withErrors(['current_kode_user' => 'Kode user saat ini salah.']);
+        }
 
         $request->user()->update([
-            'password' => Hash::make($validated['password']),
+            'kode_user' => $validated['kode_user'],
         ]);
 
-        return back();
+        return back()->with('status', 'Kode user berhasil diubah.');
     }
 }

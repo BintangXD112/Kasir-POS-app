@@ -3,112 +3,132 @@ import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler, useRef } from 'react';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { FormEventHandler, useRef, useEffect } from 'react';
 
 import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Swal from 'sweetalert2';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Password settings',
-        href: '/settings/password',
+        title: 'Kode User settings',
+        href: '/settings/kode_user',
     },
 ];
 
-export default function Password() {
-    const passwordInput = useRef<HTMLInputElement>(null);
-    const currentPasswordInput = useRef<HTMLInputElement>(null);
+export default function KodeUserSettings() {
+    const kodeUserInput = useRef<HTMLInputElement>(null);
+    const currentKodeUserInput = useRef<HTMLInputElement>(null);
 
     const { data, setData, errors, put, reset, processing, recentlySuccessful } = useForm({
-        current_password: '',
-        password: '',
-        password_confirmation: '',
+        current_kode_user: '',
+        kode_user: '',
+        kode_user_confirmation: '',
     });
 
-    const updatePassword: FormEventHandler = (e) => {
+    const updateKodeUser: FormEventHandler = (e) => {
         e.preventDefault();
 
-        put(route('password.update'), {
+        put(route('kode_user.update'), {
             preserveScroll: true,
             onSuccess: () => reset(),
             onError: (errors) => {
-                if (errors.password) {
-                    reset('password', 'password_confirmation');
-                    passwordInput.current?.focus();
+                if (errors.kode_user) {
+                    reset('kode_user', 'kode_user_confirmation');
+                    kodeUserInput.current?.focus();
                 }
 
-                if (errors.current_password) {
-                    reset('current_password');
-                    currentPasswordInput.current?.focus();
+                if (errors.current_kode_user) {
+                    reset('current_kode_user');
+                    currentKodeUserInput.current?.focus();
                 }
             },
         });
     };
 
+    const { status } = usePage().props;
+
+    useEffect(() => {
+        if (status) {
+            Swal.fire({
+                icon: 'success',
+                title: status,
+                showConfirmButton: false,
+                timer: 1500,
+            });
+        } else if (Object.keys(errors).length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal mengubah kode user',
+                text: Object.values(errors).join(', '),
+            });
+        }
+    }, [status, errors]);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Password settings" />
+            <Head title="Kode User settings" />
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
+                    <HeadingSmall title="Update kode user" description="Ganti kode user Anda secara berkala untuk menjaga keamanan akun." />
 
-                    <form onSubmit={updatePassword} className="space-y-6">
+                    <form onSubmit={updateKodeUser} className="space-y-6">
                         <div className="grid gap-2">
-                            <Label htmlFor="current_password">Current password</Label>
+                            <Label htmlFor="current_kode_user">Kode user saat ini</Label>
 
                             <Input
-                                id="current_password"
-                                ref={currentPasswordInput}
-                                value={data.current_password}
-                                onChange={(e) => setData('current_password', e.target.value)}
-                                type="password"
+                                id="current_kode_user"
+                                ref={currentKodeUserInput}
+                                value={data.current_kode_user}
+                                onChange={(e) => setData('current_kode_user', e.target.value)}
+                                type="text"
                                 className="mt-1 block w-full"
-                                autoComplete="current-password"
-                                placeholder="Current password"
+                                autoComplete="off"
+                                placeholder="Kode user saat ini"
                             />
 
-                            <InputError message={errors.current_password} />
+                            <InputError message={errors.current_kode_user} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="password">New password</Label>
+                            <Label htmlFor="kode_user">Kode user baru</Label>
 
                             <Input
-                                id="password"
-                                ref={passwordInput}
-                                value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
-                                type="password"
+                                id="kode_user"
+                                ref={kodeUserInput}
+                                value={data.kode_user}
+                                onChange={(e) => setData('kode_user', e.target.value)}
+                                type="text"
                                 className="mt-1 block w-full"
-                                autoComplete="new-password"
-                                placeholder="New password"
+                                autoComplete="off"
+                                placeholder="Kode user baru"
                             />
 
-                            <InputError message={errors.password} />
+                            <InputError message={errors.kode_user} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">Confirm password</Label>
+                            <Label htmlFor="kode_user_confirmation">Konfirmasi kode user baru</Label>
 
                             <Input
-                                id="password_confirmation"
-                                value={data.password_confirmation}
-                                onChange={(e) => setData('password_confirmation', e.target.value)}
-                                type="password"
+                                id="kode_user_confirmation"
+                                value={data.kode_user_confirmation}
+                                onChange={(e) => setData('kode_user_confirmation', e.target.value)}
+                                type="text"
                                 className="mt-1 block w-full"
-                                autoComplete="new-password"
-                                placeholder="Confirm password"
+                                autoComplete="off"
+                                placeholder="Konfirmasi kode user baru"
                             />
 
-                            <InputError message={errors.password_confirmation} />
+                            <InputError message={errors.kode_user_confirmation} />
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <Button disabled={processing}>Save password</Button>
+                            <Button disabled={processing}>Simpan kode user</Button>
 
                             <Transition
                                 show={recentlySuccessful}
@@ -117,7 +137,7 @@ export default function Password() {
                                 leave="transition ease-in-out"
                                 leaveTo="opacity-0"
                             >
-                                <p className="text-sm text-neutral-600">Saved</p>
+                                <p className="text-sm text-neutral-600">Tersimpan</p>
                             </Transition>
                         </div>
                     </form>

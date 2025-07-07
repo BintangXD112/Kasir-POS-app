@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import Swal from 'sweetalert2';
+import { useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -39,6 +41,23 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
             preserveScroll: true,
         });
     };
+
+    useEffect(() => {
+        if (recentlySuccessful) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Profil berhasil diubah',
+                showConfirmButton: false,
+                timer: 1500,
+            });
+        } else if (Object.keys(errors).length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal mengubah profil',
+                text: Object.values(errors).join(', '),
+            });
+        }
+    }, [recentlySuccessful, errors]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

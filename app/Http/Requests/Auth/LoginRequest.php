@@ -27,8 +27,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'nama_user' => ['required', 'string'],
+            'kode_user' => ['required', 'string'],
         ];
     }
 
@@ -41,15 +41,15 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
+        $user = \App\Models\User::where('nama_user', $this->nama_user)->first();
+        if (! $user || $user->kode_user !== $this->kode_user) {
+            \Illuminate\Support\Facades\RateLimiter::hit($this->throttleKey());
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'kode_user' => __('auth.failed'),
             ]);
         }
-
-        RateLimiter::clear($this->throttleKey());
+        \Illuminate\Support\Facades\Auth::login($user, false);
+        \Illuminate\Support\Facades\RateLimiter::clear($this->throttleKey());
     }
 
     /**
@@ -80,6 +80,8 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return \Illuminate\Support\Str::transliterate(
+            \Illuminate\Support\Str::lower($this->string('nama_user')).'|'.$this->ip()
+        );
     }
 }
