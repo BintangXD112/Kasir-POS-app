@@ -45,6 +45,9 @@ export default function Dashboard() {
     const funcHoverPrint = ()=>{
         setHoverPrint(!hoverPrint)
     }
+    const [showModal, setShowModal] = useState(false);
+    const [showNonTunaiModal, setShowNonTunaiModal] = useState(false);
+    const [selectedPayment, setSelectedPayment] = useState('');
     return (
         <div className="flex h-screen w-full bg-gray-600 flex-col gap-4">
             <div className={`flex justify-between pt-4 px-4`}>
@@ -84,7 +87,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-            <div className={`flex h-5/6 p-4 w-full`}>
+            <div className={`flex h-full p-4 w-full`}>
                 <div className={`w-4/6 h-full bg-white rounded-lg p-4`}>
                     <div className={`flex items-center mb-4`}>
                         <div className={`relative w-full`}>
@@ -248,7 +251,165 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
+                <div className="ml-4 flex-1 relative overflow-x-auto shadow-md sm:rounded-lg bg-white w-full">
+                    <div className="flex-1 overflow-x-auto">
+                        <table className="min-w-full table-fixed text-sm text-left text-black">
+                            <thead className="text-xs text-black uppercase bg-gray-100">
+                                <tr>
+                                    <th scope="col" className="px-4 py-3 w-1/5">
+                                        Product
+                                    </th>
+                                    <th scope="col" className="px-4 py-3 w-1/5">
+                                        Qty
+                                    </th>
+                                    <th scope="col" className="px-4 py-3 w-1/5">
+                                        Unit Price
+                                    </th>
+                                    <th scope="col" className="px-4 py-3 w-1/5">
+                                        Total Price
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="odd:bg-white even:bg-gray-100 border-b border-gray-200">
+                                    <th scope="row" className="px-6 py-4 font-medium text-black whitespace-normal truncate overflow-hidden max-w-40">
+                                        Banana
+                                    </th>
+                                    <td className="px-6 py-4 whitespace-normal">
+                                        12
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-normal">
+                                        $11
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-normal">
+                                        $132
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="border border-gray-300 bg-gray-100 font-bold w-full absolute bottom-16">
+                        <table className="w-full">
+                            <tbody>
+                                <tr>
+                                    <td colSpan={3} className="px-6 py-4 text-left text-black">
+                                        Subtotal
+                                    </td>
+                                    <td className="text-right px-6 py-4 text-black">
+                                        $132
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="w-100 absolute bottom-0 left-0 items-center justify-center m-4 ">
+                        <button className="w-full bg-blue-500 text-white py-2 rounded-md " 
+                         onClick={() => setShowModal(true)}>
+                            Checkout
+                        </button>
+                    </div>
+                    
+                </div>
             </div>
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+                    {/* Modal Header */}
+                    <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                        PEMBAYARAN
+                        </h3>
+                        <button
+                        type="button"
+                        className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm h-8 w-8 flex justify-center items-center"
+                        onClick={() => setShowModal(false)}
+                        >
+                        <svg className="w-3 h-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                        </svg>
+                        <span className="sr-only">Close modal</span>
+                        </button>
+                    </div>
+                    {/* Modal Body */}
+                    <div className="p-4">
+                        <p className="text-gray-500 mb-4">Pilih pembayaran:</p>
+                        <ul className="space-y-4 mb-4">
+                        <li>
+                            <input 
+                            type="radio" 
+                            id="tunai" 
+                            name="payment" 
+                            value="tunai" 
+                            className="hidden peer" 
+                            checked={selectedPayment === 'tunai'}
+                            onChange={(e) => setSelectedPayment('tunai')}
+                            />
+                            <label htmlFor="tunai" className="inline-flex items-center justify-between w-full p-5 text-gray-900 bg-white border border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-900 hover:bg-gray-100">
+                            <div className="block">
+                                <div className="w-full text-lg font-semibold">Tunai</div>
+                                <div className="w-full text-gray-500">Pembayaran langsung di kasir</div>
+                            </div>
+                            <svg className="w-4 h-4 ms-3 rtl:rotate-180 text-gray-500" aria-hidden="true" fill="none" viewBox="0 0 14 10">
+                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                            </svg>
+                            </label>
+                        </li>
+                        <li>
+                            <input 
+                            type="radio" 
+                            id="non-tunai" 
+                            name="payment" 
+                            value="non-tunai" 
+                            className="hidden peer" 
+                            checked={selectedPayment === 'non-tunai'}
+                            onChange={() => {
+                                setSelectedPayment('non-tunai')
+                                setShowNonTunaiModal(true)
+                            }}
+                            />
+                            <label htmlFor="non-tunai" className="inline-flex items-center justify-between w-full p-5 text-gray-900 bg-white border border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-900 hover:bg-gray-100">
+                            <div className="block">
+                                <div className="w-full text-lg font-semibold">Non-Tunai</div>
+                                <div className="w-full text-gray-500">Pembayaran lewat aplikasi</div>
+                            </div>
+                            <svg className="w-4 h-4 ms-3 rtl:rotate-180 text-gray-500" aria-hidden="true" fill="none" viewBox="0 0 14 10">
+                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                            </svg>
+                            </label>
+                        </li>
+                        {/* ...repeat for other jobs, ingat htmlFor dan className */}
+                        </ul>
+                    </div>
+                    </div>
+                </div>
+                )}
+                {/* Modal Non-Tunai */}
+            {showNonTunaiModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                                Pembayaran Non-Tunai
+                            </h3>
+                            <button
+                                type="button"
+                                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm h-8 w-8 flex justify-center items-center"
+                                onClick={() => setShowNonTunaiModal(false)}
+                            >
+                                <svg className="w-3 h-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
+                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                </svg>
+                                <span className="sr-only">Close modal</span>
+                            </button>
+                        </div>
+                        {/* Modal Body */}
+                        <div className="p-4">
+                            <img src={apple} alt="" />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
