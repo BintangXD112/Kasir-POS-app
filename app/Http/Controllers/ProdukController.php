@@ -11,7 +11,7 @@ class ProdukController extends Controller
     public function index()
     {
         $produk = Produk::all();
-        return Inertia::render('dashboard', [
+        return Inertia::render('kasir', [
             'produk' => $produk->toArray(),
         ]);
     }

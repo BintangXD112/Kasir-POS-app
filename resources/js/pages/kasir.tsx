@@ -1,8 +1,11 @@
 import { type BreadcrumbItem } from '@/types';
-import { useState, useRef } from 'react';
+import { useState, useRef, use } from 'react';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { Link, router } from '@inertiajs/react';
 import { type PageProps } from '@/types';
+import { usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 interface DashboardProps extends PageProps {
     produk: Produk[];
@@ -25,18 +28,32 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 
 export default function Dashboard({ produk }: DashboardProps) {
+    const { auth } = usePage().props;
     const [searchTerm, setSearchTerm] = useState('');
     const cleanup = useMobileNavigation();
-    const handleLogout = () => {
-        cleanup();
-        router.flushAll();
-        window.location.href = "/login";
-    };
+    function handleLogout() {
+        router.post('/logout');
+    }
     const [showLogout, setShowLogout] = useState(false);
     const toggleLogout = () => {
         setShowLogout(!showLogout);
     };
     const scrollRef = useRef(null);
+    const { props } = usePage();
+    const status = props?.status;
+    useEffect(() => {
+        if (status) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: status,
+            });
+
+            history.replaceState({}, document.title);
+        }
+    }, [status]);
+    console.log(usePage().props);
+
 
     const scrollLeft = () => {
         if (scrollRef.current) {
@@ -66,7 +83,7 @@ export default function Dashboard({ produk }: DashboardProps) {
     const filterNamaProduk = produk.filter((item) =>
         item.nama.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    const [transaksi, setTransaksi] = useState<Array<{produk: Produk, qty: number}>>([]);
+    const [transaksi, setTransaksi] = useState<Array<{ produk: Produk, qty: number }>>([]);
     const tambahTransaksi = (produk: Produk) => {
         setTransaksi((prev) => {
             const index = prev.findIndex(item => item.produk.id === produk.id);
@@ -75,7 +92,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                 update[index].qty += 1;
                 return update;
             }
-            return [...prev, {produk, qty: 1}];
+            return [...prev, { produk, qty: 1 }];
         });
     };
     return (
@@ -105,11 +122,16 @@ export default function Dashboard({ produk }: DashboardProps) {
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`size-4 ml-2 ${showLogout ? 'rotate-180' : ''} transition-transform duration-150 ease-in-out`}>
                             <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
                         </svg>
-                        <div className={`${showLogout ? 'opacity-100' : 'opacity-0'} transition-all duration-150 ease-in-out absolute top-8 right-0 bg-red-500 hover:opacity-50 rounded-md shadow-lg p-0 w-18 z-20 animate-fade-in`}>
+                        <div className={`${showLogout ? 'opacity-100' : 'opacity-0'} transition-all duration-150 ease-in-out absolute top-8 right-0 bg-red-500 hover:opacity-90 rounded-md shadow-lg p-0 w-18 z-20 animate-fade-in`}>
                             <ul className="text-white m-0 p-0">
                                 <li className="py-2 px-2 cursor-pointer transition-colors rounded-md">
-                                    <Link className="block w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
-                                        Log out
+                                    <Link
+                                        href={route('logout')}
+                                        method="post"
+                                        as="button"
+
+                                    >
+                                        Logout
                                     </Link>
                                 </li>
                             </ul>
@@ -121,7 +143,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                 <div className={`w-4/6 h-full bg-white rounded-lg p-4`}>
                     <div className={`flex items-center mb-4`}>
                         <div className={`relative w-full`}>
-                            <input type="text" placeholder='Cari Produk' className={`border-gray-500 border p-2 focus:outline-none rounded-full w-full`} value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} />
+                            <input type="text" placeholder='Cari Produk' className={`border-gray-500 border p-2 focus:outline-none rounded-full w-full`} value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value) }} />
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 font-bold text-red-500 absolute right-2 top-2 cursor-pointer">
                                 <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clipRule="evenodd" />
                             </svg>
@@ -211,20 +233,20 @@ export default function Dashboard({ produk }: DashboardProps) {
                             </thead>
                             <tbody>
                                 {transaksi.map((item, index) => (
-                                <tr key={index} className="odd:bg-white even:bg-gray-100 border-b border-gray-200">
-                                    <th scope="row" className="px-6 py-4 font-medium text-black whitespace-normal truncate overflow-hidden max-w-40">
-                                        {item.produk.nama}
-                                    </th>
-                                    <td className="px-6 py-4 whitespace-normal">
-                                        {item.qty}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-normal">
-                                        Rp. {item.produk.harga.toLocaleString('id-ID')}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-normal">
-                                        Rp. {(item.produk.harga*item.qty).toLocaleString('id-ID')}
-                                    </td>
-                                </tr>
+                                    <tr key={index} className="odd:bg-white even:bg-gray-100 border-b border-gray-200">
+                                        <th scope="row" className="px-6 py-4 font-medium text-black whitespace-normal truncate overflow-hidden max-w-40">
+                                            {item.produk.nama}
+                                        </th>
+                                        <td className="px-6 py-4 whitespace-normal">
+                                            {item.qty}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-normal">
+                                            Rp. {item.produk.harga.toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-normal">
+                                            Rp. {(item.produk.harga * item.qty).toLocaleString('id-ID')}
+                                        </td>
+                                    </tr>
                                 ))}
                             </tbody>
                         </table>
@@ -246,7 +268,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                     <div className="w-100 absolute bottom-0 left-0 items-center justify-center m-4 ">
                         <button className="w-full bg-blue-500 text-white py-2 rounded-md "
                             onClick={() => {
-                                if (transaksi.length === 0){
+                                if (transaksi.length === 0) {
                                     alert("Tidak ada produk yang dipilih");
                                     return;
                                 }
@@ -347,7 +369,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                                 onClick={() => {
                                     setShowNonTunaiModal(false);
                                     setSelectedPayment('');
-                                    
+
                                 }}
                             >
                                 <svg className="w-3 h-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
