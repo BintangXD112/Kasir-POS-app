@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\KasirController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Models\User;
 
@@ -31,6 +31,7 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 Route::middleware(['auth'])->group(function () {
     Route::get('/kasir', [ProdukController::class, 'index'])->name('kasir');
     Route::get('/admin', fn () => Inertia::render('Admin'))->name('admin');
+    Route::get('/kasir', [\App\Http\Controllers\TransaksiController::class, 'ksair']);
 });
 
 

@@ -39,7 +39,7 @@ export default function Dashboard({ produk }: DashboardProps) {
     const toggleLogout = () => {
         setShowLogout(!showLogout);
     };
-    const scrollRef = useRef(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
     const scrollLeft = () => {
         if (scrollRef.current) {
@@ -193,6 +193,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                         </div>
                         <div ref={scrollRef} className={`overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`}>
                             <div className={`flex gap-2`}>
+                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
                                 <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
                                 <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
                                 <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
