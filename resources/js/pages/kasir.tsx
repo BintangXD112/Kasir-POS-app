@@ -1,8 +1,8 @@
-import { type BreadcrumbItem } from '@/types';
+import React from "react";
+import { type BreadcrumbItem, type PageProps } from '../types/index';
 import { useState, useRef } from 'react';
-import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { useMobileNavigation } from '../hooks/use-mobile-navigation';
 import { Link, router } from '@inertiajs/react';
-import { type PageProps } from '@/types';
 import { LogOut } from 'lucide-react';
 import QRCodePembayaran from '../components/qrcodepaymentmodal';
 
@@ -17,6 +17,7 @@ export interface Produk {
     gambar: string;
 }
 
+declare const route: (name: string, params?: any, absolute?: boolean, config?: any) => string;
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -193,6 +194,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                         </div>
                         <div ref={scrollRef} className={`overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`}>
                             <div className={`flex gap-2`}>
+                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
                                 <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
                                 <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
                                 <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>

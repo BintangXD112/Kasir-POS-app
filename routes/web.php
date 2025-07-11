@@ -29,9 +29,8 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 
 // Route untuk user yang sudah login
 Route::middleware(['auth'])->group(function () {
-    Route::get('/kasir', [ProdukController::class, 'index'])->name('kasir');
+    Route::get('/kasir', [KasirController::class, 'index'])->name('kasir');
     Route::get('/admin', fn () => Inertia::render('Admin'))->name('admin');
-    Route::get('/kasir', [\App\Http\Controllers\TransaksiController::class, 'ksair']);
 });
 
 
