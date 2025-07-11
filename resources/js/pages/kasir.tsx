@@ -1,10 +1,13 @@
 import React from "react";
+import { useEffect } from 'react';
 import { type BreadcrumbItem, type PageProps } from '../types/index';
 import { useState, useRef } from 'react';
 import { useMobileNavigation } from '../hooks/use-mobile-navigation';
 import { Link, router } from '@inertiajs/react';
 import { LogOut } from 'lucide-react';
 import QRCodePembayaran from '../components/qrcodepaymentmodal';
+import Swal from 'sweetalert2';
+
 
 interface DashboardProps extends PageProps {
     produk: Produk[];
@@ -53,18 +56,66 @@ export default function Dashboard({ produk }: DashboardProps) {
 
     // reset pembayaran
     const resetPembayaranTunai = () => {
-    setUangTunai('');
-    setUangTunaiDisplay('');
-    setShowModal(false); 
+        setUangTunai('');
+        setUangTunaiDisplay('');
+        setShowModal(false);
     };
+
+    const generateKodeTransaksi = () => {
+        const now = new Date();
+        return 'TRX-' + now.getTime();
+    };
+
+    // loading screen 
+    const [loading, setLoading] = useState(false);
 
     // untuk simulasi qr code
     const handleKonfirmasiPembayaran = () => {
-        alert("Simulasi pembayaran berhasil!");
         setShowNonTunaiModal(false);
-        setSelectedPayment('');
-        setTransaksi([]);
+
+        // Tampilkan loading dari SweetAlert
+        Swal.fire({
+            title: 'Menyimpan transaksi...',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const dataToSend = {
+            kode_transaksi: generateKodeTransaksi(),
+            detail: transaksi.map(item => ({
+                produk_id: item.produk.id,
+                jumlah: item.qty,
+                harga: item.produk.harga,
+            })),
+            metode: selectedPayment,
+            total: transaksi.reduce((total, item) => total + item.produk.harga * item.qty, 0),
         };
+
+        router.post(route('transaksi'), dataToSend, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Transaksi Berhasil',
+                    text: 'Data berhasil disimpan.',
+                });
+                setTransaksi([]); // bersihkan keranjang jika perlu
+            },
+            onError: () => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Transaksi Gagal',
+                    text: 'Terjadi kesalahan saat menyimpan transaksi.',
+                });
+            },
+        });
+    };
+
+
 
     const scrollRight = () => {
         if (scrollRef.current) {
@@ -87,7 +138,7 @@ export default function Dashboard({ produk }: DashboardProps) {
     const filterNamaProduk = produk.filter((item) =>
         item.nama.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    const [transaksi, setTransaksi] = useState<Array<{produk: Produk, qty: number}>>([]);
+    const [transaksi, setTransaksi] = useState<Array<{ produk: Produk, qty: number }>>([]);
     const tambahTransaksi = (produk: Produk) => {
         setTransaksi((prev) => {
             const index = prev.findIndex(item => item.produk.id === produk.id);
@@ -96,36 +147,36 @@ export default function Dashboard({ produk }: DashboardProps) {
                 update[index].qty += 1;
                 return update;
             }
-            return [...prev, {produk, qty: 1}];
+            return [...prev, { produk, qty: 1 }];
         });
     };
-    const [quantities, setQuantities] = useState<{[key: number]: number}>({});
+    const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
     const updateQuantity = (produkId: number, newQty: number) => {
-    const finalQty = Math.max(0, newQty);
-    
-    if (finalQty === 0) {
-        setTransaksi(prev => prev.filter(item => item.produk.id !== produkId));
-        
-        setQuantities(prev => {
-            const newQuantities = { ...prev };
-            delete newQuantities[produkId];
-            return newQuantities;
-        });
-    } else {
-        setQuantities(prev => ({
-            ...prev,
-            [produkId]: finalQty
-        }));
-        
-        setTransaksi(prev => 
-            prev.map(item => 
-                item.produk.id === produkId 
-                    ? { ...item, qty: finalQty }
-                    : item
-            )
-        );
-    }
-};
+        const finalQty = Math.max(0, newQty);
+
+        if (finalQty === 0) {
+            setTransaksi(prev => prev.filter(item => item.produk.id !== produkId));
+
+            setQuantities(prev => {
+                const newQuantities = { ...prev };
+                delete newQuantities[produkId];
+                return newQuantities;
+            });
+        } else {
+            setQuantities(prev => ({
+                ...prev,
+                [produkId]: finalQty
+            }));
+
+            setTransaksi(prev =>
+                prev.map(item =>
+                    item.produk.id === produkId
+                        ? { ...item, qty: finalQty }
+                        : item
+                )
+            );
+        }
+    };
 
     return (
         <div className="flex h-screen w-full bg-gray-600 flex-col gap-4">
@@ -134,11 +185,11 @@ export default function Dashboard({ produk }: DashboardProps) {
                     <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
                 </div>
                 <div className={`flex gap-4`}>
-                    <input type="text" placeholder='Masukkan nama member' className="rounded-sm bg-white px-2 focus:outline-0" />
-                    <button onClick={()=>{setTransaksi([])}} className={`flex justify-center bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:text- transition-all duration-300`}>
+                    <input type="text" placeholder='Masukkan nama member...' className="rounded-sm bg-white text-black placeholder-gray-300 px-2 focus:outline-0" />
+                    <button onClick={() => { setTransaksi([]) }} className={`flex justify-center bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:text- transition-all duration-300`}>
                         Hapus Transaksi
                     </button>
-                    <div onMouseEnter={funcHoverPrint} onMouseLeave={funcHoverPrint} onClick={() => router.visit('/transaksi')} style={{cursor: 'pointer'}}>
+                    <div onMouseEnter={funcHoverPrint} onMouseLeave={funcHoverPrint} onClick={() => router.visit('/transaksi')} style={{ cursor: 'pointer' }}>
                         {hoverPrint ? (
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-8 text-white">
                                 <path fillRule="evenodd" d="M7.875 1.5C6.839 1.5 6 2.34 6 3.375v2.99c-.426.053-.851.11-1.274.174-1.454.218-2.476 1.483-2.476 2.917v6.294a3 3 0 0 0 3 3h.27l-.155 1.705A1.875 1.875 0 0 0 7.232 22.5h9.536a1.875 1.875 0 0 0 1.867-2.045l-.155-1.705h.27a3 3 0 0 0 3-3V9.456c0-1.434-1.022-2.7-2.476-2.917A48.716 48.716 0 0 0 18 6.366V3.375c0-1.036-.84-1.875-1.875-1.875h-8.25ZM16.5 6.205v-2.83A.375.375 0 0 0 16.125 3h-8.25a.375.375 0 0 0-.375.375v2.83a49.353 49.353 0 0 1 9 0Zm-.217 8.265c.178.018.317.16.333.337l.526 5.784a.375.375 0 0 1-.374.409H7.232a.375.375 0 0 1-.374-.409l.526-5.784a.373.373 0 0 1 .333-.337 41.741 41.741 0 0 1 8.566 0Zm.967-3.97a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H18a.75.75 0 0 1-.75-.75V10.5ZM15 9.75a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V10.5a.75.75 0 0 0-.75-.75H15Z" clipRule="evenodd" />
@@ -155,16 +206,16 @@ export default function Dashboard({ produk }: DashboardProps) {
                             <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
                         </svg>
                         {showLogout && (
-                        <div className={`transition-all duration-150 ease-in-out absolute top-8 right-0 bg-red-500 cursor-pointer hover:opacity-50 rounded-md shadow-lg p-0 w-36 z-20 animate-fade-in`}>
-                            <ul className="text-white m-0 p-0">
-                                <li className="py-2 px-2 cursor-pointer transition-colors rounded-md">
-                                    <Link className="flex w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
-                                        <LogOut className='mr-2'/>
-                                        Log out
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
+                            <div className={`transition-all duration-150 ease-in-out absolute top-8 right-0 bg-red-500 cursor-pointer hover:opacity-50 rounded-md shadow-lg p-0 w-36 z-20 animate-fade-in`}>
+                                <ul className="text-white m-0 p-0">
+                                    <li className="py-2 px-2 cursor-pointer transition-colors rounded-md">
+                                        <Link className="flex w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
+                                            <LogOut className='mr-2' />
+                                            Log out
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -173,7 +224,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                 <div className={`w-4/6 h-full bg-white rounded-lg p-4`}>
                     <div className={`flex items-center mb-4`}>
                         <div className={`relative w-full`}>
-                            <input type="text" placeholder='Cari Produk' className={`border-gray-500 border p-2 focus:outline-none rounded-full w-full`} value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} />
+                            <input type="text" placeholder='Cari Produk' className={`border-gray-500 border p-2 focus:outline-none rounded-full w-full`} value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value) }} />
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 font-bold text-red-500 absolute right-2 top-2 cursor-pointer">
                                 <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clipRule="evenodd" />
                             </svg>
@@ -267,28 +318,28 @@ export default function Dashboard({ produk }: DashboardProps) {
                             </thead>
                             <tbody>
                                 {transaksi.map((item, index) => (
-                                <tr key={index} className="odd:bg-white even:bg-gray-100 border-b border-gray-200">
-                                    <th scope="row" className="px-6 py-4 font-medium text-black whitespace-normal truncate overflow-hidden max-w-40">
-                                        {item.produk.nama}
-                                    </th>
-                                    <td className="px-6 py-4 whitespace-normal">
-                                        <div className="flex items-center w-full">
-                                            <svg onClick={()=>updateQuantity(item.produk.id, (quantities[item.produk.id] || item.qty) - 1)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="cursor-pointer size-4 mr-2">
-                                                <path fillRule="evenodd" d="M4.25 12a.75.75 0 0 1 .75-.75h14a.75.75 0 0 1 0 1.5H5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                                            </svg>
-                                            <p>{quantities[item.produk.id] || item.qty}</p>
-                                            <svg onClick={()=>updateQuantity(item.produk.id, (quantities[item.produk.id] || item.qty) + 1)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4 cursor-pointer ml-2">
-                                                <path fillRule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
-                                            </svg>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-normal">
-                                        Rp.&nbsp;{item.produk.harga.toLocaleString('id-ID')}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-normal">
-                                        Rp.&nbsp;{(item.produk.harga * (Number(quantities[item.produk.id] || item.qty) || item.qty)).toLocaleString('id-ID')}
-                                    </td>
-                                </tr>
+                                    <tr key={index} className="odd:bg-white even:bg-gray-100 border-b border-gray-200">
+                                        <th scope="row" className="px-6 py-4 font-medium text-black whitespace-normal truncate overflow-hidden max-w-40">
+                                            {item.produk.nama}
+                                        </th>
+                                        <td className="px-6 py-4 whitespace-normal">
+                                            <div className="flex items-center w-full">
+                                                <svg onClick={() => updateQuantity(item.produk.id, (quantities[item.produk.id] || item.qty) - 1)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="cursor-pointer size-4 mr-2">
+                                                    <path fillRule="evenodd" d="M4.25 12a.75.75 0 0 1 .75-.75h14a.75.75 0 0 1 0 1.5H5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
+                                                </svg>
+                                                <p>{quantities[item.produk.id] || item.qty}</p>
+                                                <svg onClick={() => updateQuantity(item.produk.id, (quantities[item.produk.id] || item.qty) + 1)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4 cursor-pointer ml-2">
+                                                    <path fillRule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-normal">
+                                            Rp.&nbsp;{item.produk.harga.toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-normal">
+                                            Rp.&nbsp;{(item.produk.harga * (Number(quantities[item.produk.id] || item.qty) || item.qty)).toLocaleString('id-ID')}
+                                        </td>
+                                    </tr>
                                 ))}
                             </tbody>
                         </table>
@@ -310,29 +361,40 @@ export default function Dashboard({ produk }: DashboardProps) {
                     <div className="w-100 absolute bottom-0 left-0 items-center justify-center m-4 ">
                         <div className="flex mb-4">
                             <div className="flex justify-center items-center w-1/2 text-black">
-                                <input type="radio" id='method' name='method'  className='mr-2' checked={selectedPayment === 'tunai'} onChange={() => setSelectedPayment('tunai')}/>
+                                <input type="radio" id='method' name='method' className='mr-2' checked={selectedPayment === 'tunai'} onChange={() => setSelectedPayment('tunai')} />
                                 Tunai
                             </div>
                             <div className="justify-center flex w-1/2 text-black">
-                                <input type="radio" id='method' name='method' className='mr-2' checked={selectedPayment === 'non-tunai'} onChange={() => setSelectedPayment('non-tunai')}/>
+                                <input type="radio" id='method' name='method' className='mr-2' checked={selectedPayment === 'non-tunai'} onChange={() => setSelectedPayment('non-tunai')} />
                                 Non Tunai
                             </div>
                         </div>
                         <button className="w-full bg-blue-500 text-white py-2 rounded-md "
                             onClick={() => {
-                                if (transaksi.length === 0){
-                                    alert("Tidak ada produk yang dipilih");
+                                if (transaksi.length === 0) {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Oops!',
+                                        text: 'Tidak ada produk yang dipilih',
+                                        confirmButtonText: 'OK'
+                                    });
+
                                     return;
                                 }
-                                if (!selectedPayment){
-                                    alert("Silahkan pilih metode pembayaran");
+                                if (!selectedPayment) {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Metode Pembayaran Belum Dipilih',
+                                        text: 'Silahkan pilih metode pembayaran terlebih dahulu.',
+                                        confirmButtonText: 'OK'
+                                    });
                                     return;
                                 }
                                 if (selectedPayment === 'tunai') {
                                     setSelectedProduk(filterNamaProduk[0]);
                                     setShowModal(true);
                                     return;
-                                }else if (selectedPayment === 'non-tunai') {
+                                } else if (selectedPayment === 'non-tunai') {
                                     setShowNonTunaiModal(true);
                                 }
                             }}>
@@ -342,6 +404,14 @@ export default function Dashboard({ produk }: DashboardProps) {
 
                 </div>
             </div>
+            {loading && (
+                <div className="flex flex-col items-center text-white text-xl">
+                    <svg className="animate-spin h-10 w-10 mb-4" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="4" fill="none" />
+                    </svg>
+                    Memproses Transaksi...
+                </div>
+            )}
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
                     <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
@@ -386,9 +456,9 @@ export default function Dashboard({ produk }: DashboardProps) {
                             <div className="flex justify-between">
                                 <span className="text-gray-700 font-medium">Total Harga</span>
                                 <span className="text-black font-semibold">Rp. {transaksi.reduce((total, item) => total + (item.produk.harga * item.qty), 0).toLocaleString('id-ID')}</span>
-                                </div>
+                            </div>
 
-                                <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center">
                                 <label htmlFor="uangTunai" className="text-gray-700 font-medium">Uang Tunai</label>
                                 <input
                                     type="text"
@@ -403,23 +473,23 @@ export default function Dashboard({ produk }: DashboardProps) {
                                             const numeric = parseInt(raw, 10);
                                             setUangTunai(numeric); // angka asli
                                             setUangTunaiDisplay(numeric.toLocaleString('id-ID')); // tampilan dengan titik
-                                            }
+                                        }
                                     }}
                                     className="border border-gray-300 rounded px-2 py-1 w-40 text-black"
                                     placeholder="Masukkan nominal"
                                 />
-                                </div>
+                            </div>
                             {uangTunai !== '' && uangTunai < transaksi.reduce((total, item) => total + (item.produk.harga * item.qty), 0) ? (
-                            <p className="text-red-500">Uang tidak cukup</p>
+                                <p className="text-red-500">Uang tidak cukup</p>
                             ) : (
-                            uangTunai !== '' && (
-                                <div className="flex justify-between">
-                                <span className="text-gray-700 font-medium">Kembalian</span>
-                                <span className="text-green-600 font-bold">
-                                    Rp. {(uangTunai - transaksi.reduce((total, item) => total + (item.produk.harga * item.qty), 0)).toLocaleString('id-ID')}
-                                </span>
-                                </div>
-                            )
+                                uangTunai !== '' && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-700 font-medium">Kembalian</span>
+                                        <span className="text-green-600 font-bold">
+                                            Rp. {(uangTunai - transaksi.reduce((total, item) => total + (item.produk.harga * item.qty), 0)).toLocaleString('id-ID')}
+                                        </span>
+                                    </div>
+                                )
                             )}
                             <button
                                 className="w-full bg-green-500 text-white py-2 rounded-md"
@@ -430,7 +500,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                                     resetPembayaranTunai();
                                     setSelectedPayment('');
                                 }}
-                                >
+                            >
                                 Bayar Sekarang
                             </button>
                         </div>
@@ -480,17 +550,17 @@ export default function Dashboard({ produk }: DashboardProps) {
                         <div className="p-4 space-y-4">
                             {/* untuk qr code */}
                             <div className="p-4 flex justify-center">
-                            <QRCodePembayaran value="https://simulasi.pembayaran/12345" />
+                                <QRCodePembayaran value="https://simulasi.pembayaran/12345" />
                             </div>
                             <button
-                            className="w-full bg-green-500 text-white py-2 rounded-md"
-                            onClick={() => {
-                                handleKonfirmasiPembayaran();
-                                setTransaksi([]);
-                                setSelectedPayment('');
-                            }}
+                                className="w-full bg-green-500 text-white py-2 rounded-md"
+                                onClick={() => {
+                                    handleKonfirmasiPembayaran();
+                                    setTransaksi([]);
+                                    setSelectedPayment('');
+                                }}
                             >
-                            Konfirmasi Pembayaran
+                                Konfirmasi Pembayaran
                             </button>
                         </div>
                     </div>
