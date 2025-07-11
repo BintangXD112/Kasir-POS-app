@@ -12,16 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('detail_transaksi', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
-            $table->id();
-            $table->unsignedBigInteger('transaksi_id')->index();
-            $table->unsignedBigInteger('produk_id')->index();
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('transaksi_id')->index('fk_detail_transaksi_transaksi');
+            $table->unsignedBigInteger('produk_id')->index('fk_detail_transaksi_produk');
             $table->integer('qty');
-            $table->decimal('harga', 15, 2);
+            $table->decimal('harga', 15);
             $table->timestamps();
-
-            $table->foreign('transaksi_id')->references('id')->on('transaksi')->onDelete('cascade');
-            $table->foreign('produk_id')->references('id')->on('produk')->onDelete('cascade');
         });
     }
 
@@ -32,4 +28,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('detail_transaksi');
     }
-}; 
+};
