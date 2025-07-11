@@ -4,8 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Http\Controllers\KasirController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Models\User;
+use App\Http\Controllers\TransaksiController;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -30,6 +29,7 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 // Route untuk user yang sudah login
 Route::middleware(['auth'])->group(function () {
     Route::get('/kasir', [KasirController::class, 'index'])->name('kasir');
+    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi');
     Route::get('/admin', fn () => Inertia::render('Admin'))->name('admin');
 });
 

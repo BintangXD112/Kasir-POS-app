@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             ProdukSeeder::class,
+            TransaksiSeeder::class,
+            DetailTransaksiSeeder::class,
         ]);
         User::factory()->create([
             'nama_user' => 'Admin',

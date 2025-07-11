@@ -6,30 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('transaksi', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->id();
-            $table->unsignedBigInteger('user_id'); // kasir
+            $table->unsignedBigInteger('user_id');
             $table->string('kode_transaksi')->unique();
             $table->decimal('total', 15, 2);
             $table->enum('metode_pembayaran', ['tunai', 'qris', 'lainnya']);
-            $table->string('qris_ref_id')->nullable(); // referensi dari payment gateway
+            $table->string('qris_ref_id')->nullable();
             $table->enum('status', ['pending', 'paid', 'failed', 'expired'])->default('pending');
             $table->timestamp('waktu_bayar')->nullable();
             $table->timestamps();
-
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('transaksi');

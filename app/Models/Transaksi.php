@@ -11,4 +11,9 @@ class Transaksi extends Model
 
     protected $table = 'transaksi';
     protected $guarded = [];
+
+    public function detail()
+    {
+        return $this->hasMany(DetailTransaksi::class);
+    }
 } 
