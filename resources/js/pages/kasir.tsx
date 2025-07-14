@@ -220,19 +220,6 @@ export default function Dashboard({ produk }: DashboardProps) {
         }
     }, [namaInput, saran]);
 
-    const handleCekMember = () => {
-
-        if (!selectedMember) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Member Tidak Ditemukan',
-                text: `Nama "${namaInput}" tidak terdaftar.`,
-            });
-            return;
-        }
-
-    };
-
 
 
 
@@ -626,10 +613,10 @@ export default function Dashboard({ produk }: DashboardProps) {
                             </button>
                         </div>
                         {/* Modal Body */}
-                        {selectedMember && (
+                        {selectedMember ? (
+                            // Jika ada member (versi dengan diskon)
                             <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
                                 <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
-
                                 <ul className="text-sm text-gray-700 space-y-1">
                                     {transaksi.map((item, index) => (
                                         <li key={index} className="flex justify-between">
@@ -659,9 +646,26 @@ export default function Dashboard({ produk }: DashboardProps) {
                                     <span>Total Akhir:</span>
                                     <span>Rp {totalSetelahDiskon.toLocaleString('id-ID')}</span>
                                 </div>
-
+                            </div>
+                        ) : (
+                            // Jika bukan member
+                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
+                                <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
+                                <ul className="text-sm text-gray-700 space-y-1">
+                                    {transaksi.map((item, index) => (
+                                        <li key={index} className="flex justify-between">
+                                            <span>{item.qty}x {item.produk.nama}</span>
+                                            <span>Rp {(item.produk.harga * item.qty).toLocaleString('id-ID')}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="flex justify-between font-bold mt-2">
+                                    <span>Total:</span>
+                                    <span>Rp {transaksi.reduce((total, item) => total + item.produk.harga * item.qty, 0).toLocaleString('id-ID')}</span>
+                                </div>
                             </div>
                         )}
+
 
                         {/* Form Pembayaran Non-Tunai */}
                         <div className="p-4 space-y-4">
