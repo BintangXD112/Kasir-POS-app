@@ -22,9 +22,17 @@ class MemberController extends Controller
         }
 
         // Ambil nama member yang mirip (max 10)
-        $members = Member::where('nama', 'like', '%' . $query . '%')
-            ->limit(10)
-            ->pluck('nama');
+        $members = Member::with('level')
+            ->where('nama', 'like', '%' . $query . '%')
+            ->get()
+            ->map(function ($member) {
+                return [
+                    'nama' => $member->nama,
+                    'level' => $member->level->nama ?? 'Tidak Ada',
+                    'diskon' => $member->level->diskon ?? 0,
+                    'total_transaksi_6bulan' => $member->total_transaksi_6bulan,
+                ];
+            });
 
         return response()->json($members);
     }

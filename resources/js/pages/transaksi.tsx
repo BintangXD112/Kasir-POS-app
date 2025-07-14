@@ -14,6 +14,7 @@ interface DetailTransaksi {
   produk: Produk;
   qty: number;
   harga: number;
+
 }
 
 interface Member {
@@ -29,6 +30,7 @@ interface Transaksi {
   metode_pembayaran: string;
   status: string;
   waktu_bayar: string | null;
+  created_at: string | null;
   detail: DetailTransaksi[];
 }
 
@@ -67,6 +69,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                 <th className="px-4 py-2 border text-gray-700">Status</th>
                 <th className="px-4 py-2 border text-gray-700">Waktu Bayar</th>
                 <th className="px-4 py-2 border text-gray-700">Detail Produk</th>
+                <th className="px-4 py-2 border text-gray-700">Tanggal Transaksi</th>
               </tr>
             </thead>
             <tbody>
@@ -91,6 +94,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                       ))}
                     </ul>
                   </td>
+                  <td className="px-4 py-2 border text-gray-800">{trx.created_at ? new Date(trx.created_at).toLocaleString('id-ID') : '-'}</td>
                 </tr>
               ))}
             </tbody>

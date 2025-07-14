@@ -71,6 +71,7 @@ export default function Dashboard({ produk }: DashboardProps) {
 
     // untuk simulasi qr code
     const handleKonfirmasiPembayaran = () => {
+        console.log('Konfirmasi pembayaran' + selectedMember);
         setShowNonTunaiModal(false);
 
         // Tampilkan loading dari SweetAlert
@@ -92,8 +93,8 @@ export default function Dashboard({ produk }: DashboardProps) {
             })),
             metode: selectedPayment,
             status: selectedPayment === 'non-tunai' ? 'paid' : 'pending',
-            total: transaksi.reduce((total, item) => total + item.produk.harga * item.qty, 0),
-            nama_member: namaInput,
+            total: totalSetelahDiskon,
+            nama_member: selectedMember?.nama ?? '',
         };
 
         router.post(route('transaksi'), dataToSend, {
@@ -182,8 +183,19 @@ export default function Dashboard({ produk }: DashboardProps) {
 
     // input rekomendasi otomatis
     const [namaInput, setNamaInput] = useState('');
-    const [saran, setSaran] = useState<string[]>([]);
-    const [selectedNama, setSelectedNama] = useState('');
+    const [saran, setSaran] = useState<Array<{
+        nama: string;
+        level: string;
+        diskon: number;
+        total_transaksi_6bulan: number;
+    }>>([]);
+    const [selectedMember, setSelectedMember] = useState<{
+        nama: string;
+        level: string;
+        diskon: number;
+        total_transaksi_6bulan: number;
+    } | null>(null);
+
 
     useEffect(() => {
         if (namaInput.trim() !== '') {
@@ -196,8 +208,21 @@ export default function Dashboard({ produk }: DashboardProps) {
         }
     }, [namaInput]);
 
+    useEffect(() => {
+        const found = saran.find(
+            item => item.nama.trim().toLowerCase() === namaInput.trim().toLowerCase()
+        );
+
+        if (found) {
+            setSelectedMember(found);
+        } else {
+            setSelectedMember(null); // reset jika tidak ditemukan
+        }
+    }, [namaInput, saran]);
+
     const handleCekMember = () => {
-        if (!saran.includes(namaInput)) {
+
+        if (!selectedMember) {
             Swal.fire({
                 icon: 'error',
                 title: 'Member Tidak Ditemukan',
@@ -206,19 +231,28 @@ export default function Dashboard({ produk }: DashboardProps) {
             return;
         }
 
-        setSelectedNama(namaInput);
-        Swal.fire({
-            icon: 'success',
-            title: 'Member Ditemukan',
-            text: `Member "${namaInput}" dipilih.`,
-        });
     };
 
-    useEffect(()=>{
-        if(localStorage.getItem("tipe_user") !== "kasir"){
+
+
+
+    useEffect(() => {
+        if (localStorage.getItem("tipe_user") !== "kasir") {
             window.location.href = "/login";
         }
     })
+
+
+    // logika diskon 
+    const totalSebelumDiskon = transaksi.reduce(
+        (total, item) => total + item.produk.harga * item.qty,
+        0
+    );
+
+    const diskonPersen = selectedMember?.diskon ?? 0;
+    const potongan = Math.floor((totalSebelumDiskon * diskonPersen) / 100);
+    const totalSetelahDiskon = totalSebelumDiskon - potongan;
+
 
     return (
         <div className="flex h-screen w-full bg-gray-600 flex-col gap-4">
@@ -229,8 +263,8 @@ export default function Dashboard({ produk }: DashboardProps) {
                 <div className={`flex gap-4`}>
                     <input type="text" placeholder='Masukkan nama member...' list="daftar-member" value={namaInput} onChange={e => setNamaInput(e.target.value)} className="rounded-sm bg-white text-black placeholder-gray-300 px-2 focus:outline-0" />
                     <datalist id="daftar-member">
-                        {saran.map((nama, i) => (
-                            <option key={i} value={nama} />
+                        {saran.map((item, i) => (
+                            <option key={i} value={item.nama} />
                         ))}
                     </datalist>
                     <button onClick={() => { setTransaksi([]) }} className={`flex justify-center bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:text- transition-all duration-300`}>
@@ -419,8 +453,9 @@ export default function Dashboard({ produk }: DashboardProps) {
                         <button
                             className="w-full bg-blue-500 text-white py-2 rounded-md"
                             onClick={() => {
-                                const isMemberValid = namaInput.length === 0 || saran.includes(namaInput);
 
+                                const found = saran.find(item => item.nama.toLowerCase() === namaInput.toLowerCase());
+                                const isMemberValid = namaInput.length === 0 || !!found;
                                 if (!isMemberValid) {
                                     Swal.fire({
                                         icon: 'error',
@@ -591,21 +626,43 @@ export default function Dashboard({ produk }: DashboardProps) {
                             </button>
                         </div>
                         {/* Modal Body */}
-                        <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
-                            <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
-                            <ul className="text-sm text-gray-700 space-y-1">
-                                {transaksi.map((item, index) => (
-                                    <li key={index} className="flex justify-between">
-                                        <span>{item.qty}x {item.produk.nama}</span>
-                                        <span>Rp {(item.produk.harga * item.qty).toLocaleString('id-ID')}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="flex justify-between font-bold mt-2">
-                                <span>Total:</span>
-                                <span>Rp {transaksi.reduce((total, item) => total + item.produk.harga * item.qty, 0).toLocaleString('id-ID')}</span>
+                        {selectedMember && (
+                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
+                                <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
+
+                                <ul className="text-sm text-gray-700 space-y-1">
+                                    {transaksi.map((item, index) => (
+                                        <li key={index} className="flex justify-between">
+                                            <span>{item.qty}x {item.produk.nama}</span>
+                                            <span>Rp {(item.produk.harga * item.qty).toLocaleString('id-ID')}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <div className="flex justify-between font-bold mt-3">
+                                    <span>Nama Member:</span>
+                                    <span>{selectedMember.nama}</span>
+                                </div>
+                                <div className="flex justify-between font-bold mt-2">
+                                    <span>Level Member:</span>
+                                    <span>{selectedMember.level}</span>
+                                </div>
+                                <div className="flex justify-between font-bold mt-2">
+                                    <span>Diskon Member:</span>
+                                    <span>{diskonPersen}%</span>
+                                </div>
+                                <div className="flex justify-between font-bold mt-2 text-red-600">
+                                    <span>Potongan:</span>
+                                    <span>- Rp {potongan.toLocaleString('id-ID')}</span>
+                                </div>
+                                <div className="flex justify-between font-bold mt-2 text-green-600">
+                                    <span>Total Akhir:</span>
+                                    <span>Rp {totalSetelahDiskon.toLocaleString('id-ID')}</span>
+                                </div>
+
                             </div>
-                        </div>
+                        )}
+
                         {/* Form Pembayaran Non-Tunai */}
                         <div className="p-4 space-y-4">
                             {/* untuk qr code */}
