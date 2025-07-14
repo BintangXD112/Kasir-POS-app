@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\KasirController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\MemberController;
 
 
 
@@ -36,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi');
     Route::post('/transaksi', [TransaksiController::class, 'store'])->name('transaksi.store');
     Route::get('/admin', fn () => Inertia::render('Admin'))->name('admin');
+    Route::get('/members/search', [MemberController::class, 'search']);
 });
 
 

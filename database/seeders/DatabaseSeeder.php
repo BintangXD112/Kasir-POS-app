@@ -26,9 +26,13 @@ class DatabaseSeeder extends Seeder
         ]);
         $this->call([
             ProdukSeeder::class,
+            MemberLevelSeeder::class,
+            VoucherSeeder::class,
+            MemberSeeder::class,
+            MemberVoucherSeeder::class,
             TransaksiSeeder::class,
             DetailTransaksiSeeder::class,
-            MemberLevelSeeder::class,
+
         ]);
     }
 }

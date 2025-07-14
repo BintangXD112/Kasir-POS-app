@@ -16,9 +16,15 @@ interface DetailTransaksi {
   harga: number;
 }
 
+interface Member {
+  id: number;
+  nama: string;
+}
+
 interface Transaksi {
   id: number;
   kode_transaksi: string;
+  member: Member | null;
   total: number;
   metode_pembayaran: string;
   status: string;
@@ -55,6 +61,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-4 py-2 border text-gray-700">Kode Transaksi</th>
+                <th className="px-4 py-2 border text-gray-700">Member</th>
                 <th className="px-4 py-2 border text-gray-700">Total</th>
                 <th className="px-4 py-2 border text-gray-700">Metode</th>
                 <th className="px-4 py-2 border text-gray-700">Status</th>
@@ -66,6 +73,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
               {transaksi.map((trx) => (
                 <tr key={trx.id} className="odd:bg-white even:bg-gray-50 border-b">
                   <td className="px-4 py-2 border font-semibold text-gray-800">{trx.kode_transaksi}</td>
+                  <td className="px-4 py-2 border font-semibold text-gray-800">{trx.member?.nama ?? 'Non Member'}</td>
                   <td className="px-4 py-2 border text-gray-800">Rp {trx.total.toLocaleString('id-ID')}</td>
                   <td className="px-4 py-2 border text-gray-800 capitalize">{trx.metode_pembayaran}</td>
                   <td className={

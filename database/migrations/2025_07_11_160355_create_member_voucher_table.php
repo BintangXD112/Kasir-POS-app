@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('member_vouchers', function (Blueprint $table) {
+        Schema::create('member_voucher', function (Blueprint $table) {
             $table->id();
             $table->foreignId('member_id')->constrained()->onDelete('cascade');
             $table->foreignId('voucher_id')->constrained()->onDelete('cascade');
-            $table->date('mulai_berlaku');
-            $table->date('berakhir');
-            $table->boolean('sudah_digunakan')->default(false);
+            $table->integer('jumlah_pakai')->default(0);
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('member_vouchers');
+        Schema::dropIfExists('member_voucher');
     }
 };

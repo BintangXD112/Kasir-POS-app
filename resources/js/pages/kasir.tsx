@@ -1,7 +1,6 @@
 import React from "react";
-import { useEffect } from 'react';
 import { type BreadcrumbItem, type PageProps } from '../types/index';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useMobileNavigation } from '../hooks/use-mobile-navigation';
 import { Link, router } from '@inertiajs/react';
 import { LogOut } from 'lucide-react';
@@ -91,7 +90,9 @@ export default function Dashboard({ produk }: DashboardProps) {
                 harga: item.produk.harga,
             })),
             metode: selectedPayment,
+            status: selectedPayment === 'non-tunai' ? 'paid' : 'pending',
             total: transaksi.reduce((total, item) => total + item.produk.harga * item.qty, 0),
+            nama_member: namaInput,
         };
 
         router.post(route('transaksi'), dataToSend, {
@@ -105,11 +106,11 @@ export default function Dashboard({ produk }: DashboardProps) {
                 });
                 setTransaksi([]); // bersihkan keranjang jika perlu
             },
-            onError: () => {
+            onError: (errors) => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Transaksi Gagal',
-                    text: 'Terjadi kesalahan saat menyimpan transaksi.',
+                    text: errors.error,
                 });
             },
         });
@@ -178,6 +179,42 @@ export default function Dashboard({ produk }: DashboardProps) {
         }
     };
 
+    // input rekomendasi otomatis
+    const [namaInput, setNamaInput] = useState('');
+    const [saran, setSaran] = useState<string[]>([]);
+    const [selectedNama, setSelectedNama] = useState('');
+
+    useEffect(() => {
+        if (namaInput.trim() !== '') {
+            fetch(`/members/search?q=${encodeURIComponent(namaInput)}`)
+                .then(res => res.json())
+                .then(data => setSaran(data))
+                .catch(() => setSaran([]));
+        } else {
+            setSaran([]);
+        }
+    }, [namaInput]);
+
+    const handleCekMember = () => {
+        if (!saran.includes(namaInput)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Member Tidak Ditemukan',
+                text: `Nama "${namaInput}" tidak terdaftar.`,
+            });
+            return;
+        }
+
+        setSelectedNama(namaInput);
+        Swal.fire({
+            icon: 'success',
+            title: 'Member Ditemukan',
+            text: `Member "${namaInput}" dipilih.`,
+        });
+    };
+
+
+
     return (
         <div className="flex h-screen w-full bg-gray-600 flex-col gap-4">
             <div className={`flex justify-between pt-4 px-4`}>
@@ -185,7 +222,12 @@ export default function Dashboard({ produk }: DashboardProps) {
                     <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
                 </div>
                 <div className={`flex gap-4`}>
-                    <input type="text" placeholder='Masukkan nama member...' className="rounded-sm bg-white text-black placeholder-gray-300 px-2 focus:outline-0" />
+                    <input type="text" placeholder='Masukkan nama member...' list="daftar-member" value={namaInput} onChange={e => setNamaInput(e.target.value)} className="rounded-sm bg-white text-black placeholder-gray-300 px-2 focus:outline-0" />
+                    <datalist id="daftar-member">
+                        {saran.map((nama, i) => (
+                            <option key={i} value={nama} />
+                        ))}
+                    </datalist>
                     <button onClick={() => { setTransaksi([]) }} className={`flex justify-center bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:text- transition-all duration-300`}>
                         Hapus Transaksi
                     </button>
@@ -369,37 +411,52 @@ export default function Dashboard({ produk }: DashboardProps) {
                                 Non Tunai
                             </div>
                         </div>
-                        <button className="w-full bg-blue-500 text-white py-2 rounded-md "
+                        <button
+                            className="w-full bg-blue-500 text-white py-2 rounded-md"
                             onClick={() => {
+                                const isMemberValid = namaInput.length === 0 || saran.includes(namaInput);
+
+                                if (!isMemberValid) {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Member Tidak Ditemukan',
+                                        text: `Nama "${namaInput}" tidak terdaftar.`,
+                                    });
+                                    return;
+                                }
+
                                 if (transaksi.length === 0) {
                                     Swal.fire({
                                         icon: 'warning',
                                         title: 'Oops!',
                                         text: 'Tidak ada produk yang dipilih',
-                                        confirmButtonText: 'OK'
+                                        confirmButtonText: 'OK',
                                     });
-
                                     return;
                                 }
+
                                 if (!selectedPayment) {
                                     Swal.fire({
                                         icon: 'warning',
                                         title: 'Metode Pembayaran Belum Dipilih',
                                         text: 'Silahkan pilih metode pembayaran terlebih dahulu.',
-                                        confirmButtonText: 'OK'
+                                        confirmButtonText: 'OK',
                                     });
                                     return;
                                 }
+
+                                // Aksi berdasarkan metode pembayaran
                                 if (selectedPayment === 'tunai') {
                                     setSelectedProduk(filterNamaProduk[0]);
                                     setShowModal(true);
-                                    return;
                                 } else if (selectedPayment === 'non-tunai') {
                                     setShowNonTunaiModal(true);
                                 }
-                            }}>
+                            }}
+                        >
                             Checkout
                         </button>
+
                     </div>
 
                 </div>
@@ -519,8 +576,6 @@ export default function Dashboard({ produk }: DashboardProps) {
                                 type="button"
                                 className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm h-8 w-8 flex justify-center items-center"
                                 onClick={() => {
-                                    setSelectedPayment('');
-                                    setTransaksi([]);
                                     setShowNonTunaiModal(false);
                                 }}
                             >
@@ -557,7 +612,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                                 onClick={() => {
                                     handleKonfirmasiPembayaran();
                                     setTransaksi([]);
-                                    setSelectedPayment('');
+                                    setSelectedPayment('non-tunai');
                                 }}
                             >
                                 Konfirmasi Pembayaran

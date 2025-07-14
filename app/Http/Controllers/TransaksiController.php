@@ -9,6 +9,7 @@ use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Member;
 
 
 
@@ -17,7 +18,8 @@ class TransaksiController extends Controller
     public function index()
     {
         $transaksi = Transaksi::with([
-            'detail.produk:id,nama,harga,gambar'
+            'detail.produk:id,nama,harga,gambar',
+            'member:id,nama'
         ])->get();
 
         return Inertia::render('transaksi', [
@@ -29,26 +31,38 @@ class TransaksiController extends Controller
         $request->validate([
             'kode_transaksi' => 'required|string|unique:transaksi,kode_transaksi',
             'total' => 'required|numeric',
+            'metode' => 'required|in:tunai,non-tunai,qris',
+            'status' => 'required|in:paid,pending',
+            'member_id' => 'nullable|exists:members,id',
             'detail' => 'required|array|min:1',
             'detail.*.produk_id' => 'required|exists:produk,id',
             'detail.*.jumlah' => 'required|integer|min:1',
             'detail.*.harga' => 'required|numeric|min:0',
+            'nama_member' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
 
         try {
-            $start = microtime(true);
 
-            // Simpan data transaksi utama
+            $member = null;
+            if ($request->filled('nama_member')) {
+                $member = Member::where('nama', $request->nama_member)->first();
+
+                if (!$member) {
+                    return back()->withErrors(['nama_member' => 'Nama member tidak ditemukan.']);
+                }
+            }
             $transaksi = Transaksi::create([
-                'kode_transaksi' => $request->kode_transaksi,
-                'total' => $request->total,
-                'user_id' => Auth::id(),
-                'status' => 'paid', 
+                'kode_transaksi'     => $request->kode_transaksi,
+                'total'              => $request->total,
+                'user_id'            => Auth::id(),
+                'member_id'          => $member?->id,
+                'metode_pembayaran'  => $request->metode,
+                'status'             => $request->status,
+                'waktu_bayar'        => $request->status === 'paid' ? now() : null,
             ]);
 
-            // Ambil semua produk yang dibutuhkan
             $produkIds = collect($request->detail)->pluck('produk_id');
             $produkList = Produk::whereIn('id', $produkIds)->get()->keyBy('id');
 
@@ -63,32 +77,27 @@ class TransaksiController extends Controller
 
                 $details[] = [
                     'transaksi_id' => $transaksi->id,
-                    'produk_id' => $item['produk_id'],
-                    'qty' => $item['jumlah'],
-                    'harga' => $item['harga'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'produk_id'    => $item['produk_id'],
+                    'qty'          => $item['jumlah'],
+                    'harga'        => $item['harga'],
+                    'created_at'   => now(),
+                    'updated_at'   => now(),
                 ];
 
-                // Update stok produk langsung via query
+                // Kurangi stok
                 DB::table('produk')
                     ->where('id', $item['produk_id'])
                     ->decrement('stok', $item['jumlah']);
             }
 
-            // Insert semua detail transaksi sekaligus
             DetailTransaksi::insert($details);
 
             DB::commit();
 
-            $end = microtime(true);
-
             return redirect()->route('kasir')->with('message', 'Transaksi berhasil!');
         } catch (\Exception $e) {
             DB::rollBack();
-
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
-    
 }
