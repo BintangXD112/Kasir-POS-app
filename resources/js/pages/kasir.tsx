@@ -36,6 +36,7 @@ export default function Dashboard({ produk }: DashboardProps) {
         cleanup();
         router.flushAll();
         localStorage.removeItem("username");
+        localStorage.removeItem("tipe_user");
         window.location.href = "/login";
     };
     const [showLogout, setShowLogout] = useState(false);
@@ -213,7 +214,11 @@ export default function Dashboard({ produk }: DashboardProps) {
         });
     };
 
-
+    useEffect(()=>{
+        if(localStorage.getItem("tipe_user") !== "kasir"){
+            window.location.href = "/login";
+        }
+    })
 
     return (
         <div className="flex h-screen w-full bg-gray-600 flex-col gap-4">

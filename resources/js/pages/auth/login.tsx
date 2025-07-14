@@ -16,40 +16,40 @@ interface LoginProps {
 
 export default function Login({ status, users }: LoginProps) {
   const [activeUser, setActiveUser] = useState<string | null>(null);
+  const [activeTipeUser, setActiveTipeUser] = useState<string | null>(null);
   const [showKode, setShowKode] = useState(false);
   const { data, setData, post, errors, reset } = useForm({
     nama_user: '',
     kode_user: '',
   });
 
-useEffect(() => {
-  if (status) {
-    Swal.fire({
-      icon: 'success',
-      title: status,
-      showConfirmButton: false,
-      timer: 1500,
-    });
-  }
-}, [status]);
+  useEffect(() => {
+    if (status) {
+      Swal.fire({
+        icon: 'success',
+        title: status,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    }
+  }, [status]);
 
-
-  const handleLoginClick = (nama_user: string) => {
+  const handleLoginClick = (nama_user: string, tipe_user: string) => {
     setActiveUser(nama_user);
+    setActiveTipeUser(tipe_user);
     setData('nama_user', nama_user); // ✅ wajib set nama_user di useForm
+    localStorage.setItem("username", nama_user);
+    localStorage.setItem("tipe_user", tipe_user);
     setData('kode_user', ''); // kosongkan input kode
   };
 
-
-
-  const handleSubmit = async (nama_user: string, e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const user = users.find((u) => u.nama_user === nama_user);
+    if (!activeUser) return;
+
+    const user = users.find((u) => u.nama_user === activeUser);
     if (!user) return;
-
-
-    setData('nama_user', nama_user);
 
     post('/login', {
       onError: (errors) => {
@@ -57,13 +57,6 @@ useEffect(() => {
       },
     });
   };
-
-
-
-
-
-
-
 
   return (
     <div className='w-full'>
@@ -106,7 +99,7 @@ useEffect(() => {
                 <div className="w-full mt-auto">
                   {isActive ? (
                     <form
-                      onSubmit={(e) => handleSubmit(user.nama_user, e)}
+                      onSubmit={handleSubmit}
                       className="flex flex-col gap-3 animate-fade-in"
                     >
                       <div className="relative">
@@ -143,7 +136,11 @@ useEffect(() => {
 
                       <button
                         type="button"
-                        onClick={() => setActiveUser(null)}
+                        onClick={() => {
+                          setActiveUser(null);
+                          setActiveTipeUser(null);
+                          setData('kode_user', '');
+                        }}
                         className="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-white mt-1"
                       >
                         Batal
@@ -154,7 +151,7 @@ useEffect(() => {
                       className="w-full bg-gradient-to-r from-blue-500 to-green-500 
             hover:from-blue-600 hover:to-green-600 text-white font-bold py-2 
             rounded-lg shadow-md"
-                      onClick={() => handleLoginClick(user.nama_user)}
+                      onClick={() => handleLoginClick(user.nama_user, user.tipe_user)}
                     >
                       Login
                     </Button>
@@ -164,12 +161,7 @@ useEffect(() => {
             );
           })
         )}
-
       </div>
-
-
-      
     </div>
-
   );
 }

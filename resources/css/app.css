@@ -159,6 +159,6 @@
 }
 *{
     caret-color: none;
-    
+    user-select: none;
 
 }
