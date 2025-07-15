@@ -185,15 +185,11 @@ export default function Dashboard({ produk }: DashboardProps) {
     const [namaInput, setNamaInput] = useState('');
     const [saran, setSaran] = useState<Array<{
         nama: string;
-        level: string;
         diskon: number;
-        total_transaksi_6bulan: number;
     }>>([]);
     const [selectedMember, setSelectedMember] = useState<{
         nama: string;
-        level: string;
         diskon: number;
-        total_transaksi_6bulan: number;
     } | null>(null);
 
 
@@ -203,6 +199,8 @@ export default function Dashboard({ produk }: DashboardProps) {
                 .then(res => res.json())
                 .then(data => setSaran(data))
                 .catch(() => setSaran([]));
+
+                console.log(saran);
         } else {
             setSaran([]);
         }
