@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation.js';
-import {Link, router } from '@inertiajs/react';
+import {Link, router, usePage } from '@inertiajs/react';
 import { LogOut } from 'lucide-react';
-import Home from './view/home.js'
+import Home from './view/home.js';
+import type { PageProps } from '@/types/type';
 
 export default function Admin(){
+    const { users, members, produks } = usePage<PageProps>().props;
     const [page, setPage] = useState(localStorage.getItem("page") || "home")
     useEffect(()=>{
         localStorage.setItem("page", page)
@@ -120,7 +122,7 @@ export default function Admin(){
                 {/* Main Content Area */}
                 <div className="flex-1 overflow-auto p-6">
                     <div className="bg-white rounded-lg shadow-lg p-6 h-full">
-                        {page === "home" ? <Home/> :page === "produk" ?'' :""}
+                        {page === "home" ? <Home users={users} members={members} produks={produks} /> :page === "produk" ?'' :""}
                     </div>
                 </div>
             </div>

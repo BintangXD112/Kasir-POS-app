@@ -36,6 +36,8 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
+        $user->status = 'active'; // Update user status to active
+        $user->save();
         $redirectRoute = $user->tipe_user === 'admin' ? 'admin' : 'kasir';
 
         return redirect()->route($redirectRoute)->with('status', 'Login berhasil!');

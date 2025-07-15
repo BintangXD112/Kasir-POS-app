@@ -7,6 +7,7 @@ use App\Http\Controllers\KasirController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\HomeController;
 
 
 
@@ -36,8 +37,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/kasir', [KasirController::class, 'index'])->name('kasir');
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi');
     Route::post('/transaksi', [TransaksiController::class, 'store'])->name('transaksi.store');
-    Route::get('/admin', fn () => Inertia::render('Admin'))->name('admin');
     Route::get('/members/search', [MemberController::class, 'search']);
+    Route::get('/admin', [HomeController::class, 'index'])->name('admin');
+
 });
 
 
