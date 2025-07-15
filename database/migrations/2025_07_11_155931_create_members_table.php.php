@@ -10,12 +10,9 @@ return new class extends Migration {
         Schema::create('members', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->foreignId('member_level_id')->nullable()->constrained('member_levels')->onDelete('set null');
+            $table->foreignId('diskon_id')->nullable()->constrained('diskons')->onDelete('set null');
             $table->integer('total_transaksi')->default(0);
-            $table->integer('total_transaksi_6bulan')->default(0);
-            $table->timestamp('periode_dimulai')->nullable();
-            $table->timestamp('terakhir_diskon_level5')->nullable(); // batasi diskon 1x/minggu
-            $table->timestamps();
+            $table->timestamp('tanggal_daftar')->nullable();
         });
     }
 

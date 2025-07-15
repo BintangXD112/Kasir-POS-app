@@ -11,32 +11,18 @@ class Member extends Model
 
     protected $fillable = [
         'nama',
-        'member_level_id',
+        'diskon_id',
         'total_transaksi',
-        'total_transaksi_6bulan',
-        'periode_dimulai',
-        'terakhir_diskon_level5',
+        'tanggal_daftar',
     ];
 
     protected $dates = [
-        'periode_dimulai',
-        'terakhir_diskon_level5',
+        'tanggal_daftar',
     ];
 
-    public function level()
+    // Relasi ke tabel diskon (dalam hal ini, mungkin ke MemberLevel atau model bernama Diskon)
+    public function diskon()
     {
-        return $this->belongsTo(MemberLevel::class, 'member_level_id');
-    }
-
-    public function vouchers()
-    {
-        return $this->belongsToMany(Voucher::class, 'member_voucher')
-                    ->withPivot('jumlah_pakai')
-                    ->withTimestamps();
-    }
-
-    public function memberVouchers()
-    {
-        return $this->hasMany(MemberVoucher::class);
+        return $this->belongsTo(Diskon::class, 'diskon_id');
     }
 }
