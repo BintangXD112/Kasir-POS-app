@@ -3,7 +3,7 @@ import { type BreadcrumbItem, type PageProps } from '../types/index';
 import { useState, useRef, useEffect } from 'react';
 import { useMobileNavigation } from '../hooks/use-mobile-navigation';
 import { Link, router } from '@inertiajs/react';
-import { LogOut } from 'lucide-react';
+import { icons, LogOut } from 'lucide-react';
 import QRCodePembayaran from '../components/qrcodepaymentmodal';
 import Swal from 'sweetalert2';
 
@@ -508,7 +508,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                                 onClick={() => {
                                     resetPembayaranTunai();
                                     setSelectedPayment('');
-                                    setTransaksi([]);
+                                    // setTransaksi([]);
                                 }}
                             >
                                 <svg className="w-3 h-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
@@ -577,10 +577,15 @@ export default function Dashboard({ produk }: DashboardProps) {
                                 className="w-full bg-green-500 text-white py-2 rounded-md"
                                 disabled={uangTunai === '' || uangTunai < transaksi.reduce((total, item) => total + (item.produk.harga * item.qty), 0)}
                                 onClick={() => {
-                                    alert('Pembayaran berhasil!');
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Pembayaran Berhasil',
+                                        text: 'transaksi berhasil disimpan',
+                                    }).then(() => {
                                     setTransaksi([]);
                                     resetPembayaranTunai();
                                     setSelectedPayment('');
+                                });
                                 }}
                             >
                                 Bayar Sekarang
@@ -663,8 +668,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                                 </div>
                             </div>
                         )}
-
-npm
+                        
                         {/* Form Pembayaran Non-Tunai */}
                         <div className="p-4 space-y-4">
                             {/* untuk qr code */}
@@ -676,7 +680,7 @@ npm
                                 onClick={() => {
                                     handleKonfirmasiPembayaran();
                                     setTransaksi([]);
-                                    setSelectedPayment('non-tunai');
+                                    setSelectedPayment('');
                                 }}
                             >
                                 Konfirmasi Pembayaran

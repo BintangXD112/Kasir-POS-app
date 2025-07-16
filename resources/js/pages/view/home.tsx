@@ -1,10 +1,10 @@
 import React from 'react';
-import { User, Member } from '@/types/type'; // ganti path sesuai file kamu
+import { User, Member, Produk } from '@/types/type'; // ganti path sesuai file kamu
 
 interface PageProps {
   users: User[];
   members: Member[];
-  produks: Produks[];
+  produks: Produk[];
 }
 
 export default function Home({ users, members, produks }: PageProps) {
@@ -15,7 +15,7 @@ export default function Home({ users, members, produks }: PageProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-blue-500 text-white p-6 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Total Pemasukan</h3>
-          <p className="text-3xl font-bold">Rp. 1.200.000</p>
+          <p className="text-3xl font-bold">Rp.&nbsp;1.200.000</p>
         </div>
         <div className="bg-orange-500 text-white p-6 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Jumlah Produk</h3>

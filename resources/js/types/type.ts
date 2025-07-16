@@ -7,6 +7,7 @@ export interface User {
   email_verified_at: string | null;
   created_at: string | null;
   updated_at: string | null;
+  status: 'active' | 'non-active'; // New field for user status
 }
 
 // Member Interface
@@ -24,7 +25,7 @@ export interface Produk {
   nama: string;
   harga: number;
   stok: number;
-  gambar: string;
+  gambar: string | File;
   created_at: string | null;
   updated_at: string | null;
 }

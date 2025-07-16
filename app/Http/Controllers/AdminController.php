@@ -11,7 +11,7 @@ use App\Models\Produk;
 
 
 
-class HomeController extends Controller
+class AdminController extends Controller
 {
     public function index()
     {

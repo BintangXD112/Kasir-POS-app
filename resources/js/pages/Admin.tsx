@@ -3,6 +3,7 @@ import { useMobileNavigation } from '@/hooks/use-mobile-navigation.js';
 import {Link, router, usePage } from '@inertiajs/react';
 import { LogOut } from 'lucide-react';
 import Home from './view/home.js';
+import Produk from './view/produk.js';
 import type { PageProps } from '@/types/type';
 
 export default function Admin(){
@@ -45,7 +46,7 @@ export default function Admin(){
                             </svg>
                             Dashboard
                         </a>
-                        <a onClick={()=>{setPage("produk")}} className={`flex  ${page === "produk"  && "bg-gray-700 text-white" }  items-center gap-1 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-colors`}>
+                        <a onClick={()=>{setPage("produk")}}  className={`flex  ${page === "produk"  && "bg-gray-700 text-white" }  items-center gap-1 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-colors`}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
                                 <path d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v.75c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875v-.75C22.5 3.839 21.66 3 20.625 3H3.375Z" />
                                 <path fillRule="evenodd" d="m3.087 9 .54 9.176A3 3 0 0 0 6.62 21h10.757a3 3 0 0 0 2.995-2.824L20.913 9H3.087Zm6.163 3.75A.75.75 0 0 1 10 12h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
@@ -121,8 +122,9 @@ export default function Admin(){
                 
                 {/* Main Content Area */}
                 <div className="flex-1 overflow-auto p-6">
-                    <div className="bg-white rounded-lg shadow-lg p-6 h-full">
-                        {page === "home" ? <Home users={users} members={members} produks={produks} /> :page === "produk" ?'' :""}
+                    <div className="bg-white rounded-lg shadow-lg  px-6 pb-6">
+                        {page === "home" && <Home users={users} members={members} produks={produks} />};
+                        { page === "produk" && <Produk produks={produks} />}
                     </div>
                 </div>
             </div>
