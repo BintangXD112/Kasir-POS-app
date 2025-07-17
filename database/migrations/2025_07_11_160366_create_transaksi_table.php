@@ -20,8 +20,8 @@ return new class extends Migration
             $table->enum('metode_pembayaran', ['tunai', 'non-tunai', 'qris', 'lainnya']);
             $table->string('qris_ref_id')->nullable();
             $table->enum('status', ['pending', 'paid', 'failed', 'expired'])->default('pending');
+            $table->timestamp('created_at')->nullable();
             $table->timestamp('waktu_bayar')->nullable();
-            $table->timestamps();
         });
     }
 

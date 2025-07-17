@@ -11,7 +11,7 @@ class KasirController extends Controller
 {
     public function index()
     {
-        return Inertia::render('kasir/index', [
+        return Inertia::render('kasir', [
             'produk' => Produk::all(),
             'transaksi' => Transaksi::all(),
         ]);

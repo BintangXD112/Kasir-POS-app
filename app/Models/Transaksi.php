@@ -10,6 +10,7 @@ class Transaksi extends Model
     use HasFactory;
 
     protected $table = 'transaksi';
+    public $timestamps = false;
     protected $guarded = [];
 
     public function detail()

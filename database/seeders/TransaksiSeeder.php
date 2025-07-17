@@ -19,9 +19,8 @@ class TransaksiSeeder extends Seeder
                 'metode_pembayaran' => 'tunai',
                 'qris_ref_id' => null,
                 'status' => 'paid',
-                'waktu_bayar' => '2025-07-11 07:41:40',
                 'created_at' => '2025-07-11 07:41:40',
-                'updated_at' => '2025-07-11 07:41:40',
+                'waktu_bayar' => '2025-07-11 07:41:40',
             ],
             [
                 'id' => 2,
@@ -32,11 +31,12 @@ class TransaksiSeeder extends Seeder
                 'metode_pembayaran' => 'qris',
                 'qris_ref_id' => 'QRIS123',
                 'status' => 'paid',
-                'waktu_bayar' => '2025-07-11 07:41:40',
                 'created_at' => '2025-07-11 07:41:40',
-                'updated_at' => '2025-07-11 07:41:40',
+                'waktu_bayar' => '2025-07-11 07:41:40',
             ],
         ]);
     }
+
+
 }
 

@@ -60,7 +60,7 @@ export default function Dashboard({ produk }: DashboardProps) {
         setUangTunaiDisplay('');
         setShowModal(false);
     };
-
+    
     const generateKodeTransaksi = () => {
         const now = new Date();
         return 'TRX-' + now.getTime();
@@ -71,8 +71,8 @@ export default function Dashboard({ produk }: DashboardProps) {
 
     // untuk simulasi qr code
     const handleKonfirmasiPembayaran = () => {
-        console.log('Konfirmasi pembayaran' + selectedMember);
         setShowNonTunaiModal(false);
+        resetPembayaranTunai();
 
         // Tampilkan loading dari SweetAlert
         Swal.fire({
@@ -92,7 +92,11 @@ export default function Dashboard({ produk }: DashboardProps) {
                 harga: item.produk.harga,
             })),
             metode: selectedPayment,
-            status: selectedPayment === 'non-tunai' ? 'paid' : 'pending',
+            status: isHutang === true
+                    ? 'pending'
+                    : (selectedPayment === 'tunai' || selectedPayment === 'non-tunai')
+                    ? 'paid'
+                    : 'failed',
             total: totalSetelahDiskon,
             nama_member: selectedMember?.nama ?? '',
         };
@@ -106,7 +110,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                     title: 'Transaksi Berhasil',
                     text: 'Data berhasil disimpan.',
                 });
-                setTransaksi([]); // bersihkan keranjang jika perlu
+                setTransaksi([]);
             },
             onError: (errors) => {
                 Swal.fire({
@@ -128,11 +132,9 @@ export default function Dashboard({ produk }: DashboardProps) {
             });
         }
     };
-    const [hoverPrint, setHoverPrint] = useState(false)
-    const funcHoverPrint = () => {
-        setHoverPrint(!hoverPrint)
-    }
+    
     const [showModal, setShowModal] = useState(false);
+    const [showModalTambahMember, setShowModalTambahMember] = useState(false);
     const [uangTunai, setUangTunai] = useState<number | ''>('');
     const [uangTunaiDisplay, setUangTunaiDisplay] = useState('');
     const [showNonTunaiModal, setShowNonTunaiModal] = useState(false);
@@ -180,6 +182,8 @@ export default function Dashboard({ produk }: DashboardProps) {
             );
         }
     };
+    const [isHutang, setIsHutang] = useState(false);
+
 
     // input rekomendasi otomatis
     const [namaInput, setNamaInput] = useState('');
@@ -239,33 +243,60 @@ export default function Dashboard({ produk }: DashboardProps) {
     const totalSetelahDiskon = totalSebelumDiskon - potongan;
 
 
+    // tambah member 
+    const [member, setMember] = useState({
+        nama: '',
+        alamat: '',
+        telepon: '',
+    });
+
+    const handleTambahMember = () => {
+        router.post(route('member.store'), member, {
+            onSuccess: () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Member berhasil ditambahkan.',
+                });
+                setMember({ nama: '', alamat: '', telepon: '' });
+                setShowModalTambahMember(false);
+            },
+           onError: (errors) => {
+                const allErrors = Object.values(errors).flat().join('\n');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: allErrors,
+                });
+            },
+
+        });
+    };
+
+
+
     return (
         <div className="flex h-screen w-full bg-gray-600 flex-col gap-4">
             <div className={`flex justify-between pt-4 px-4`}>
-                <div>
+                <div className="w-1/6 items-center flex">
                     <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
                 </div>
-                <div className={`flex gap-4`}>
-                    <input type="text" placeholder='Masukkan nama member...' list="daftar-member" value={namaInput} onChange={e => setNamaInput(e.target.value)} className="rounded-sm bg-white text-black placeholder-gray-300 px-2 focus:outline-0" />
+                <div className={`flex gap-4 w-full justify-end`}>
+                    <input type="text" placeholder='Masukkan nama member...' list="daftar-member" value={namaInput} onChange={e => setNamaInput(e.target.value)} className="rounded-sm bg-white text-black w-full placeholder-gray-300 px-2 focus:outline-0" />
                     <datalist id="daftar-member">
                         {saran.map((item, i) => (
                             <option key={i} value={item.nama} />
                         ))}
                     </datalist>
-                    <button onClick={() => { setTransaksi([]) }} className={`flex justify-center bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:text- transition-all duration-300`}>
-                        Hapus Transaksi
+                    <button onClick={()=>{ setShowModalTambahMember(!showModalTambahMember)}} className={`flex justify-center bg-transparent text-white border border-blue-500 rounded-sm items-center px-4 cursor-pointer hover:bg-blue-500 hover:scale-105 transition-all duration-300`}>
+                        Tambah&nbsp;Member&nbsp;baru
                     </button>
-                    <div onMouseEnter={funcHoverPrint} onMouseLeave={funcHoverPrint} onClick={() => router.visit('/transaksi')} style={{ cursor: 'pointer' }}>
-                        {hoverPrint ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-8 text-white">
-                                <path fillRule="evenodd" d="M7.875 1.5C6.839 1.5 6 2.34 6 3.375v2.99c-.426.053-.851.11-1.274.174-1.454.218-2.476 1.483-2.476 2.917v6.294a3 3 0 0 0 3 3h.27l-.155 1.705A1.875 1.875 0 0 0 7.232 22.5h9.536a1.875 1.875 0 0 0 1.867-2.045l-.155-1.705h.27a3 3 0 0 0 3-3V9.456c0-1.434-1.022-2.7-2.476-2.917A48.716 48.716 0 0 0 18 6.366V3.375c0-1.036-.84-1.875-1.875-1.875h-8.25ZM16.5 6.205v-2.83A.375.375 0 0 0 16.125 3h-8.25a.375.375 0 0 0-.375.375v2.83a49.353 49.353 0 0 1 9 0Zm-.217 8.265c.178.018.317.16.333.337l.526 5.784a.375.375 0 0 1-.374.409H7.232a.375.375 0 0 1-.374-.409l.526-5.784a.373.373 0 0 1 .333-.337 41.741 41.741 0 0 1 8.566 0Zm.967-3.97a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H18a.75.75 0 0 1-.75-.75V10.5ZM15 9.75a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V10.5a.75.75 0 0 0-.75-.75H15Z" clipRule="evenodd" />
-                            </svg>
-                        ) :
-                            (
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-8 text-white">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z" />
-                                </svg>)}
-                    </div>
+                    <button onClick={() => { setTransaksi([]) }} className={`flex justify-center bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:scale-105 transition-all duration-300`}>
+                        Hapus&nbsp;Transaksi
+                    </button>
+                    <button onClick={() => router.visit('/transaksi')} className="flex justify-center bg-transparent text-white border border-white rounded-sm items-center px-4 cursor-pointer hover:bg-white hover:scale-105 hover:text-black transition-all duration-300">
+                        Riwayat&nbsp;Transaksi
+                    </button>
                     <div onClick={toggleLogout} className={`text-white flex items-center relative cursor-pointer`}>
                         {localStorage.getItem("username")}
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`size-4 ml-2 ${showLogout ? 'rotate-180' : ''} transition-transform duration-150 ease-in-out`}>
@@ -344,10 +375,10 @@ export default function Dashboard({ produk }: DashboardProps) {
                             </svg>
                         </div>
                     </div>
-                    <div className={`grid grid-cols-6 gap-4 mt-4 [scrollbar-width:thin] overflow-y-auto max-h-[375px] overflow-x-hidden`}>
+                    <div className={`grid grid-cols-6 gap-4 mt-4 p-2 [scrollbar-width:thin] overflow-y-auto max-h-[375px] overflow-x-hidden`}>
                         {filterNamaProduk && filterNamaProduk.length > 0 ? (
                             filterNamaProduk.map((item) => (
-                                <div key={item.id} onClick={() => tambahTransaksi(item)} className={`flex flex-col rounded-sm border border-gray-300 w-[120px] h-[140px]`}>
+                                <div key={item.id} onClick={() => tambahTransaksi(item)} className={`flex flex-col rounded-sm border hover:scale-105 hover:shadow-md hover:shadow-gray-500 transition-all duration-300 ease-in-out cursor-pointer border-gray-300 w-[120px] h-[140px]`}>
                                     <img src={`/logo/${item.gambar}`} alt={item.nama} className={`object-cover w-full h-20 rounded-t-sm`} />
                                     <div className={`p-2 rounded-b-sm`}>
                                         <p className={`text-gray-600 text-sm font-semibold truncate`}>{item.nama}</p>
@@ -518,26 +549,53 @@ export default function Dashboard({ produk }: DashboardProps) {
                             </button>
                         </div>
                         {/* Modal Body */}
-                        <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
-                            <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
-                            <ul className="text-sm text-black space-y-1">
-                                {transaksi.map((item, index) => (
-                                    <li key={index} className="flex justify-between">
-                                        <span>{item.qty}x {item.produk.nama}</span>
-                                        <span>Rp {(item.produk.harga * item.qty).toLocaleString('id-ID')}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="flex justify-between font-bold mt-2 text--black">
-                                <span>Total:</span>
-                                <span>Rp {transaksi.reduce((total, item) => total + item.produk.harga * item.qty, 0).toLocaleString('id-ID')}</span>
+                        {selectedMember ? (
+                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
+                                <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
+                                <ul className="text-sm text-gray-700 space-y-1">
+                                    {transaksi.map((item, index) => (
+                                        <li key={index} className="flex justify-between">
+                                            <span>{item.qty}x {item.produk.nama}</span>
+                                            <span>Rp {(item.produk.harga * item.qty).toLocaleString('id-ID')}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <div className="flex justify-between font-bold mt-3">
+                                    <span>Nama Member:</span>
+                                    <span>{selectedMember.nama}</span>
+                                </div>
+                                <div className="flex justify-between font-bold mt-2">
+                                    <span>Diskon Member:</span>
+                                    <span>{diskonPersen}%</span>
+                                </div>
+                                <div className="flex justify-between font-bold mt-2 text-red-600">
+                                    <span>Potongan:</span>
+                                    <span>- Rp {potongan.toLocaleString('id-ID')}</span>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
+                                <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
+                                <ul className="text-sm text-black space-y-1">
+                                    {transaksi.map((item, index) => (
+                                        <li key={index} className="flex justify-between">
+                                            <span>{item.qty}x {item.produk.nama}</span>
+                                            <span>Rp {(item.produk.harga * item.qty).toLocaleString('id-ID')}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="flex justify-between font-bold mt-2 text--black">
+                                    <span>Total:</span>
+                                    <span>Rp {transaksi.reduce((total, item) => total + item.produk.harga * item.qty, 0).toLocaleString('id-ID')}</span>
+                                </div>
+                            </div>
+                        )}
                         {/* pembayaran */}
                         <div className="p-4 space-y-4">
                             <div className="flex justify-between">
                                 <span className="text-gray-700 font-medium">Total Harga</span>
-                                <span className="text-black font-semibold">Rp. {transaksi.reduce((total, item) => total + (item.produk.harga * item.qty), 0).toLocaleString('id-ID')}</span>
+                                <span className="text-black font-semibold">Rp. {totalSetelahDiskon.toLocaleString('id-ID')}</span>
                             </div>
 
                             <div className="flex justify-between items-center">
@@ -561,35 +619,65 @@ export default function Dashboard({ produk }: DashboardProps) {
                                     placeholder="Masukkan nominal"
                                 />
                             </div>
-                            {uangTunai !== '' && uangTunai < transaksi.reduce((total, item) => total + (item.produk.harga * item.qty), 0) ? (
-                                <p className="text-red-500">Uang tidak cukup</p>
+                            {uangTunai !== '' && uangTunai < totalSetelahDiskon ? (
+                                <div>
+                                   <span className="text-red-500 font-medium">UANG TIDAK CUKUP!!</span>
+                                   <div className="flex items-center space-x-2 mt-4">
+                                    <input
+                                        type="checkbox"
+                                        id="checkbox-hutang"
+                                        checked={isHutang}
+                                        onChange={(e) => setIsHutang(e.target.checked)}
+                                        className="w-4 h-4 text-red-500 border-gray-300 rounded"
+                                    />
+                                    <label htmlFor="checkbox-hutang" className="text-sm text-gray-700">
+                                        Tandai sebagai <span className="text-red-500 font-semibold">Hutang</span>
+                                    </label>
+                                    </div>
+                                </div>
+
                             ) : (
                                 uangTunai !== '' && (
                                     <div className="flex justify-between">
                                         <span className="text-gray-700 font-medium">Kembalian</span>
                                         <span className="text-green-600 font-bold">
-                                            Rp. {(uangTunai - transaksi.reduce((total, item) => total + (item.produk.harga * item.qty), 0)).toLocaleString('id-ID')}
+                                            Rp. {(uangTunai - totalSetelahDiskon).toLocaleString('id-ID')}
                                         </span>
                                     </div>
                                 )
                             )}
                             <button
-                                className="w-full bg-green-500 text-white py-2 rounded-md"
-                                disabled={uangTunai === '' || uangTunai < transaksi.reduce((total, item) => total + (item.produk.harga * item.qty), 0)}
-                                onClick={() => {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Pembayaran Berhasil',
-                                        text: 'transaksi berhasil disimpan',
-                                    }).then(() => {
-                                    setTransaksi([]);
-                                    resetPembayaranTunai();
-                                    setSelectedPayment('');
+                            className="w-full bg-green-500 text-white py-2 rounded-md"
+                            onClick={() => {
+                                if (uangTunai === '') {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Oops!',
+                                    text: 'Silakan masukkan nominal pembayaran!',
                                 });
-                                }}
+                                return;
+                                }
+
+                                // Jika tidak hutang dan uang tidak cukup
+                                const totalTanpaDiskon = transaksi.reduce((total, item) => total + item.produk.harga * item.qty, 0);
+                                if (!isHutang && uangTunai < totalTanpaDiskon) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Uang Tidak Cukup!',
+                                    text: 'Silakan masukkan jumlah yang sesuai atau centang sebagai hutang.',
+                                });
+                                return;
+                                }
+
+                                // Jika valid, jalankan transaksi
+                                handleKonfirmasiPembayaran();
+                                setTransaksi([]);
+                                setSelectedPayment('');
+                            }}
                             >
-                                Bayar Sekarang
+                            Bayar Sekarang
                             </button>
+
                         </div>
                     </div>
                 </div>
@@ -632,10 +720,6 @@ export default function Dashboard({ produk }: DashboardProps) {
                                 <div className="flex justify-between font-bold mt-3">
                                     <span>Nama Member:</span>
                                     <span>{selectedMember.nama}</span>
-                                </div>
-                                <div className="flex justify-between font-bold mt-2">
-                                    <span>Level Member:</span>
-                                    <span>{selectedMember.level}</span>
                                 </div>
                                 <div className="flex justify-between font-bold mt-2">
                                     <span>Diskon Member:</span>
@@ -684,6 +768,70 @@ export default function Dashboard({ produk }: DashboardProps) {
                                 }}
                             >
                                 Konfirmasi Pembayaran
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showModalTambahMember && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                                Tambah Member
+                            </h3>
+                            <button
+                                type="button"
+                                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm h-8 w-8 flex justify-center items-center"
+                                onClick={() => {
+                                    setShowModalTambahMember(false);
+                                }}
+                            >
+                                <svg className="w-3 h-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
+                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                </svg>
+                                <span className="sr-only">Close modal</span>
+                            </button>
+                        </div>
+                        {/* Modal Body */}
+                        <div className={`p-4 space-y-4`}>
+                            <div className="flex flex-col">
+                                <label htmlFor="nama">Nama Member</label>
+                                <input
+                                    id="nama"
+                                    type="text"
+                                    value={member.nama}
+                                    onChange={(e) => setMember({ ...member, nama: e.target.value })}
+                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2"
+                                />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label htmlFor="alamat">Alamat Member</label>
+                                <textarea
+                                    id="alamat"
+                                    value={member.alamat}
+                                    onChange={(e) => setMember({ ...member, alamat: e.target.value })}
+                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2"
+                                />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <label htmlFor="telepon">Nomor Telepon Member</label>
+                                <input
+                                    id="telepon"
+                                    type="text"
+                                    value={member.telepon}
+                                    onChange={(e) => setMember({ ...member, telepon: e.target.value })}
+                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2"
+                                />
+                            </div>
+
+                        </div>
+                        <div className="p-4 space-y-4">
+                            <button onClick={handleTambahMember} className="w-full bg-blue-500 text-white py-2 rounded-md">
+                                Tambahkan
                             </button>
                         </div>
                     </div>

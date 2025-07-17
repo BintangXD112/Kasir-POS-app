@@ -38,7 +38,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/kasir', [KasirController::class, 'index'])->name('kasir');
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi');
     Route::post('/transaksi', [TransaksiController::class, 'store'])->name('transaksi.store');
+    Route::post('//transaksi/lunas/{id}', [TransaksiController::class, 'lunas'])->name('transaksi.lunas');
     Route::get('/members/search', [MemberController::class, 'search']);
+    Route::post('member', [MemberController::class, 'store'])->name('member.store');
     Route::get('/admin', [AdminController::class, 'index'])->name('admin');
     Route::delete('/produk/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
     Route::post('/produk/{id}', [ProdukController::class, 'update'])->name('produk.update');
