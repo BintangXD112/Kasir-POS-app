@@ -58,6 +58,7 @@ class TransaksiController extends Controller
                 'total'              => $request->total,
                 'user_id'            => Auth::id(),
                 'member_id'          => $member?->id,
+                'diskon_id'          => $member?->diskon_id ?? null,
                 'metode_pembayaran'  => $request->metode,
                 'status'             => $request->status,
                 'waktu_bayar'        => $request->status === 'paid' ? now() : null,

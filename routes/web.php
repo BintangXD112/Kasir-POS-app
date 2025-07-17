@@ -42,7 +42,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin');
     Route::delete('/produk/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
     Route::post('/produk/{id}', [ProdukController::class, 'update'])->name('produk.update');
+    Route::get('admin/voucher-usage', [AdminController::class, 'voucherUsage']);
 
+});
+
+Route::middleware(['web'])->group(function () {
+    Route::prefix('admin/voucher-diskon')->middleware('auth')->group(function () {
+        Route::get('/', [AdminController::class, 'voucherDiskonIndex']);
+        Route::post('/', [AdminController::class, 'voucherDiskonStore']);
+        Route::put('/{id}', [AdminController::class, 'voucherDiskonUpdate']);
+        Route::delete('/{id}', [AdminController::class, 'voucherDiskonDestroy']);
+    });
+    Route::prefix('admin/member')->middleware('auth')->group(function () {
+        Route::put('{id}/voucher', [MemberController::class, 'updateVoucher']);
+        Route::get('/', [MemberController::class, 'indexJson']);
+    });
 });
 
 

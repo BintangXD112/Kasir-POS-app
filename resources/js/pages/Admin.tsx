@@ -5,6 +5,9 @@ import { LogOut } from 'lucide-react';
 import Home from './view/home.js';
 import Produk from './view/produk.js';
 import type { PageProps } from '@/types/type';
+import VoucherDiskon from './view/voucher-diskon';
+import Member from './view/member';
+import VoucherUsage from './view/voucher-usage';
 
 export default function Admin(){
     const { users, members, produks } = usePage<PageProps>().props;
@@ -67,6 +70,24 @@ export default function Admin(){
                             </svg>
                             Reports
                         </a>
+                        <a onClick={()=>{setPage("voucher-diskon")}} className={`flex  ${page === "voucher-diskon"  && "bg-gray-700 text-white" }  items-center gap-1 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-colors`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6v-1.5A2.25 2.25 0 0 0 13.5 2.25h-3A2.25 2.25 0 0 0 8.25 4.5V6m7.5 0h-9m9 0A2.25 2.25 0 0 1 19.5 8.25v9A2.25 2.25 0 0 1 17.25 19.5h-10.5A2.25 2.25 0 0 1 4.5 17.25v-9A2.25 2.25 0 0 1 6.75 6m9 0v-.75A2.25 2.25 0 0 0 13.5 3h-3A2.25 2.25 0 0 0 8.25 5.25V6" />
+                            </svg>
+                            Voucher Diskon
+                        </a>
+                        <a onClick={()=>{setPage("member")}} className={`flex  ${page === "member"  && "bg-gray-700 text-white" }  items-center gap-1 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-colors`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6v-1.5A2.25 2.25 0 0 0 13.5 2.25h-3A2.25 2.25 0 0 0 8.25 4.5V6m7.5 0h-9m9 0A2.25 2.25 0 0 1 19.5 8.25v9A2.25 2.25 0 0 1 17.25 19.5h-10.5A2.25 2.25 0 0 1 4.5 17.25v-9A2.25 2.25 0 0 1 6.75 6m9 0v-.75A2.25 2.25 0 0 0 13.5 3h-3A2.25 2.25 0 0 0 8.25 5.25V6" />
+                            </svg>
+                            Kelola Member
+                        </a>
+                        <a onClick={()=>{setPage("voucher-usage")}} className={`flex  ${page === "voucher-usage"  && "bg-gray-700 text-white" }  items-center gap-1 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-colors`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6v-1.5A2.25 2.25 0 0 0 13.5 2.25h-3A2.25 2.25 0 0 0 8.25 4.5V6m7.5 0h-9m9 0A2.25 2.25 0 0 1 19.5 8.25v9A2.25 2.25 0 0 1 17.25 19.5h-10.5A2.25 2.25 0 0 1 4.5 17.25v-9A2.25 2.25 0 0 1 6.75 6m9 0v-.75A2.25 2.25 0 0 0 13.5 3h-3A2.25 2.25 0 0 0 8.25 5.25V6" />
+                            </svg>
+                            Penggunaan Voucher
+                        </a>
                     </nav>
                 </div>
             </div>
@@ -125,6 +146,9 @@ export default function Admin(){
                     <div className="bg-white rounded-lg shadow-lg  px-6 pb-6">
                         {page === "home" && <Home users={users} members={members} produks={produks} />};
                         { page === "produk" && <Produk produks={produks} />}
+                        { page === "voucher-diskon" && <VoucherDiskon />}
+                        { page === "member" && <Member members={members} />}
+                        { page === "voucher-usage" && <VoucherUsage />}
                     </div>
                 </div>
             </div>

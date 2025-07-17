@@ -234,7 +234,8 @@ export default function Dashboard({ produk }: DashboardProps) {
         0
     );
 
-    const diskonPersen = selectedMember?.diskon ?? 0;
+    const diskonPersen = selectedPayment === 'non-tunai' ? (selectedMember?.diskon ?? 0) : 0;
+    const kodeVoucher = selectedPayment === 'non-tunai' ? (selectedMember?.kode_voucher ?? null) : null;
     const potongan = Math.floor((totalSebelumDiskon * diskonPersen) / 100);
     const totalSetelahDiskon = totalSebelumDiskon - potongan;
 

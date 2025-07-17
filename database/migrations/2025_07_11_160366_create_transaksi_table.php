@@ -15,6 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('user_id')->index('fk_transaksi_user');
             $table->foreignId('member_id')->nullable()->constrained('members')->onDelete('set null');
+            $table->foreignId('diskon_id')->nullable()->constrained('diskons')->onDelete('set null');
             $table->string('kode_transaksi')->unique('kode_transaksi');
             $table->decimal('total', 15);
             $table->enum('metode_pembayaran', ['tunai', 'non-tunai', 'qris', 'lainnya']);

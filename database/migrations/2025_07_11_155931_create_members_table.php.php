@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->foreignId('diskon_id')->nullable()->constrained('diskons')->onDelete('set null');
             $table->integer('total_transaksi')->default(0);
             $table->timestamp('tanggal_daftar')->nullable();
+            $table->timestamps();
         });
     }
 
