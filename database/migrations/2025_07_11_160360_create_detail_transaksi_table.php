@@ -17,7 +17,8 @@ return new class extends Migration
             $table->unsignedBigInteger('produk_id')->index('fk_detail_transaksi_produk');
             $table->integer('qty');
             $table->decimal('harga', 15);
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('waktu_bayar')->nullable();
         });
     }
 

@@ -9,8 +9,12 @@ class Member extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'nama',
+        'alamat',
+        'telepon',
         'diskon_id',
         'total_transaksi',
         'tanggal_daftar',
