@@ -1,17 +1,66 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Http\Controllers\KasirController;
+use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProdukController;
+
+
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+    if (Auth::check()) {
+        // Redirect ke halaman sesuai tipe_user
+        return redirect()->route(Auth::user()->tipe_user === 'admin' ? 'admin' : 'kasir');
+    }
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    // Jika belum login, tampilkan halaman login
+    return redirect()->route('login');
 });
+
+// Halaman login inertia (otomatis disediakan oleh controller Auth bawaan inertia)
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])
+    ->middleware('guest')
+    ->name('login');
+
+// Logout route
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('logout');
+    
+
+// Route untuk user yang sudah login
+Route::middleware(['auth'])->group(function () {
+    Route::get('/kasir', [KasirController::class, 'index'])->name('kasir');
+    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi');
+    Route::post('/transaksi', [TransaksiController::class, 'store'])->name('transaksi.store');
+    Route::post('//transaksi/lunas/{id}', [TransaksiController::class, 'lunas'])->name('transaksi.lunas');
+    Route::get('/members/search', [MemberController::class, 'search']);
+    Route::post('member', [MemberController::class, 'store'])->name('member.store');
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin');
+    Route::delete('/produk/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
+    Route::post('/produk/{id}', [ProdukController::class, 'update'])->name('produk.update');
+    Route::get('admin/voucher-usage', [AdminController::class, 'voucherUsage']);
+
+});
+
+Route::middleware(['web'])->group(function () {
+    Route::prefix('admin/voucher-diskon')->middleware('auth')->group(function () {
+        Route::get('/', [AdminController::class, 'voucherDiskonIndex']);
+        Route::post('/', [AdminController::class, 'voucherDiskonStore']);
+        Route::put('/{id}', [AdminController::class, 'voucherDiskonUpdate']);
+        Route::delete('/{id}', [AdminController::class, 'voucherDiskonDestroy']);
+    });
+    Route::prefix('admin/member')->middleware('auth')->group(function () {
+        Route::put('{id}/voucher', [MemberController::class, 'updateVoucher']);
+        Route::get('/', [MemberController::class, 'indexJson']);
+    });
+});
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

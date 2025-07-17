@@ -157,3 +157,8 @@
         @apply bg-background text-foreground;
     }
 }
+*{
+    caret-color: none;
+    user-select: none;
+
+}
