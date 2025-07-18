@@ -143,6 +143,19 @@ export default function Dashboard({ produk }: DashboardProps) {
     const filterNamaProduk = produk.filter((item) =>
         item.nama.toLowerCase().includes(searchTerm.toLowerCase())
     );
+    const [showModalNabung, setShowModalNabung] = useState(false)
+    const funcShowModalNabung = () => {
+        if(namaInput === ""){
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Silahkan masukkan nama member terlebih dahulu',
+                timer: 2000
+            })
+        }else{
+            setShowModalNabung(!showModalNabung)
+        }
+    }
     const [transaksi, setTransaksi] = useState<Array<{ produk: Produk, qty: number }>>([]);
     const tambahTransaksi = (produk: Produk) => {
         setTransaksi((prev) => {
@@ -283,17 +296,8 @@ export default function Dashboard({ produk }: DashboardProps) {
                     <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
                 </div>
                 <div className={`flex gap-4 w-full justify-end`}>
-                    <input type="text" placeholder='Masukkan nama member...' list="daftar-member" value={namaInput} onChange={e => setNamaInput(e.target.value)} className="rounded-sm bg-white text-black w-full placeholder-gray-300 px-2 focus:outline-0" />
-                    <datalist id="daftar-member">
-                        {saran.map((item, i) => (
-                            <option key={i} value={item.nama} />
-                        ))}
-                    </datalist>
-                    <button onClick={()=>{ setShowModalTambahMember(!showModalTambahMember)}} className={`flex justify-center bg-transparent text-white border border-blue-500 rounded-sm items-center px-4 cursor-pointer hover:bg-blue-500 hover:scale-105 transition-all duration-300`}>
-                        Tambah&nbsp;Member&nbsp;baru
-                    </button>
                     <button onClick={() => { setTransaksi([]) }} className={`flex justify-center bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:scale-105 transition-all duration-300`}>
-                        Hapus&nbsp;Transaksi
+                        Batalkan&nbsp;Transaksi
                     </button>
                     <button onClick={() => router.visit('/transaksi')} className="flex justify-center bg-transparent text-white border border-white rounded-sm items-center px-4 cursor-pointer hover:bg-white hover:scale-105 hover:text-black transition-all duration-300">
                         Riwayat&nbsp;Transaksi
@@ -396,7 +400,29 @@ export default function Dashboard({ produk }: DashboardProps) {
                     </div>
                 </div>
                 <div className="ml-4 flex-1 relative overflow-x-auto shadow-md sm:rounded-lg bg-white h-full w-full">
-                    <div className="flex-1 overflow-x-hidden overflow-y-auto h-[510px]">
+                    <div className={`flex items-center my-2 px-2 gap-2`}>
+                        <input type="text" placeholder='Masukkan nama member...' list="daftar-member" value={namaInput} onChange={e => setNamaInput(e.target.value)} className="rounded-sm bg-white text-black w-full py-4 border-slate-300 border placeholder-gray-500 px-2 focus:outline-0" />
+                        <datalist id="daftar-member">
+                            {saran.map((item, i) => (
+                                <option key={i} value={item.nama} />
+                            ))}
+                        </datalist>
+                        <div className="flex flex-col w-3/6 gap-2">
+                            <button onClick={()=>{ setShowModalTambahMember(!showModalTambahMember)}} className={`flex w-full justify-center bg-blue-500 text-white border border-blue-500 rounded-sm items-center px-4 cursor-pointer hover:bg-blue-500 hover:scale-105 transition-all duration-300`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5">
+                                    <path fillRule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+                                </svg>&nbsp;Member&nbsp;baru
+                            </button>
+                            <button onClick={funcShowModalNabung} className={`flex w-full justify-center bg-green-500 text-white border border-green-500 rounded-sm items-center px-4 cursor-pointer hover:bg-green-500 hover:scale-105 transition-all duration-300`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5">
+                                    <path d="M12 7.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+                                    <path fillRule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 0 1 1.5 14.625v-9.75ZM8.25 9.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM18.75 9a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V9.75a.75.75 0 0 0-.75-.75h-.008ZM4.5 9.75A.75.75 0 0 1 5.25 9h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75V9.75Z" clipRule="evenodd" />
+                                    <path d="M2.25 18a.75.75 0 0 0 0 1.5c5.4 0 10.63.722 15.6 2.075 1.19.324 2.4-.558 2.4-1.82V18.75a.75.75 0 0 0-.75-.75H2.25Z" />
+                                </svg>&nbsp;Nabung
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex-1 overflow-x-hidden overflow-y-auto h-[450px]">
                         <table className="min-w-full table-fixed text-sm text-left text-black">
                             <thead className="text-xs text-black uppercase bg-gray-100">
                                 <tr>
@@ -829,6 +855,54 @@ export default function Dashboard({ produk }: DashboardProps) {
                                 />
                             </div>
 
+                        </div>
+                        <div className="p-4 space-y-4">
+                            <button onClick={handleTambahMember} className="w-full bg-blue-500 text-white py-2 rounded-md">
+                                Tambahkan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showModalNabung && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                                Tabungan Member
+                            </h3>
+                            <button
+                                type="button"
+                                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm h-8 w-8 flex justify-center items-center"
+                                onClick={() => {
+                                    setShowModalNabung(false);
+                                }}
+                            >
+                                <svg className="w-3 h-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
+                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                </svg>
+                                <span className="sr-only">Close modal</span>
+                            </button>
+                        </div>
+                        {/* Modal Body */}
+                        <div className={`p-4 space-y-4`}>
+                            <div className="flex flex-col">
+                                <label htmlFor="telepon">Deposit Member</label>
+                                <input
+                                    id="nabung"
+                                    type="nummber"
+                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2"
+                                />
+                            </div>
+                            <div className="flex flex-col">
+                                <label htmlFor="telepon">Tarik Uang Member</label>
+                                <input
+                                    id="nabung"
+                                    type="nummber"
+                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2"
+                                />
+                            </div>
                         </div>
                         <div className="p-4 space-y-4">
                             <button onClick={handleTambahMember} className="w-full bg-blue-500 text-white py-2 rounded-md">

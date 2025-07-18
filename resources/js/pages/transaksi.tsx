@@ -261,7 +261,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                 Kembali ke Kasir
               </button>
               <div className="h-6 w-px bg-slate-300"></div>
-              <h1 className="text-2xl font-bold text-white">Data Transaksi</h1>
+              <h1 className="text-2xl font-bold text-white">Riwayat Transaksi</h1>
               <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {filteredTransaksi.length} transaksi
               </span>
