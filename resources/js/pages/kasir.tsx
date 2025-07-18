@@ -387,7 +387,7 @@ export default function Dashboard({ produk }: DashboardProps) {
 
     return (
         <div className="flex h-screen w-full bg-gray-600 flex-col gap-4">
-            <div className={`flex justify-between pt-4 px-4`}>
+            <div className={`flex justify-between pt-4 px-4 bg-gray-800 py-4`}>
                 <div className="w-1/6 items-center flex">
                     <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
                 </div>
@@ -518,7 +518,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                             </button>
                         </div>
                     </div>
-                    <div className="flex-1 overflow-x-hidden overflow-y-auto h-[450px]">
+                    <div className="flex-1 overflow-x-hidden overflow-y-auto h-[300px]">
                         <table className="min-w-full table-fixed text-sm text-left text-black">
                             <thead className="text-xs text-black uppercase bg-gray-100">
                                 <tr>
@@ -744,18 +744,18 @@ export default function Dashboard({ produk }: DashboardProps) {
                             </div>
                             {uangTunai !== '' && uangTunai < totalSetelahDiskon ? (
                                 <div>
-                                    <span className="text-red-500 font-medium">UANG TIDAK CUKUP!!</span>
-                                    <div className="flex items-center space-x-2 mt-4">
-                                        <input
-                                            type="checkbox"
-                                            id="checkbox-hutang"
-                                            checked={isHutang}
-                                            onChange={(e) => setIsHutang(e.target.checked)}
-                                            className="w-4 h-4 text-red-500 border-gray-300 rounded"
-                                        />
-                                        <label htmlFor="checkbox-hutang" className="text-sm text-gray-700">
-                                            Tandai sebagai <span className="text-red-500 font-semibold">Hutang</span>
-                                        </label>
+                                   <span className="text-red-500 font-medium">UANG TIDAK CUKUP!!</span>
+                                   <div className="flex items-center space-x-2 mt-4">
+                                    <input
+                                        type="checkbox"
+                                        id="checkbox-hutang"
+                                        checked={isHutang}
+                                        onChange={(e) => setIsHutang(e.target.checked)}
+                                        className="w-4 h-4 text-red-500 border-gray-300 rounded"
+                                    />
+                                    <label htmlFor="checkbox-hutang" className="text-sm text-gray-700">
+                                        Tandai sebagai <span className="text-red-500 font-semibold">Hutang</span>
+                                    </label>
                                     </div>
                                 </div>
 
