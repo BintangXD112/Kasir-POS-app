@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
             MemberSeeder::class,
             TransaksiSeeder::class,
             DetailTransaksiSeeder::class,
-
+            TabunganSeeder::class,
         ]);
     }
 }

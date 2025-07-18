@@ -58,8 +58,10 @@ class TransaksiController extends Controller
                 'total'              => $request->total,
                 'user_id'            => Auth::id(),
                 'member_id'          => $member?->id,
+                'diskon_id'          => $member?->diskon_id ?? null,
                 'metode_pembayaran'  => $request->metode,
                 'status'             => $request->status,
+                'created_at'        => $request->status === 'paid' || $request->status === 'pending'? now() : null,
                 'waktu_bayar'        => $request->status === 'paid' ? now() : null,
             ]);
 
@@ -81,7 +83,7 @@ class TransaksiController extends Controller
                     'qty'          => $item['jumlah'],
                     'harga'        => $item['harga'],
                     'created_at'   => now(),
-                    'updated_at'   => now(),
+                    'waktu_bayar'   => now(),
                 ];
 
                 // Kurangi stok
@@ -99,5 +101,14 @@ class TransaksiController extends Controller
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
+    }
+    public function lunas($id)
+    {
+        $trx = Transaksi::findOrFail($id);
+        $trx->status = 'paid';
+        $trx->waktu_bayar = now();
+        $trx->save();
+
+        return back()->with('success', 'Transaksi berhasil ditandai lunas.');
     }
 }

@@ -9,8 +9,12 @@ class Member extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'nama',
+        'alamat',
+        'telepon',
         'diskon_id',
         'total_transaksi',
         'tanggal_daftar',
@@ -24,5 +28,9 @@ class Member extends Model
     public function diskon()
     {
         return $this->belongsTo(Diskon::class, 'diskon_id');
+    }
+    public function tabungan()
+    {
+        return $this->hasMany(TabunganMember::class);
     }
 }

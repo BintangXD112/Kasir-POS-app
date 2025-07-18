@@ -9,7 +9,10 @@ return new class extends Migration {
     {
         Schema::create('diskons', function (Blueprint $table) {
             $table->id();
-            $table->decimal('jumlah_diskon', 3, 2)->default(0);
+            $table->string('kode_voucher')->unique();
+            $table->string('deskripsi')->nullable();
+            $table->decimal('jumlah_diskon', 5, 2)->default(0);
+            $table->timestamps();
         });
     }
 

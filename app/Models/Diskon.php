@@ -10,10 +10,12 @@ class Diskon extends Model
     protected $table = 'diskons';
 
     protected $fillable = [
-        'jumlah_diskon', // misalnya nilai decimal seperti 5.00
+        'kode_voucher',
+        'deskripsi',
+        'jumlah_diskon',
     ];
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     /**
      * Relasi ke member: satu diskon bisa dimiliki banyak member
