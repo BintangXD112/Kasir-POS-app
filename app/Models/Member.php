@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+
 class Member extends Model
 {
     use HasFactory;
@@ -31,6 +32,6 @@ class Member extends Model
     }
     public function tabungan()
     {
-        return $this->hasMany(TabunganMember::class);
+        return $this->hasOne(Tabungan::class, 'member_id');
     }
 }

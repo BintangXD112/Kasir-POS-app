@@ -101,6 +101,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                     : 'failed',
             total: totalSetelahDiskon,
             nama_member: selectedMember?.nama ?? '',
+            menggunakan_saldo: isSaldoCheck,
         };
         router.post(route('transaksi'), dataToSend, {
             preserveScroll: true,
@@ -123,6 +124,19 @@ export default function Dashboard({ produk }: DashboardProps) {
                         false,
                     );
                     
+                }
+                // Proses ke TabunganController jika menggunakan saldo
+                if (isSaldoCheck) {
+                    const totalDiskonNum = Number(totalSetelahDiskon) || 0;
+                    const uangTunaiNum = Number(uangTunai) || 0;
+                    handleTabunganMember(
+                        selectedMember?.id,
+                        0,
+                        totalDiskonNum - uangTunaiNum,
+                        'Pembayaran menggunakan saldo',
+                        kode_transaksi,
+                        false
+                    );
                 }
             },
             onError: (errors) => {
@@ -212,6 +226,7 @@ export default function Dashboard({ produk }: DashboardProps) {
     };
     const [isHutang, setIsHutang] = useState(false);
     const [isTabung, setIsTabung] = useState(false);
+    const [isSaldoCheck, setIsSaldoCheck] = useState(false);
 
 
     // input rekomendasi otomatis
@@ -220,12 +235,14 @@ export default function Dashboard({ produk }: DashboardProps) {
         id: number;
         nama: string;
         diskon: number;
+        saldo: number;
     }>>([]);
 
     const [selectedMember, setSelectedMember] = useState<{
         id: number;
         nama: string;
         diskon: number;
+        saldo: number;
     } | null>(null);
 
 
@@ -273,7 +290,7 @@ export default function Dashboard({ produk }: DashboardProps) {
     const diskonPersen = selectedMember?.diskon ?? 0;
     const potongan = Math.floor((totalSebelumDiskon * diskonPersen) / 100);
     const totalSetelahDiskon = totalSebelumDiskon - potongan;
-    const kembalian = uangTunai - totalSetelahDiskon;
+    const kembalian = Number(uangTunai) - Number(totalSetelahDiskon);
 
 
 
@@ -310,12 +327,12 @@ export default function Dashboard({ produk }: DashboardProps) {
     const [deposit, setDeposit] = useState('');
     const [tarik, setTarik] = useState('');
     const handleTabunganMember = (
-        memberId,
-        jumlahDeposit = 0,
-        jumlahTarik = 0,
-        keterangan = '',
-        kodeTransaksi = '',
-        showAlert = true
+        memberId: number | undefined,
+        jumlahDeposit: number = 0,
+        jumlahTarik: number = 0,
+        keterangan: string = '',
+        kodeTransaksi: string = '',
+        showAlert: boolean = true
     ) => {
         if (!memberId || (jumlahDeposit <= 0 && jumlahTarik <= 0)) return;
 
@@ -360,20 +377,38 @@ export default function Dashboard({ produk }: DashboardProps) {
         };
 
         // Tampilkan konfirmasi hanya jika showAlert = true
+
         if (showAlert) {
-            Swal.fire({
-                title: 'Yakin?',
-                text: 'Data tabungan akan diperbarui!',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, simpan!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    executeRequest();
-                }
-            });
+            if (Number(deposit) > 0) {
+                Swal.fire({
+                    title: 'Yakin?',
+                    text: 'Melakukan Deposit!',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, simpan!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        executeRequest();
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Yakin?',
+                    text: 'Melakukan Penarikan',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, simpan!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        executeRequest();
+                    }
+                });
+                
+            }
         } else {
             // Langsung request tanpa SweetAlert
             executeRequest();
@@ -742,20 +777,44 @@ export default function Dashboard({ produk }: DashboardProps) {
                                     placeholder="Masukkan nominal"
                                 />
                             </div>
-                            {uangTunai !== '' && uangTunai < totalSetelahDiskon ? (
+                            {uangTunai !== '' && Number(uangTunai) < Number(totalSetelahDiskon) && selectedMember?.nama ? (
                                 <div>
-                                   <span className="text-red-500 font-medium">UANG TIDAK CUKUP!!</span>
-                                   <div className="flex items-center space-x-2 mt-4">
-                                    <input
-                                        type="checkbox"
-                                        id="checkbox-hutang"
-                                        checked={isHutang}
-                                        onChange={(e) => setIsHutang(e.target.checked)}
-                                        className="w-4 h-4 text-red-500 border-gray-300 rounded"
-                                    />
-                                    <label htmlFor="checkbox-hutang" className="text-sm text-gray-700">
-                                        Tandai sebagai <span className="text-red-500 font-semibold">Hutang</span>
-                                    </label>
+                                    <div className="flex justify-between pb-4">
+                                        <span className="text-gray-700 font-medium">Saldo Member</span>
+                                        <span className="text-black font-semibold">Rp. {selectedMember.saldo.toLocaleString('id-ID')}</span>
+                                    </div>
+                                    {!isSaldoCheck && (
+                                        <span className="text-yellow-500 font-medium">Uang tidak cukup! Apakah ingin menggunakan saldo?</span>
+                                    )}
+                                    <div className="flex items-center space-x-2 mt-2">
+                                        <input
+                                            type="checkbox"
+                                            id="checkbox-saldo"
+                                            checked={isSaldoCheck}
+                                            onChange={e => {
+                                                setIsSaldoCheck(e.target.checked);
+                                                if (e.target.checked) setIsHutang(false);
+                                            }}
+                                            className="w-4 h-4 text-blue-500 border-gray-300 rounded"
+                                        />
+                                        <label htmlFor="checkbox-saldo" className="text-sm text-gray-700">
+                                            Mengambil dari <span className="text-green-500 font-semibold">Saldo</span>
+                                        </label>
+                                    </div>
+                                    <div className="flex items-center space-x-2 mt-4">
+                                        <input
+                                            type="checkbox"
+                                            id="checkbox-hutang"
+                                            checked={isHutang}
+                                            onChange={e => {
+                                                setIsHutang(e.target.checked);
+                                                if (e.target.checked) setIsSaldoCheck(false);
+                                            }}
+                                            className="w-4 h-4 text-red-500 border-gray-300 rounded"
+                                        />
+                                        <label htmlFor="checkbox-hutang" className="text-sm text-gray-700">
+                                            Tandai sebagai <span className="text-red-500 font-semibold">Hutang</span>
+                                        </label>
                                     </div>
                                 </div>
 
@@ -803,11 +862,11 @@ export default function Dashboard({ produk }: DashboardProps) {
 
                                     // Jika tidak hutang dan uang tidak cukup
                                     const totalTanpaDiskon = transaksi.reduce((total, item) => total + item.produk.harga * item.qty, 0);
-                                    if (!isHutang && uangTunai < totalTanpaDiskon) {
+                                    if (!isHutang && !isSaldoCheck && uangTunai < totalTanpaDiskon) {
                                         Swal.fire({
                                             icon: 'error',
                                             title: 'Uang Tidak Cukup!',
-                                            text: 'Silakan masukkan jumlah yang sesuai atau centang sebagai hutang.',
+                                            text: 'Silakan masukkan jumlah yang sesuai atau centang sebagai hutang atau menggunakan saldo.',
                                         });
                                         return;
                                     }
@@ -985,7 +1044,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                     <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold text-black">
                                 Tabungan Member
                             </h3>
                             <button
@@ -1002,25 +1061,25 @@ export default function Dashboard({ produk }: DashboardProps) {
                             </button>
                         </div>
                         {/* Modal Body */}
-                        <div className={`p-4 space-y-4`}>
+                        <div className={`p-4 space-y-4 text-black`}>
                             <div className="flex flex-col">
-                                <label htmlFor="telepon">Deposit Member</label>
+                                <label htmlFor="telepon" className="text-black">Deposit Member</label>
                                 <input
                                     id="deposit"
                                     type="number"
                                     value={deposit}
                                     onChange={(e) => setDeposit(e.target.value)}
-                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2"
+                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2 text-black"
                                 />
                             </div>
                             <div className="flex flex-col">
-                                <label htmlFor="telepon">Tarik Uang Member</label>
+                                <label htmlFor="telepon" className="text-black">Tarik Uang Member</label>
                                 <input
                                     id="tarik"
                                     type="number"
                                     value={tarik}
                                     onChange={(e) => setTarik(e.target.value)}
-                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2"
+                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2 text-black"
                                 />
                             </div>
                         </div>
@@ -1034,7 +1093,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                                     '-',
                                     true
                                 )}
-                                className="w-full bg-blue-500 text-white py-2 rounded-md"
+                                className="w-full bg-blue-500 text-black py-2 rounded-md font-semibold"
                             >
                                 Tambahkan
                             </button>

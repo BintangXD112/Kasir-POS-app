@@ -23,7 +23,7 @@ class MemberController extends Controller
         }
 
         // Ambil nama member yang mirip (max 10)
-        $members = Member::with('diskon')
+        $members = Member::with('diskon', 'tabungan')
             ->where('nama', 'like', '%' . $query . '%')
             ->get()
             ->map(function ($member) {
@@ -32,6 +32,7 @@ class MemberController extends Controller
                     'nama' => $member->nama,
                     'diskon' => $member->diskon->jumlah_diskon ?? 0,
                     'kode_voucher' => $member->diskon->kode_voucher ?? null,
+                    'saldo' => $member->tabungan->saldo ?? null,
                 ];
             });
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\DetailTabunganController;
+use App\Http\Controllers\TabunganController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\KasirController;
@@ -29,6 +29,12 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 
 // Route untuk user yang sudah login
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('admin/users', App\Http\Controllers\UserController::class);
+    Route::get('admin/user-logs', [App\Http\Controllers\AdminController::class, 'userLogs'])->name('admin.user-logs');
+    Route::get('admin/user-logs/export', [App\Http\Controllers\AdminController::class, 'exportUserLogs'])->name('admin.user-logs.export');
+});
+
 Route::middleware(['auth'])->group(function () {
 
     // Kasir & Transaksi
@@ -42,11 +48,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/member', [MemberController::class, 'store'])->name('member.store');
 
     // Produk
+    Route::post('/produk', [ProdukController::class, 'store'])->name('produk.store');
     Route::delete('/produk/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
     Route::put('/produk/{id}', [ProdukController::class, 'update'])->name('produk.update');
 
     // Tabungan Member
-    Route::post('/tabungan', [DetailTabunganController::class, 'store'])->name('tabungan.store');
+    Route::post('/tabungan', [TabunganController::class, 'store'])->name('tabungan.store');
 
     // Admin group
     Route::prefix('admin')->name('admin.')->group(function () {

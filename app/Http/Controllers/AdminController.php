@@ -10,6 +10,8 @@ use App\Models\Member;
 use App\Models\Produk;
 use App\Models\Diskon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
+use App\Models\UserLog;
 
 
 class AdminController extends Controller
@@ -80,5 +82,41 @@ class AdminController extends Controller
                 ];
             });
         return response()->json($usages);
+    }
+
+    public function userLogs(Request $request)
+    {
+        $query = UserLog::with(['user', 'targetUser']);
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        $logs = $query->orderByDesc('created_at')->get();
+        return Inertia::render('view/user-logs', [
+            'logs' => $logs,
+            'filters' => $request->only(['date_from', 'date_to'])
+        ]);
+    }
+
+    public function exportUserLogs(Request $request)
+    {
+        $query = UserLog::with(['user', 'targetUser']);
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        $logs = $query->orderByDesc('created_at')->get();
+        $csv = "Waktu,User,Aksi,Target User,Keterangan\n";
+        foreach ($logs as $log) {
+            $csv .= '"'.date('Y-m-d H:i:s', strtotime($log->created_at)).'","'.($log->user->nama_user ?? '-').'","'.$log->action.'","'.($log->targetUser->nama_user ?? '-').'","'.($log->keterangan ?? '-').'"\n';
+        }
+        return Response::make($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="user_logs.csv"',
+        ]);
     }
 }

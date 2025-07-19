@@ -8,6 +8,8 @@ import type { PageProps } from '@/types/type';
 import VoucherDiskon from './view/voucher-diskon';
 import Member from './view/member';
 import VoucherUsage from './view/voucher-usage';
+import User from './view/user';
+import UserLogs from './view/user-logs';
 
 export default function Admin(){
     const { users, members, produks } = usePage<PageProps>().props;
@@ -76,6 +78,18 @@ export default function Admin(){
                             </svg>
                             Penggunaan Voucher
                         </a>
+                        <a onClick={()=>{setPage("user")}} className={`flex  ${page === "user"  && "bg-gray-700 text-white scale-105" }  items-center gap-1 hover:scale-105 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-all duration-300 ease-in-out`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                                <path fillRule="evenodd" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" clipRule="evenodd" />
+                            </svg>
+                            Kelola User
+                        </a>
+                        <a onClick={()=>{setPage("user-logs")}} className={`flex  ${page === "user-logs"  && "bg-gray-700 text-white scale-105" }  items-center gap-1 hover:scale-105 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-all duration-300 ease-in-out`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                                <path fillRule="evenodd" d="M5 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5zm2 2h10a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm5 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-3 4a1 1 0 1 1 2 0v2a1 1 0 1 1-2 0v-2zm4 0a1 1 0 1 1 2 0v2a1 1 0 1 1-2 0v-2z" clipRule="evenodd" />
+                            </svg>
+                            Log Aktivitas
+                        </a>
                     </nav>
                 </div>
             </div>
@@ -137,6 +151,8 @@ export default function Admin(){
                         { page === "voucher-diskon" && <VoucherDiskon />}
                         { page === "member" && <Member members={members} />}
                         { page === "voucher-usage" && <VoucherUsage />}
+                        { page === "user" && <User users={users} />}
+                        { page === "user-logs" && <UserLogs />}
                     </div>
                 </div>
             </div>
