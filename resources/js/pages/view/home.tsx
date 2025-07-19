@@ -5,9 +5,13 @@ interface PageProps {
   users: User[];
   members: Member[];
   produks: Produk[];
+  pemasukan_bulan_ini: number;
+  transaksi: any[];
 }
 
-export default function Home({ users, members, produks }: PageProps) {
+export default function Home({ users, members, produks, pemasukan_bulan_ini, transaksi }: PageProps) {
+  // Format pemasukan dengan pemisah ribuan dan tanpa desimal jika tidak ada
+  const formattedPemasukan = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(pemasukan_bulan_ini);
   return (
     <>
       <h1 className="text-2xl font-bold text-gray-800 mb-4">Dashboard</h1>
@@ -15,7 +19,7 @@ export default function Home({ users, members, produks }: PageProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-blue-500 text-white p-6 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Total Pemasukan</h3>
-          <p className="text-3xl font-bold">Rp.&nbsp;1.200.000</p>
+          <p className="text-3xl font-bold">{formattedPemasukan}</p>
         </div>
         <div className="bg-orange-500 text-white p-6 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Jumlah Produk</h3>

@@ -23,10 +23,25 @@ class AdminController extends Controller
         $members = Member::all();
         $produks = Produk::all();
 
+        // Hitung pemasukan 1 bulan terakhir (reset otomatis tiap bulan)
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+        $pemasukanBulanIni = \App\Models\Transaksi::where('status', 'paid')
+            ->whereBetween('waktu_bayar', [$startOfMonth, $endOfMonth])
+            ->sum('total');
+
+        // Ambil riwayat transaksi (dengan relasi detail, produk, member)
+        $transaksi = \App\Models\Transaksi::with([
+            'detail.produk:id,nama,harga,gambar',
+            'member:id,nama'
+        ])->orderByDesc('created_at')->get();
+
         return Inertia::render('Admin', [
             'users' => $users,
             'members' => $members,
             'produks' => $produks,
+            'pemasukan_bulan_ini' => $pemasukanBulanIni,
+            'transaksi' => $transaksi,
         ]);
     }
 
@@ -117,6 +132,20 @@ class AdminController extends Controller
         return Response::make($csv, 200, [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="user_logs.csv"',
+        ]);
+    }
+
+    public function transaksiAdmin()
+    {
+        $transaksi = \App\Models\Transaksi::with([
+            'detail.produk:id,nama,harga,gambar',
+            'member:id,nama'
+        ])->orderByDesc('created_at')->get();
+        return Inertia::render('view/transaksi-admin', [
+            'transaksi' => $transaksi,
+            'auth' => [
+                'user' => Auth::user(),
+            ],
         ]);
     }
 }

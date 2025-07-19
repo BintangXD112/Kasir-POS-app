@@ -75,6 +75,10 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/admin/transaksi', [\App\Http\Controllers\AdminController::class, 'transaksiAdmin'])->name('admin.transaksi');
+    });
+
 });
 
 require __DIR__.'/settings.php';

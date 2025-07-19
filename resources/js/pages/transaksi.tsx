@@ -314,7 +314,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
             </div>
             
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-slate-700">Urutkan:</label>
+              <label className="text-sm font-medium text-black text-slate-700">Urutkan:</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
