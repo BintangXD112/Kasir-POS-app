@@ -185,11 +185,11 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                 <td>${index + 1}</td>
                 <td>${trx.kode_transaksi}</td>
                 <td>${trx.member?.nama || 'Guest'}</td>
-                <td class="total">Rp ${trx.total.toLocaleString('id-ID')}</td>
+                <td class="total">${formatCurrency(trx.total)}</td>
                 <td>${trx.metode_pembayaran}</td>
                 <td class="status-${trx.status}">${trx.status}</td>
                 <td>${trx.created_at ? new Date(trx.created_at).toLocaleDateString('id-ID') : '-'}</td>
-                <td>${trx.detail.length} item(s)</td>
+                <td>${trx.detail.length}&nbsp;item(s)</td>
               </tr>
             `).join('')}
           </tbody>
