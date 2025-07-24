@@ -81,4 +81,29 @@ class MemberController extends Controller
             return back()->withErrors(['erros' => 'Erros:' . $e->getMessage()]);
         }
     }
+    public function destroy($id)
+    {
+        $member = Member::findOrFail($id);
+        $member->delete();
+
+        return redirect()->back()->with('message', 'Member berhasil dihapus.');
+    }
+    public function update(Request $request, $id)
+{
+    $rules = [
+        'nama' => 'required|string',
+        'telepon' => 'required|string|max:20',
+        'alamat' => 'required|string',
+    ];
+
+    $validated = $request->validate($rules);
+
+    $member = Member::findOrFail($id);
+    $member->nama = $validated['nama'];
+    $member->telepon = $validated['telepon'];
+    $member->alamat = $validated['alamat'];
+    $member->save();
+
+    return redirect()->back()->with('success', 'Member berhasil diperbarui.');
+}
 }

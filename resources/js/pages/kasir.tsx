@@ -555,7 +555,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                             </button>
                         </div>
                     </div>
-                    <div className="flex-1 overflow-x-hidden overflow-y-auto h-[300px]">
+                    <div className="flex-1 overflow-x-hidden overflow-y-auto h-[330px]">
                         <table className="min-w-full table-fixed text-sm text-left text-black">
                             <thead className="text-xs text-black uppercase bg-gray-100">
                                 <tr>

@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\TabunganController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -35,31 +34,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('admin/user-logs/export', [App\Http\Controllers\AdminController::class, 'exportUserLogs'])->name('admin.user-logs.export');
 });
 
-Route::middleware(['auth'])->group(function () {
-
+// ADD INERTIA MIDDLEWARE HERE
+Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->group(function () {
     // Kasir & Transaksi
     Route::get('/kasir', [KasirController::class, 'index'])->name('kasir');
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi');
     Route::post('/transaksi', [TransaksiController::class, 'store'])->name('transaksi.store');
     Route::post('/transaksi/lunas/{id}', [TransaksiController::class, 'lunas'])->name('transaksi.lunas');
-
-    // Member
+    
+    // Member - FIXED ROUTES
     Route::get('/members/search', [MemberController::class, 'search'])->name('member.search');
+    Route::delete('/member/{id}', [MemberController::class, 'destroy'])->name('member.destroy');
     Route::post('/member', [MemberController::class, 'store'])->name('member.store');
-
+    Route::put('/member/{id}', [MemberController::class, 'update'])->name('member.update');
+    
     // Produk
     Route::post('/produk', [ProdukController::class, 'store'])->name('produk.store');
     Route::delete('/produk/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
     Route::put('/produk/{id}', [ProdukController::class, 'update'])->name('produk.update');
-
+    
     // Tabungan Member
     Route::post('/tabungan', [TabunganController::class, 'store'])->name('tabungan.store');
-
+    
     // Admin group
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('dashboard');
         Route::get('/voucher-usage', [AdminController::class, 'voucherUsage'])->name('voucher.usage');
-
+        Route::get('/transaksi', [AdminController::class, 'transaksiAdmin'])->name('transaksi');
+        
         // Voucher Diskon
         Route::prefix('voucher-diskon')->group(function () {
             Route::get('/', [AdminController::class, 'voucherDiskonIndex'])->name('voucher.index');
@@ -67,18 +69,13 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{id}', [AdminController::class, 'voucherDiskonUpdate'])->name('voucher.update');
             Route::delete('/{id}', [AdminController::class, 'voucherDiskonDestroy'])->name('voucher.destroy');
         });
-
+        
         // Member Management
         Route::prefix('member')->group(function () {
             Route::get('/', [MemberController::class, 'indexJson'])->name('member.index');
             Route::put('{id}/voucher', [MemberController::class, 'updateVoucher'])->name('member.voucher.update');
         });
     });
-
-    Route::middleware(['auth'])->group(function () {
-        Route::get('/admin/transaksi', [\App\Http\Controllers\AdminController::class, 'transaksiAdmin'])->name('admin.transaksi');
-    });
-
 });
 
 require __DIR__.'/settings.php';
