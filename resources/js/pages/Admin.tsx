@@ -10,6 +10,7 @@ import Member from './view/member';
 import VoucherUsage from './view/voucher-usage';
 import User from './view/user';
 import UserLogs from './view/user-logs';
+import TransaksiAdminPage from './view/transaksi-admin.js';
 
 export default function Admin(){
     const { users, members, produks, pemasukan_bulan_ini, transaksi } = usePage<PageProps & { pemasukan_bulan_ini: number, transaksi: any[] }>().props;
@@ -26,6 +27,7 @@ export default function Admin(){
             cleanup();
             router.flushAll();
             localStorage.removeItem("username");
+            localStorage.removeItem("page");
             window.location.href = "/login";
         };
     const [nav, setNav] = useState(false)
@@ -41,7 +43,7 @@ export default function Admin(){
         <div className='w-full h-screen bg-gray-700 flex'>
             {/* Sidebar */}
             <div className={`${nav ? 'w-64' : 'w-0'} transition-all duration-300 ease-in-out bg-gray-800 overflow-hidden`}>
-                <div className="p-4">
+                <div className={`p-4 ${nav ? 'block' : 'hidden'}`}>
                     <h3 className="text-white text-lg font-semibold mb-4">Menu</h3>
                     <nav className="space-y-2 pt-2">
                         <a onClick={()=>{setPage("home")}} className={`flex ${page === "home" && "bg-gray-700 text-white scale-105"} items-center hover:scale-105 gap-1 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-all duration-300 ease-in-out`}>
@@ -51,9 +53,9 @@ export default function Admin(){
                             </svg>
                             Dashboard
                         </a>
-                        <a href="/admin/transaksi" className="flex items-center gap-1 hover:scale-105 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-all duration-300 ease-in-out">
+                        <a onClick={()=>{setPage("transaksi")}} className={`flex ${page === "transaksi" && "bg-gray-700 text-white scale-105"} items-center gap-1 hover:scale-105 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-all duration-300 ease-in-out`}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                                <path fillRule="evenodd" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                <path fillRule="evenodd" d="M6.32 1.827a49.255 49.255 0 0 1 11.36 0c1.497.174 2.57 1.46 2.57 2.93V19.5a3 3 0 0 1-3 3H6.75a3 3 0 0 1-3-3V4.757c0-1.47 1.073-2.756 2.57-2.93ZM7.5 11.25a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H8.25a.75.75 0 0 1-.75-.75v-.008Zm.75 1.5a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H8.25Zm-.75 3a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H8.25a.75.75 0 0 1-.75-.75v-.008Zm.75 1.5a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V18a.75.75 0 0 0-.75-.75H8.25Zm1.748-6a.75.75 0 0 1 .75-.75h.007a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75h-.007a.75.75 0 0 1-.75-.75v-.008Zm.75 1.5a.75.75 0 0 0-.75.75v.008c0 .414.335.75.75.75h.007a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75h-.007Zm-.75 3a.75.75 0 0 1 .75-.75h.007a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75h-.007a.75.75 0 0 1-.75-.75v-.008Zm.75 1.5a.75.75 0 0 0-.75.75v.008c0 .414.335.75.75.75h.007a.75.75 0 0 0 .75-.75V18a.75.75 0 0 0-.75-.75h-.007Zm1.754-6a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75h-.008a.75.75 0 0 1-.75-.75v-.008Zm.75 1.5a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75h-.008Zm-.75 3a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75h-.008a.75.75 0 0 1-.75-.75v-.008Zm.75 1.5a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V18a.75.75 0 0 0-.75-.75h-.008Zm1.748-6a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75h-.008a.75.75 0 0 1-.75-.75v-.008Zm.75 1.5a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75h-.008Zm-8.25-6A.75.75 0 0 1 8.25 6h7.5a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-.75.75h-7.5a.75.75 0 0 1-.75-.75v-.75Zm9 9a.75.75 0 0 0-1.5 0V18a.75.75 0 0 0 1.5 0v-2.25Z" clipRule="evenodd" />
                             </svg>
                             Riwayat Transaksi
                         </a>
@@ -153,6 +155,7 @@ export default function Admin(){
                 <div className="flex-1 overflow-auto w-full h-screen p-6">
                     <div className="bg-white rounded-lg shadow-lg  px-6 py-6">
                         { page === "home" && <Home users={users} members={members} produks={produks} pemasukan_bulan_ini={pemasukan_bulan_ini} transaksi={transaksi} />}
+                        { page === "transaksi" && <TransaksiAdminPage transaksi={transaksi} />}
                         { page === "produk" && <Produk produks={produks} />}
                         { page === "voucher-diskon" && <VoucherDiskon />}
                         { page === "member" && <Member members={members} />}

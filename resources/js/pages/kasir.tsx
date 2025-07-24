@@ -45,6 +45,8 @@ export default function Dashboard({ produk }: DashboardProps) {
     };
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    const [statusNabung, setStatusNabung]= useState("Deposit")
+
     const scrollLeft = () => {
         if (scrollRef.current) {
             scrollRef.current.scrollBy({
@@ -1062,7 +1064,12 @@ export default function Dashboard({ produk }: DashboardProps) {
                         </div>
                         {/* Modal Body */}
                         <div className={`p-4 space-y-4 text-black`}>
-                            <div className="flex flex-col">
+                            <div className={`flex w-full h-10 justify-between relative rounded-full p-2 bg-gray-400`}>
+                                <div className={` w-1/2 h-2/3 top-1.5 z-0 ${statusNabung === "Deposit" ? '' :statusNabung === "Tarik" && 'translate-x-48'} bg-white rounded-full absolute transition-all duration-300 ease-in-out`}>&nbsp;</div>
+                                <div onClick={()=>{setStatusNabung("Deposit")}} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Deposit" ? 'text-black' :'text-white'}`}>Deposit</div>
+                                <div onClick={()=>{setStatusNabung("Tarik")}} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Tarik" ? 'text-black' :'text-white'}`}>Tarik</div>
+                            </div>
+                            {statusNabung === "Deposit" ? (<div className="flex flex-col">
                                 <label htmlFor="telepon" className="text-black">Deposit Member</label>
                                 <input
                                     id="deposit"
@@ -1071,7 +1078,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                                     onChange={(e) => setDeposit(e.target.value)}
                                     className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2 text-black"
                                 />
-                            </div>
+                            </div>): statusNabung === "Tarik" && (
                             <div className="flex flex-col">
                                 <label htmlFor="telepon" className="text-black">Tarik Uang Member</label>
                                 <input
@@ -1082,6 +1089,7 @@ export default function Dashboard({ produk }: DashboardProps) {
                                     className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2 text-black"
                                 />
                             </div>
+                            )}
                         </div>
                         <div className="p-4 space-y-4">
                             <button
@@ -1093,9 +1101,9 @@ export default function Dashboard({ produk }: DashboardProps) {
                                     '-',
                                     true
                                 )}
-                                className="w-full bg-blue-500 text-black py-2 rounded-md font-semibold"
+                                className="w-full bg-blue-500 text-white py-2 rounded-md font-semibold"
                             >
-                                Tambahkan
+                                {statusNabung === "Deposit" ?'Depositkan uang' :'Tarik uang'}
                             </button>
 
                         </div>

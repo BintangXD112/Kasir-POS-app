@@ -47,6 +47,15 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
   const [printDateFrom, setPrintDateFrom] = useState('');
   const [printDateTo, setPrintDateTo] = useState('');
 
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       paid: 'bg-emerald-100 text-emerald-800 border-emerald-200',
@@ -198,7 +207,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
         <div class="summary">
           <h3>Ringkasan</h3>
           <p><strong>Total Transaksi:</strong> ${dataToPrint.length}</p>
-          <p><strong>Total Pendapatan:</strong> Rp ${dataToPrint.reduce((sum, trx) => sum + trx.total, 0).toLocaleString('id-ID')}</p>
+<p><strong>Total Pendapatan:</strong> Rp ${dataToPrint.reduce((sum, trx) => Number(sum) + Number(trx.total), 0).toLocaleString('id-ID')}</p>
           <p><strong>Transaksi Paid:</strong> ${dataToPrint.filter(trx => trx.status === 'paid').length}</p>
           <p><strong>Transaksi Pending:</strong> ${dataToPrint.filter(trx => trx.status === 'pending').length}</p>
           <p><strong>Transaksi Cancelled:</strong> ${dataToPrint.filter(trx => trx.status === 'cancelled').length}</p>
@@ -465,7 +474,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                     
                     <td className="px-6 py-4">
                       <div className="text-lg font-bold text-slate-900">
-                        Rp {trx.total.toLocaleString('id-ID')}
+                        {formatCurrency(trx.total)}
                       </div>
                     </td>
                     
