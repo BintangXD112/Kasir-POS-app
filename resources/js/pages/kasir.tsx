@@ -538,7 +538,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             {kategori.map((kat) => (
                                 <button
                                 key={kat.id}
-                                className={`px-3 py-1 rounded ${
+                                className={`px-3 py-1 rounded w-fit ${
                                     selectedKategori === kat.id ? 'bg-red-500 text-white' : 'bg-gray-300'
                                 }`}
                                 onClick={() => setSelectedKategori(kat.id)}
