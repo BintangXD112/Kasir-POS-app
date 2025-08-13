@@ -12,9 +12,10 @@ use Illuminate\Support\Facades\Auth;
 
 class TabunganController extends Controller
 {
+
     public function store(Request $request)
     {
-        
+
         $request->validate([
             'member_id' => 'required|exists:members,id',
             'deposit' => 'nullable|numeric|min:0',

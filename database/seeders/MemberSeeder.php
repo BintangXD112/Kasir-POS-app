@@ -15,7 +15,7 @@ class MemberSeeder extends Seeder
                 'alamat' => 'Kampung beh ditu',
                 'telepon' => '08512345678',
                 'diskon_id' => 1, // pastikan ID ini ada di tabel diskons
-                'total_transaksi' => 15,
+                'total_transaksi' => 0,
                 'tanggal_daftar' => now(),
             ],
             [
@@ -23,7 +23,7 @@ class MemberSeeder extends Seeder
                 'alamat' => 'Kampung beh ditu',
                 'telepon' => '08512345678',
                 'diskon_id' => 2,
-                'total_transaksi' => 30,
+                'total_transaksi' => 0,
                 'tanggal_daftar' => now()->subDays(10),
             ],
             [
@@ -31,7 +31,7 @@ class MemberSeeder extends Seeder
                 'alamat' => 'Kampung beh ditu',
                 'telepon' => '08512345678',
                 'diskon_id' => null, // tidak dapat diskon
-                'total_transaksi' => 5,
+                'total_transaksi' => 0,
                 'tanggal_daftar' => now()->subMonths(1),
             ],
         ]);

@@ -24,6 +24,7 @@ class MemberController extends Controller
 
         // Ambil nama member yang mirip (max 10)
         $members = Member::with('diskon', 'tabungan')
+            ->withCount('transaksi')
             ->where('nama', 'like', '%' . $query . '%')
             ->get()
             ->map(function ($member) {
@@ -33,6 +34,7 @@ class MemberController extends Controller
                     'diskon' => $member->diskon->jumlah_diskon ?? 0,
                     'kode_voucher' => $member->diskon->kode_voucher ?? null,
                     'saldo' => $member->tabungan->saldo ?? null,
+                    'total_transaksi' => $member->transaksi_count ?? 0,
                 ];
             });
 
@@ -71,16 +73,25 @@ class MemberController extends Controller
         ], [
             'nama.unique' => "Nama dengan alamat yang sama sudah terdaftar",
         ]);
-
+    
         $validated['tanggal_daftar'] = now();
-
+    
         try {
-            Member::create($validated);
+            // Simpan member
+            $member = Member::create($validated);
+    
+            // Buat tabungan default
+            $member->tabungan()->create([
+                'uang_tunai' => 0,
+                // tambahkan field lain jika perlu
+            ]);
+    
             return back()->with('success', 'Member berhasil ditambahkan');
         } catch (\Exception $e) {
-            return back()->withErrors(['erros' => 'Erros:' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Error: ' . $e->getMessage()]);
         }
     }
+    
     public function destroy($id)
     {
         $member = Member::findOrFail($id);

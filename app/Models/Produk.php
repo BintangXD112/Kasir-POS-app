@@ -3,9 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Produk extends Model
 {
-    protected $table = 'produk'; // override karena default-nya 'produks'
-    protected $fillable = ['nama', 'harga', 'gambar'];
+    use HasFactory;
+
+    protected $table = 'produk';
+    protected $fillable = ['id_kategori', 'nama', 'harga', 'stok', 'gambar'];
+
+    public function kategori()
+    {
+        return $this->belongsTo(Kategori::class, 'id_kategori');
+    }
 }

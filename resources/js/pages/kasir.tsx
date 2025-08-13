@@ -7,15 +7,22 @@ import { icons, LogOut } from 'lucide-react';
 import QRCodePembayaran from '../components/qrcodepaymentmodal';
 import Swal from 'sweetalert2';
 
-
 interface DashboardProps extends PageProps {
     produk: Produk[];
+    kategori: Kategori[];
+}
+
+export interface Kategori {
+  id: number;
+  nama_kategori: string;
 }
 
 export interface Produk {
     id: number;
+    id_kategori: number;
     nama: string;
     harga: number;
+    stok: number;
     gambar: string;
 }
 
@@ -29,7 +36,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 
-export default function Dashboard({ produk }: DashboardProps) {
+export default function Dashboard({ produk, kategori }: DashboardProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const cleanup = useMobileNavigation();
     const handleLogout = () => {
@@ -170,10 +177,14 @@ export default function Dashboard({ produk }: DashboardProps) {
     const [uangTunaiDisplay, setUangTunaiDisplay] = useState('');
     const [showNonTunaiModal, setShowNonTunaiModal] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState('');
-    const [selectedProduk, setSelectedProduk] = useState<Produk | null>(null);
-    const filterNamaProduk = produk.filter((item) =>
-        item.nama.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const [selectedKategori, setSelectedKategori] = useState<number | 'semua'>( 'semua' );
+    const filterNamaProduk = produk.filter((item) => {
+    const matchNama = item.nama.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchKategori = selectedKategori === 'semua' ? true : item.id_kategori === selectedKategori;
+    return matchNama && matchKategori;
+    });
+
+    
     const [showModalNabung, setShowModalNabung] = useState(false)
     const funcShowModalNabung = () => {
         if (namaInput === "") {
@@ -188,17 +199,43 @@ export default function Dashboard({ produk }: DashboardProps) {
         }
     }
     const [transaksi, setTransaksi] = useState<Array<{ produk: Produk, qty: number }>>([]);
+
     const tambahTransaksi = (produk: Produk) => {
         setTransaksi((prev) => {
             const index = prev.findIndex(item => item.produk.id === produk.id);
             if (index !== -1) {
+                const item = prev[index];
+                if (item.qty + 1 > item.produk.stok) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Stok tidak cukup',
+                        text: 'Jumlah produk melebihi stok yang tersedia',
+                        timer: 2000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                    });
+                    return prev; // jangan update
+                }
                 const update = [...prev];
                 update[index].qty += 1;
                 return update;
             }
+            if (produk.stok < 1) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Stok tidak cukup',
+                    text: 'Produk ini sedang habis stok',
+                    timer: 2000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                });
+                return prev;
+            }
             return [...prev, { produk, qty: 1 }];
         });
     };
+
+
     const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
     const updateQuantity = (produkId: number, newQty: number) => {
         const finalQty = Math.max(0, newQty);
@@ -472,55 +509,68 @@ export default function Dashboard({ produk }: DashboardProps) {
                         </div>
                     </div>
                     <div className={`flex gap-4`}>
-                        <div onClick={scrollLeft} className={`rounded-full active:opacity-50 p-1 text-red-500 border border-red-500`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
-                                <path fillRule="evenodd" d="M10.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L12.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clipRule="evenodd" />
-                                <path fillRule="evenodd" d="M4.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L6.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clipRule="evenodd" />
+                        <div
+                            onClick={scrollLeft}
+                            className={`rounded-full active:opacity-50 py-1 mb-4 text-red-500 border border-red-500 cursor-pointer select-none`}
+                            title="Scroll Left"
+                        >
+                            {/* Tombol scroll left (panah kiri) */}
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" 
+                            viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7 7-7" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M20 19l-7-7 7-7" />
                             </svg>
                         </div>
-                        <div ref={scrollRef} className={`overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`}>
-                            <div className={`flex gap-2`}>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
-                                <button className={`bg-gray-300 text-gray-600 p-1 rounded-sm flex items-center justify-center active:bg-red-500 active:text-white active:opacity-60`}>TEST</button>
 
+                        <div
+                            ref={scrollRef}
+                            className={`overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex-grow`}
+                        >
+                            <div className="flex gap-2 mb-4">
+                            <button
+                                className={`px-3 py-1 rounded ${
+                                selectedKategori === 'semua' ? 'bg-red-500 text-white' : 'bg-gray-300'
+                                }`}
+                                onClick={() => setSelectedKategori('semua')}
+                            >
+                                Semua
+                            </button>
+                            {kategori.map((kat) => (
+                                <button
+                                key={kat.id}
+                                className={`px-3 py-1 rounded ${
+                                    selectedKategori === kat.id ? 'bg-red-500 text-white' : 'bg-gray-300'
+                                }`}
+                                onClick={() => setSelectedKategori(kat.id)}
+                                >
+                                {kat.nama_kategori}
+                                </button>
+                            ))}
                             </div>
                         </div>
-                        <div onClick={scrollRight} className={`rounded-full active:opacity-50 p-1 text-red-500 border border-red-500`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
-                                <path fillRule="evenodd" d="M13.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L11.69 12 4.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clipRule="evenodd" />
-                                <path fillRule="evenodd" d="M19.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06L17.69 12l-6.97-6.97a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clipRule="evenodd" />
+
+                        <div
+                            onClick={scrollRight}
+                            className={`rounded-full active:opacity-50 py-1 mb-4 text-red-500 border border-red-500 cursor-pointer select-none`}
+                            title="Scroll Right"
+                        >
+                            {/* Tombol scroll right (panah kanan) */}
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" 
+                            viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 5l7 7-7 7" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 5l7 7-7 7" />
                             </svg>
                         </div>
                     </div>
                     <div className={`grid grid-cols-6 gap-4 mt-4 p-2 [scrollbar-width:thin] overflow-y-auto max-h-[375px] overflow-x-hidden`}>
                         {filterNamaProduk && filterNamaProduk.length > 0 ? (
                             filterNamaProduk.map((item) => (
-                                <div key={item.id} onClick={() => tambahTransaksi(item)} className={`flex flex-col rounded-sm border hover:scale-105 hover:shadow-md hover:shadow-gray-500 transition-all duration-300 ease-in-out cursor-pointer border-gray-300 w-[120px] h-[140px]`}>
+                                <div key={item.id} onClick={() => tambahTransaksi(item)} className={`flex flex-col rounded-sm border hover:scale-105 hover:shadow-md hover:shadow-gray-500 transition-all duration-300 ease-in-out cursor-pointer border-gray-300 w-[120px] h-[160px]`}>
                                     <img src={`/logo/${item.gambar}`} alt={item.nama} className={`object-cover w-full h-20 rounded-t-sm`} />
                                     <div className={`p-2 rounded-b-sm`}>
                                         <p className={`text-gray-600 text-sm font-semibold truncate`}>{item.nama}</p>
                                         <p className={`text-gray-500 text-xs`}>Rp. {item.harga.toLocaleString('id-ID')}</p>
+                                        <p className={`text-gray-600 text-xs`}>Stok: {item.stok}</p>
                                     </div>
                                 </div>
                             ))
@@ -663,7 +713,6 @@ export default function Dashboard({ produk }: DashboardProps) {
 
                                 // Aksi berdasarkan metode pembayaran
                                 if (selectedPayment === 'tunai') {
-                                    setSelectedProduk(filterNamaProduk[0]);
                                     setShowModal(true);
                                 } else if (selectedPayment === 'non-tunai') {
                                     setShowNonTunaiModal(true);

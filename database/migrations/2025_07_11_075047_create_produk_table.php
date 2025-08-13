@@ -6,24 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('produk', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->unsignedBigInteger('id_kategori'); // foreign key
             $table->string('nama');
             $table->integer('harga');
             $table->integer('stok')->default(0);
             $table->string('gambar');
             $table->timestamps();
+
+            $table->foreign('id_kategori')
+                  ->references('id')
+                  ->on('kategori')
+                  ->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('produk');

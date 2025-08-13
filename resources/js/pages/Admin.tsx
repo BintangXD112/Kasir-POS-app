@@ -11,9 +11,11 @@ import VoucherUsage from './view/voucher-usage';
 import User from './view/user';
 import UserLogs from './view/user-logs';
 import TransaksiAdminPage from './view/transaksi-admin.js';
+import TabunganMember from './view/tabungan-member.js';
+import Kategori from './view/kategori.js';
 
 export default function Admin(){
-    const { users, members, produks, pemasukan_bulan_ini, transaksi } = usePage<PageProps & { pemasukan_bulan_ini: number, transaksi: any[] }>().props;
+    const { users, members, produks, pemasukan_bulan_ini, transaksi, tabungan, kategori } = usePage<PageProps & { pemasukan_bulan_ini: number, transaksi: any[], kategori: Kategori[] }>().props;
     const [page, setPage] = useState(localStorage.getItem("page") || "home")
     useEffect(()=>{
         localStorage.setItem("page", page)
@@ -66,6 +68,20 @@ export default function Admin(){
                             </svg>
                             Kelola Member
                         </a>
+                        <a onClick={()=>{setPage("tabungan-member")}} className={`flex  ${page === "tabungan-member"  && "bg-gray-700 text-white scale-105" }  items-center gap-1 hover:scale-105 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-all duration-300 ease-in-out`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                                <path fillRule="evenodd" d="M8.25 6.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM15.75 9.75a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM2.25 9.75a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM6.31 15.117A6.745 6.745 0 0 1 12 12a6.745 6.745 0 0 1 6.709 7.498.75.75 0 0 1-.372.568A12.696 12.696 0 0 1 12 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 0 1-.372-.568 6.787 6.787 0 0 1 1.019-4.38Z" clipRule="evenodd" />
+                                <path d="M5.082 14.254a8.287 8.287 0 0 0-1.308 5.135 9.687 9.687 0 0 1-1.764-.44l-.115-.04a.563.563 0 0 1-.373-.487l-.01-.121a3.75 3.75 0 0 1 3.57-4.047ZM20.226 19.389a8.287 8.287 0 0 0-1.308-5.135 3.75 3.75 0 0 1 3.57 4.047l-.01.121a.563.563 0 0 1-.373.486l-.115.04c-.567.2-1.156.349-1.764.441Z" />
+                            </svg>
+                            Tabungan Member
+                        </a>
+                        <a onClick={()=>{setPage("kategori")}}  className={`flex  ${page === "kategori"  && "bg-gray-700 text-white scale-105" }  items-center gap-1 hover:scale-105 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-all duration-300 ease-in-out`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                                <path d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v.75c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875v-.75C22.5 3.839 21.66 3 20.625 3H3.375Z" />
+                                <path fillRule="evenodd" d="m3.087 9 .54 9.176A3 3 0 0 0 6.62 21h10.757a3 3 0 0 0 2.995-2.824L20.913 9H3.087Zm6.163 3.75A.75.75 0 0 1 10 12h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
+                            </svg>
+                            Categories Products
+                        </a>                        
                         <a onClick={()=>{setPage("produk")}}  className={`flex  ${page === "produk"  && "bg-gray-700 text-white scale-105" }  items-center gap-1 hover:scale-105 text-gray-300 hover:text-white hover:bg-gray-700 rounded px-3 py-2 transition-all duration-300 ease-in-out`}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
                                 <path d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v.75c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875v-.75C22.5 3.839 21.66 3 20.625 3H3.375Z" />
@@ -156,9 +172,11 @@ export default function Admin(){
                     <div className="bg-white rounded-lg shadow-lg  px-6 py-6">
                         { page === "home" && <Home users={users} members={members} produks={produks} pemasukan_bulan_ini={pemasukan_bulan_ini} transaksi={transaksi} />}
                         { page === "transaksi" && <TransaksiAdminPage transaksi={transaksi} />}
-                        { page === "produk" && <Produk produks={produks} />}
+                        { page === "kategori" && <Kategori kategori={kategori} />}
+                        { page === "produk" && <Produk produks={produks} kategori={kategori} />}
                         { page === "voucher-diskon" && <VoucherDiskon />}
                         { page === "member" && <Member members={members} />}
+                        { page === "tabungan-member" && <TabunganMember tabungan={tabungan} />}
                         { page === "voucher-usage" && <VoucherUsage />}
                         { page === "user" && <User users={users} />}
                         { page === "user-logs" && <UserLogs />}

@@ -44,64 +44,94 @@ class TransaksiController extends Controller
         DB::beginTransaction();
 
         try {
-
             $member = null;
             if ($request->filled('nama_member')) {
                 $member = Member::where('nama', $request->nama_member)->first();
-
                 if (!$member) {
                     return back()->withErrors(['nama_member' => 'Nama member tidak ditemukan.']);
                 }
             }
-            $transaksi = Transaksi::create([
-                'kode_transaksi'     => $request->kode_transaksi,
-                'total'              => $request->total,
-                'user_id'            => Auth::id(),
-                'member_id'          => $member?->id,
-                'diskon_id'          => $member?->diskon_id ?? null,
-                'metode_pembayaran'  => $request->metode,
-                'status'             => $request->status,
-                'created_at'        => $request->status === 'paid' || $request->status === 'pending'? now() : null,
-                'waktu_bayar'        => $request->status === 'paid' ? now() : null,
-            ]);
 
-            $produkIds = collect($request->detail)->pluck('produk_id');
-            $produkList = Produk::whereIn('id', $produkIds)->get()->keyBy('id');
+            // Ambil produk sekaligus
+            $produkIds = collect($request->detail)->pluck('produk_id')->unique();
+            $produkList = Produk::whereIn('id', $produkIds)->lockForUpdate()->get()->keyBy('id'); // Lock untuk safety transaksi
 
-            $details = [];
-
+            // Cek stok dulu semua
             foreach ($request->detail as $item) {
-                $produk = $produkList[$item['produk_id']];
-
+                $produk = $produkList->get($item['produk_id']);
+                if (!$produk) {
+                    throw new \Exception("Produk dengan ID {$item['produk_id']} tidak ditemukan.");
+                }
                 if ($produk->stok < $item['jumlah']) {
                     throw new \Exception("Stok tidak cukup untuk produk: {$produk->nama}");
                 }
+            }
+
+            // Buat transaksi
+            $transaksi = Transaksi::create([
+                'kode_transaksi' => $request->kode_transaksi,
+                'total' => $request->total,
+                'user_id' => Auth::id(),
+                'member_id' => $member?->id,
+                'diskon_id' => $member?->diskon_id ?? null,
+                'metode_pembayaran' => $request->metode,
+                'status' => $request->status,
+                'created_at' => in_array($request->status, ['paid', 'pending']) ? now() : null,
+                'waktu_bayar' => $request->status === 'paid' ? now() : null,
+            ]);
+
+            $details = [];
+            foreach ($request->detail as $item) {
+                $produk = $produkList->get($item['produk_id']);
+
+                // Kurangi stok di DB dan update model agar sesuai
+                $produk->stok -= $item['jumlah'];
+                if ($produk->stok < 0) {
+                    throw new \Exception("Stok produk {$produk->nama} tidak mencukupi saat pengurangan.");
+                }
+
+                $produk->save();
 
                 $details[] = [
                     'transaksi_id' => $transaksi->id,
-                    'produk_id'    => $item['produk_id'],
-                    'qty'          => $item['jumlah'],
-                    'harga'        => $item['harga'],
-                    'created_at'   => now(),
-                    'waktu_bayar'   => now(),
+                    'produk_id' => $item['produk_id'],
+                    'qty' => $item['jumlah'],
+                    'harga' => $item['harga'],
+                    'created_at' => now(),
+                    'waktu_bayar' => $request->status === 'paid' ? now() : null,
                 ];
-
-                // Kurangi stok
-                DB::table('produk')
-                    ->where('id', $item['produk_id'])
-                    ->decrement('stok', $item['jumlah']);
             }
-
+            
             DetailTransaksi::insert($details);
 
-            DB::commit();
 
+
+            // Setelah insert detail transaksi, hapus produk yang stoknya 0
+            foreach ($produkList as $produk) {
+                if ($produk->stok === 0) {
+                    $produk->delete();
+                }
+            }
+            
+            if ($member) {
+                // hitung total transaksi member dari tabel transaksi
+                $totalTransaksiMember = Transaksi::where('member_id', $member->id)->count('member_id');
+
+                // update kolom total_transaksi di member
+                $member->total_transaksi = $totalTransaksiMember;
+                $member->save();
+            }
+
+            DB::commit();
+            
             return redirect()->route('kasir')->with('message', 'Transaksi berhasil!');
+            
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
+
     public function lunas($id)
     {
         $trx = Transaksi::findOrFail($id);

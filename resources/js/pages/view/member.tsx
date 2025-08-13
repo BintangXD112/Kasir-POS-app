@@ -1,58 +1,36 @@
-import React, { useEffect, useState } from "react";
-import {Link, router} from '@inertiajs/react'
+
+import React, { useState, useEffect } from 'react';
+import { router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-
-interface Member {
-  id: number;
-  nama: string;
-  diskon_id: number | null;
-  alamat: string;
-  telepon: number;
-  total_transaksi: number;
-  tanggal_daftar: string;
-}
-
-interface Voucher {
-  id: number;
-  kode_voucher: string;
-  deskripsi: string;
-  jumlah_diskon: number;
-}
+import type { Member, Voucher } from '@/types/type';
 
 function getCsrfToken() {
   return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 }
 
-export default function Member() {
-  const [addData, setAddData] = useState({ nama: '', alamat: '', telepon: ''});
-  const [member, setMember] = useState({
-          nama: '',
-          alamat: '',
-          telepon: '',
-  });
+export default function Member({ members }: { members: Member[] }) {
+  const [member, setMember] = useState({ nama: '', alamat: '', telepon: '' });
   const handleTambahMember = () => {
-          router.post(route('member.store'), member, {
-              onSuccess: () => {
-                  Swal.fire({
-                      icon: 'success',
-                      title: 'Berhasil!',
-                      text: 'Member berhasil ditambahkan.',
-                  });
-                  setMember({ nama: '', alamat: '', telepon: '' });
-                  setShowModalTambahMember(false);
-                  fetchMembers();
-              },
-              onError: (errors) => {
-                  const allErrors = Object.values(errors).flat().join('\n');
-                  Swal.fire({
-                      icon: 'error',
-                      title: 'Gagal!',
-                      text: allErrors,
-                  });
-              },
-  
-          });
-      };
+    router.post(route('member.store'), member, {
+      onSuccess: () => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Member berhasil ditambahkan.',
+        });
+        setMember({ nama: '', alamat: '', telepon: '' });
+        setShowModalTambahMember(false);
+      },
+      onError: (errors) => {
+        const allErrors = Object.values(errors).flat().join('\n');
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal!',
+          text: allErrors,
+        });
+      },
+    });
+  };
       const handleDelete = (id: number) => {
           Swal.fire({
             title: 'Yakin ingin menghapus?',
@@ -68,7 +46,6 @@ export default function Member() {
               router.delete(route('member.destroy', id), {
                 onSuccess: () => {
                   Swal.fire('Terhapus!', 'Produk berhasil dihapus.', 'success');
-                  fetchMembers();
                 },
                 onError: () => {
                   Swal.fire('Gagal!', 'Gagal menghapus produk.', 'error');
@@ -77,7 +54,6 @@ export default function Member() {
             }
           });
         };
-  const [members, setMembers] = useState<Member[]>([]);
   const [editData, setEditData] = useState<Member | null>(null);
   const openEditModal = (member: Member) => {
     setEditData({
@@ -95,20 +71,12 @@ export default function Member() {
   const [loading, setLoading] = useState(false);
   const [showModalTambahMember, setShowModalTambahMember] = useState(false);
   const [showModalEditMember, setShowModalEditMember] = useState(false);
-  const fetchMembers = async () => {
-    setLoading(true);
-    const res = await fetch('/admin/member');
-    const data = await res.json();
-    setMembers(data);
-    setLoading(false);
-  };
 
   const convertSpacesToNbsp = (text: string) => {
   return text.replace(/ /g, '\u00A0');
   };
 
   useEffect(() => {
-    fetchMembers();
     fetch('/admin/voucher-diskon')
       .then(res => res.json())
       .then(setVouchers);
@@ -125,7 +93,6 @@ export default function Member() {
       body: JSON.stringify({ diskon_id: diskonId }),
     });
     if (res.ok) {
-      await fetchMembers();
       Swal.fire('Berhasil', 'Voucher diskon berhasil diupdate untuk member', 'success');
     } else {
       Swal.fire('Gagal', 'Gagal update voucher diskon', 'error');
@@ -274,7 +241,7 @@ export default function Member() {
                 setShowModalEditMember(false);
                 setEditData(null);
                 Swal.fire('Berhasil', 'Member berhasil diperbarui', 'success');
-                fetchMembers();
+                // Data akan di-refresh dari parent (props)
               },
               onError: (errors) => {
                 const allErrors = errors
