@@ -122,6 +122,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                     text: 'Data berhasil disimpan.',
                 });
                 setTransaksi([]);
+                if (selectedMember?.id) fetchMemberById(selectedMember.id);
 
                 if (isTabung) {
                     handleTabunganMember(
@@ -136,12 +137,10 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                 }
                 // Proses ke TabunganController jika menggunakan saldo
                 if (isSaldoCheck) {
-                    const totalDiskonNum = Number(totalSetelahDiskon) || 0;
-                    const uangTunaiNum = Number(uangTunai) || 0;
                     handleTabunganMember(
                         selectedMember?.id,
                         0,
-                        totalDiskonNum - uangTunaiNum,
+                        kekurangan,
                         'Pembayaran menggunakan saldo',
                         kode_transaksi,
                         false
@@ -399,6 +398,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         setDeposit('');
                         setTarik('');
                         setShowModalNabung(false);
+                        if (memberId) fetchMemberById(memberId);
                         console.log(res);
                     },
                     onError: (errors) => {
@@ -453,8 +453,20 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             executeRequest();
         }
     };
+    // Pastikan uangTunai & totalSetelahDiskon sudah Number
+    const kekurangan = Math.max(0, Number(totalSetelahDiskon) - Number(uangTunai));
 
-
+    const fetchMemberById = async (id: number) => {
+        try {
+            const res = await fetch(`/members/${id}`);
+            if (!res.ok) throw new Error('Gagal fetch member');
+            const data = await res.json();
+            setSelectedMember(data);
+        } catch (err) {
+            // Optional: tampilkan error
+            console.log(err)
+        }
+    };
 
 
 
@@ -830,9 +842,17 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             </div>
                             {uangTunai !== '' && Number(uangTunai) < Number(totalSetelahDiskon) && selectedMember?.nama ? (
                                 <div>
+                                    { kekurangan > 0 && (
+                                        <div className="flex justify-between pb-4">
+                                            <span className="text-gray-700 font-medium">Kekurangan</span>
+                                            <span className="text-black font-semibold">
+                                                Rp. {kekurangan.toLocaleString('id-ID')}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between pb-4">
                                         <span className="text-gray-700 font-medium">Saldo Member</span>
-                                        <span className="text-black font-semibold">Rp. {selectedMember.saldo.toLocaleString('id-ID')}</span>
+                                        <span className="text-black font-semibold">Rp. {Number(selectedMember.saldo).toLocaleString('id-ID')}</span>
                                     </div>
                                     {!isSaldoCheck && (
                                         <span className="text-yellow-500 font-medium">Uang tidak cukup! Apakah ingin menggunakan saldo?</span>
@@ -842,12 +862,39 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                             type="checkbox"
                                             id="checkbox-saldo"
                                             checked={isSaldoCheck}
+                                            className="w-4 h-4 text-red-500 border-gray-300 rounded"
                                             onChange={e => {
+                                                const saldo = Number(selectedMember?.saldo ?? 0);
+                                                const kekurangan = Math.max(0, totalSetelahDiskon - Number(uangTunai));
+
+                                                // Cek saldo kosong
+                                                if (saldo === 0) {
+                                                    Swal.fire('Saldo Kosong', 'Tabungan member ini masih nol.', 'warning');
+                                                    setIsSaldoCheck(false);
+                                                    return;
+                                                }
+
+                                                // Cek saldo kurang dari kekurangan
+                                                if (e.target.checked && saldo < kekurangan) {
+                                                    Swal.fire(
+                                                        'Saldo Tidak Cukup',
+                                                        `Saldo member hanya Rp ${saldo.toLocaleString('id-ID')}, perlu Rp ${(kekurangan - saldo).toLocaleString('id-ID')} lagi.`,
+                                                        'warning'
+                                                    );
+                                                    setIsSaldoCheck(false);
+                                                    return;
+                                                }
+
+                                                // Kalau lolos semua, update state
                                                 setIsSaldoCheck(e.target.checked);
-                                                if (e.target.checked) setIsHutang(false);
+
+                                                // Kalau saldo diaktifkan, hutang otomatis mati
+                                                if (e.target.checked) {
+                                                    setIsHutang(false);
+                                                }
                                             }}
-                                            className="w-4 h-4 text-blue-500 border-gray-300 rounded"
                                         />
+
                                         <label htmlFor="checkbox-saldo" className="text-sm text-gray-700">
                                             Mengambil dari <span className="text-green-500 font-semibold">Saldo</span>
                                         </label>
@@ -870,7 +917,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                 </div>
 
                             ) : (
-                                uangTunai !== '' && (
+                                uangTunai !== '' && Number(uangTunai) > Number(totalSetelahDiskon) && (
                                     <div>
                                         <div className="flex justify-between">
                                             <span className="text-gray-700 font-medium">Kembalian</span>

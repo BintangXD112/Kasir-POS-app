@@ -121,4 +121,18 @@ class MemberController extends Controller
     {
         return response()->json(Member::with(['diskon', 'tabungan', 'transaksi'])->get());
     }
+    public function show($id)
+    {
+        $member = Member::with(['diskon', 'tabungan', 'transaksi'])->findOrFail($id);
+        return response()->json([
+            'id' => $member->id,
+            'nama' => $member->nama,
+            'diskon' => $member->diskon->jumlah_diskon ?? 0,
+            'kode_voucher' => $member->diskon->kode_voucher ?? null,
+            'saldo' => $member->tabungan->saldo ?? 0,
+            'total_transaksi' => $member->transaksi->count() ?? 0,
+            'telepon' => $member->telepon,
+            'alamat' => $member->alamat,
+        ]);
+    }
 }

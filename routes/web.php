@@ -49,6 +49,7 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     Route::delete('/member/{id}', [MemberController::class, 'destroy'])->name('member.destroy');
     Route::post('/member', [MemberController::class, 'store'])->name('member.store');
     Route::put('/member/{id}', [MemberController::class, 'update'])->name('member.update');
+    Route::get('/members/{id}', [MemberController::class, 'show'])->name('member.show');
     Route::get('/member/list', [MemberController::class, 'list']);
 
     // Kategori
