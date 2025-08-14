@@ -119,6 +119,6 @@ class MemberController extends Controller
     }
     public function list()
     {
-        return response()->json(Member::all());
+        return response()->json(Member::with(['diskon', 'tabungan', 'transaksi'])->get());
     }
 }
