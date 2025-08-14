@@ -49,6 +49,7 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     Route::delete('/member/{id}', [MemberController::class, 'destroy'])->name('member.destroy');
     Route::post('/member', [MemberController::class, 'store'])->name('member.store');
     Route::put('/member/{id}', [MemberController::class, 'update'])->name('member.update');
+    Route::get('/member/list', [MemberController::class, 'list']);
 
     // Kategori
     Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');
@@ -82,7 +83,6 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
             Route::get('/', [MemberController::class, 'indexJson'])->name('member.index');
             Route::put('{id}/voucher', [MemberController::class, 'updateVoucher'])->name('member.voucher.update');
         });
-
 
     });
 });

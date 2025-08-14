@@ -73,25 +73,25 @@ class MemberController extends Controller
         ], [
             'nama.unique' => "Nama dengan alamat yang sama sudah terdaftar",
         ]);
-    
+
         $validated['tanggal_daftar'] = now();
-    
+
         try {
             // Simpan member
             $member = Member::create($validated);
-    
+
             // Buat tabungan default
             $member->tabungan()->create([
                 'uang_tunai' => 0,
                 // tambahkan field lain jika perlu
             ]);
-    
+
             return back()->with('success', 'Member berhasil ditambahkan');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error: ' . $e->getMessage()]);
         }
     }
-    
+
     public function destroy($id)
     {
         $member = Member::findOrFail($id);
@@ -100,21 +100,25 @@ class MemberController extends Controller
         return redirect()->back()->with('message', 'Member berhasil dihapus.');
     }
     public function update(Request $request, $id)
-{
-    $rules = [
-        'nama' => 'required|string',
-        'telepon' => 'required|string|max:20',
-        'alamat' => 'required|string',
-    ];
+    {
+        $rules = [
+            'nama' => 'required|string',
+            'telepon' => 'required|string|max:20',
+            'alamat' => 'required|string',
+        ];
 
-    $validated = $request->validate($rules);
+        $validated = $request->validate($rules);
 
-    $member = Member::findOrFail($id);
-    $member->nama = $validated['nama'];
-    $member->telepon = $validated['telepon'];
-    $member->alamat = $validated['alamat'];
-    $member->save();
+        $member = Member::findOrFail($id);
+        $member->nama = $validated['nama'];
+        $member->telepon = $validated['telepon'];
+        $member->alamat = $validated['alamat'];
+        $member->save();
 
-    return redirect()->back()->with('success', 'Member berhasil diperbarui.');
-}
+        return redirect()->back()->with('success', 'Member berhasil diperbarui.');
+    }
+    public function list()
+    {
+        return response()->json(Member::all());
+    }
 }

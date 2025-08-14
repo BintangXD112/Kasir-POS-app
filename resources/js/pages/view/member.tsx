@@ -9,7 +9,17 @@ function getCsrfToken() {
 }
 
 export default function Member({ members }: { members: Member[] }) {
+  const [membersList, setMembersList] = useState<Member[]>(members);
   const [member, setMember] = useState({ nama: '', alamat: '', telepon: '' });
+
+  // fetch ulang data member
+  const fetchMembers = async () => {
+    const res = await fetch('/member/list');
+    if (res.ok) {
+      const data = await res.json();
+      setMembersList(data);
+    }
+  };
   const handleTambahMember = () => {
     router.post(route('member.store'), member, {
       onSuccess: () => {
@@ -20,6 +30,7 @@ export default function Member({ members }: { members: Member[] }) {
         });
         setMember({ nama: '', alamat: '', telepon: '' });
         setShowModalTambahMember(false);
+        fetchMembers();
       },
       onError: (errors) => {
         const allErrors = Object.values(errors).flat().join('\n');
@@ -31,29 +42,30 @@ export default function Member({ members }: { members: Member[] }) {
       },
     });
   };
-      const handleDelete = (id: number) => {
-          Swal.fire({
-            title: 'Yakin ingin menghapus?',
-            text: 'Data member akan dihapus secara permanen!',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal',
-          }).then((result) => {
-            if (result.isConfirmed) {
-              router.delete(route('member.destroy', id), {
-                onSuccess: () => {
-                  Swal.fire('Terhapus!', 'Produk berhasil dihapus.', 'success');
-                },
-                onError: () => {
-                  Swal.fire('Gagal!', 'Gagal menghapus produk.', 'error');
-                },
-              });
-            }
-          });
-        };
+  const handleDelete = (id: number) => {
+    Swal.fire({
+      title: 'Yakin ingin menghapus?',
+      text: 'Data member akan dihapus secara permanen!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Ya, hapus!',
+      cancelButtonText: 'Batal',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        router.delete(route('member.destroy', id), {
+          onSuccess: () => {
+            Swal.fire('Terhapus!', 'Produk berhasil dihapus.', 'success');
+            fetchMembers();
+          },
+          onError: () => {
+            Swal.fire('Gagal!', 'Gagal menghapus produk.', 'error');
+          },
+        });
+      }
+    });
+  };
   const [editData, setEditData] = useState<Member | null>(null);
   const openEditModal = (member: Member) => {
     setEditData({
@@ -94,6 +106,7 @@ export default function Member({ members }: { members: Member[] }) {
     });
     if (res.ok) {
       Swal.fire('Berhasil', 'Voucher diskon berhasil diupdate untuk member', 'success');
+      fetchMembers();
     } else {
       Swal.fire('Gagal', 'Gagal update voucher diskon', 'error');
     }
@@ -121,7 +134,7 @@ export default function Member({ members }: { members: Member[] }) {
             </tr>
           </thead>
           <tbody>
-            {members.map((member) => (
+            {membersList.map((member) => (
               <tr key={member.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
                 <td className="py-3 px-6">{member.id}</td>
                 <td className="py-3 px-6">{convertSpacesToNbsp(member.nama)}</td>
@@ -241,7 +254,7 @@ export default function Member({ members }: { members: Member[] }) {
                 setShowModalEditMember(false);
                 setEditData(null);
                 Swal.fire('Berhasil', 'Member berhasil diperbarui', 'success');
-                // Data akan di-refresh dari parent (props)
+                fetchMembers();
               },
               onError: (errors) => {
                 const allErrors = errors
