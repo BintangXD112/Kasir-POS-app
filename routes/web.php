@@ -85,6 +85,7 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
             Route::put('{id}/voucher', [MemberController::class, 'updateVoucher'])->name('member.voucher.update');
         });
 
+
     });
 });
 

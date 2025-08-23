@@ -169,7 +169,7 @@ export default function Admin(){
                 
                 {/* Main Content Area */}
                 <div className="flex-1 overflow-auto w-full h-screen p-6">
-                    <div className="bg-white rounded-lg shadow-lg  px-6 py-6">
+                    <div className="bg-white min-h-full rounded-lg shadow-lg  px-6 py-6">
                         { page === "home" && <Home users={users} members={members} produks={produks} pemasukan_bulan_ini={pemasukan_bulan_ini} transaksi={transaksi} />}
                         { page === "transaksi" && <TransaksiAdminPage transaksi={transaksi} />}
                         { page === "kategori" && <Kategori kategori={kategori} />}

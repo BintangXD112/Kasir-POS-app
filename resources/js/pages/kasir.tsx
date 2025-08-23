@@ -513,7 +513,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                 <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clipRule="evenodd" />
                             </svg>
                         </div>
-                        <div className={`ml-2 flex justify-end items-center`}>
+                        <div onClick={() => { setSearchTerm("") }} className={`ml-2 flex justify-end items-center hover:opacity-50 cursor-pointer`}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4 text-red-500 mr-1">
                                 <path fillRule="evenodd" d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
                             </svg>
@@ -523,7 +523,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                     <div className={`flex gap-4`}>
                         <div
                             onClick={scrollLeft}
-                            className={`rounded-full active:opacity-50 py-1 mb-4 text-red-500 border border-red-500 cursor-pointer select-none`}
+                            className={`rounded-full active:opacity-50 p-1 mb-4 text-red-500 border border-red-500 cursor-pointer select-none`}
                             title="Scroll Left"
                         >
                             {/* Tombol scroll left (panah kiri) */}
@@ -563,7 +563,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
 
                         <div
                             onClick={scrollRight}
-                            className={`rounded-full active:opacity-50 py-1 mb-4 text-red-500 border border-red-500 cursor-pointer select-none`}
+                            className={`rounded-full active:opacity-50 p-1 mb-4 text-red-500 border border-red-500 cursor-pointer select-none`}
                             title="Scroll Right"
                         >
                             {/* Tombol scroll right (panah kanan) */}
@@ -1160,7 +1160,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         </div>
                         {/* Modal Body */}
                         <div className={`p-4 space-y-4 text-black`}>
-                            <div className={`flex w-full h-10 justify-between relative rounded-full p-2 bg-gray-400`}>
+                            <div className={`flex w-full h-10 justify-between relative rounded-full p-2 bg-gray-900`}>
                                 <div className={` w-1/2 h-2/3 top-1.5 z-0 ${statusNabung === "Deposit" ? '' :statusNabung === "Tarik" && 'translate-x-48'} bg-white rounded-full absolute transition-all duration-300 ease-in-out`}>&nbsp;</div>
                                 <div onClick={()=>{setStatusNabung("Deposit")}} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Deposit" ? 'text-black' :'text-white'}`}>Deposit</div>
                                 <div onClick={()=>{setStatusNabung("Tarik")}} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Tarik" ? 'text-black' :'text-white'}`}>Tarik</div>

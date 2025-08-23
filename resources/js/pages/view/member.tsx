@@ -158,13 +158,13 @@ export default function Member({ members }: { members: Member[] }) {
                 <td className="py-3 px-6 flex justify-center gap-4">
                 <button
                     onClick={()=> handleDelete(member.id)}
-                    className="bg-red-500 text-white w-16 py-2 rounded-md"
+                    className="bg-red-500 text-white w-16 py-2 rounded-md cursor-pointer"
                   >
                     Hapus
                   </button>
                   <button
                     onClick={() => openEditModal(member)}
-                    className="bg-yellow-500 text-white w-16 py-2 rounded-md"
+                    className="bg-yellow-500 text-white w-16 py-2 rounded-md cursor-pointer"
                   >
                     Edit
                   </button>

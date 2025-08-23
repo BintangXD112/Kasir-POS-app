@@ -18,7 +18,7 @@ export default function Home({ users, members, produks, pemasukan_bulan_ini, tra
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-blue-500 text-white p-6 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Total Pemasukan</h3>
-          <p className="text-3xl font-bold">Rp.&nbsp;<CountUp from={0} to={pemasukan_bulan_ini} separator="," direction="up" duration={0.3} className="count-up-text" /></p>
+          <p className="text-3xl font-bold">Rp.&nbsp;<CountUp from={0} to={pemasukan_bulan_ini} separator="." direction="up" duration={0.3} className="count-up-text" /></p>
         </div>
         <div className="bg-orange-500 text-white p-6 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Jumlah Produk</h3>

@@ -120,13 +120,13 @@ export default function VoucherDiskon() {
                 <td className="py-3 px-6 flex justify-center">
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="bg-red-500 text-white w-16 mr-4 py-2 rounded-md"
+                    className="bg-red-500 text-white w-16 mr-4 py-2 rounded-md cursor-pointer"
                   >
                     Hapus
                   </button>
                   <button
                     onClick={() => openModal(item)}
-                    className="bg-yellow-500 text-white w-16 py-2 rounded-md"
+                    className="bg-yellow-500 text-white w-16 py-2 rounded-md cursor-pointer"
                   >
                     Edit
                   </button>

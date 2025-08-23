@@ -111,8 +111,8 @@ export default function User({ users }) {
                                     )}
                                 </td>
                                 <td className="py-3 px-6 flex gap-2 justify-center">
-                                    <button onClick={() => handleEdit(user)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded shadow transition font-semibold">Edit</button>
-                                    <button onClick={() => handleDelete(user.id)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded shadow transition font-semibold">Hapus</button>
+                                    <button onClick={() => handleDelete(user.id)} className="bg-red-500 cursor-pointer text-white w-16 mr-4 py-2 rounded-md">Hapus</button>
+                                    <button onClick={() => handleEdit(user)} className="bg-yellow-500 cursor-pointer text-white w-16 mr-4 py-2 rounded-md">Edit</button>
                                 </td>
                             </tr>
                         ))}
