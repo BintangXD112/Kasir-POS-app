@@ -30,7 +30,6 @@ export default function Admin(){
             router.flushAll();
             localStorage.removeItem("username");
             localStorage.removeItem("page");
-            window.location.href = "/login";
         };
     const [nav, setNav] = useState(false)
     const funcNav = () => {
@@ -40,7 +39,7 @@ export default function Admin(){
         if(localStorage.getItem("tipe_user")!=="admin"){
             window.location.href = "/login";
         }
-    })
+    },[handleLogout])
     return (
         <div className='w-full h-screen bg-gray-700 flex'>
             {/* Sidebar */}

@@ -63,7 +63,7 @@ function TabunganTable({ tabungan }) {
 
       {/* List of members */}
       {filteredTabungan.length === 0 ? (
-        <p className="text-center text-gray-500 text-lg italic">Data tabungan kosong</p>
+        <p className="text-center text-gray-500 text-lg italic">Tidak ada data</p>
       ) : (
         <div className="space-y-6">
           {filteredTabungan.map(({ id, member, saldo, detail }) => {
@@ -76,7 +76,7 @@ function TabunganTable({ tabungan }) {
               >
                 {/* Header */}
                 <div
-                className="flex justify-between items-center cursor-pointer select-none"
+                className="flex items-center cursor-pointer select-none"
                 onClick={() => toggleExpand(id)}
                 role="button"
                 tabIndex={0}
@@ -86,11 +86,11 @@ function TabunganTable({ tabungan }) {
                     }
                 }}
                 >
-                <div className="flex flex-col">
+                <div className="flex flex-col w-1/2">
                     <span className="text-xs text-gray-500 uppercase tracking-wide">Nama Member</span>
                     <h2 className="text-lg font-semibold text-gray-900">{member?.nama ?? '—'}</h2>
                 </div>
-                <div className="flex flex-col items-end">
+                <div className="flex flex-col w-1/2 items-end">
                     <span className="text-xs text-gray-500 uppercase tracking-wide">Total Saldo</span>
                     <div className="text-indigo-600 font-bold text-lg">
                     Rp {Number(saldo ?? 0).toLocaleString()}

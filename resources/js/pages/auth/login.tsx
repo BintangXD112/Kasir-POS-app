@@ -43,6 +43,10 @@ export default function Login({ status, users }: LoginProps) {
     setData('kode_user', ''); // kosongkan input kode
   };
 
+  useEffect(()=>{
+    localStorage.removeItem("tipe_user");
+  },[])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

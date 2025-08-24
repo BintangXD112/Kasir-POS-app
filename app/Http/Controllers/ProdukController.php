@@ -27,7 +27,7 @@ class ProdukController extends Controller
             $gambar->move(public_path('logo'), $filename);
             $data['gambar'] = $filename;
         } else {
-            $data['gambar'] = null;
+            $data['gambar'] = file_get_contents(public_path('logo/default.png'));
         }
 
         Produk::create($data);

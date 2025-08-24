@@ -43,8 +43,6 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
         cleanup();
         router.flushAll();
         localStorage.removeItem("username");
-        localStorage.removeItem("tipe_user");
-        window.location.href = "/login";
     };
     const [showLogout, setShowLogout] = useState(false);
     const toggleLogout = () => {
@@ -316,7 +314,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
         if (localStorage.getItem("tipe_user") !== "kasir") {
             window.location.href = "/login";
         }
-    })
+    },[handleLogout])
 
 
     // logika diskon 
@@ -432,7 +430,13 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         executeRequest();
                     }
                 });
-            } else {
+            } else if(selectedMember.saldo < Number(tarik)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Saldo tidak mencukupi',
+                })
+            }else{
                 Swal.fire({
                     title: 'Yakin?',
                     text: 'Melakukan Penarikan',
@@ -446,7 +450,6 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         executeRequest();
                     }
                 });
-                
             }
         } else {
             // Langsung request tanpa SweetAlert
@@ -508,7 +511,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                 <div className={`w-4/6 h-full bg-white rounded-lg p-4`}>
                     <div className={`flex items-center mb-4`}>
                         <div className={`relative w-full`}>
-                            <input type="text" placeholder='Cari Produk' className={`border-gray-500 border p-2 focus:outline-none rounded-full w-full`} value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value) }} />
+                            <input type="text" placeholder='Cari Produk' className={`text-black placeholder-gray-500 border-gray-500 border p-2 focus:outline-none rounded-full w-full`} value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value) }} />
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 font-bold text-red-500 absolute right-2 top-2 cursor-pointer">
                                 <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clipRule="evenodd" />
                             </svg>
@@ -520,7 +523,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             <p className={`text-red-500`}>Back</p>
                         </div>
                     </div>
-                    <div className={`flex gap-4`}>
+                    <div className={`flex gap-2`}>
                         <div
                             onClick={scrollLeft}
                             className={`rounded-full active:opacity-50 p-1 mb-4 text-red-500 border border-red-500 cursor-pointer select-none`}
@@ -868,7 +871,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                                 const kekurangan = Math.max(0, totalSetelahDiskon - Number(uangTunai));
 
                                                 // Cek saldo kosong
-                                                if (saldo === 0) {
+                                                if (saldo === '0') {
                                                     Swal.fire('Saldo Kosong', 'Tabungan member ini masih nol.', 'warning');
                                                     setIsSaldoCheck(false);
                                                     return;
@@ -1165,6 +1168,10 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                 <div onClick={()=>{setStatusNabung("Deposit")}} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Deposit" ? 'text-black' :'text-white'}`}>Deposit</div>
                                 <div onClick={()=>{setStatusNabung("Tarik")}} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Tarik" ? 'text-black' :'text-white'}`}>Tarik</div>
                             </div>
+                            <div className="flex justify-between pb-4">
+                                <span className="text-gray-700 font-medium">Saldo Member</span>
+                                <span className="text-black font-semibold">Rp. {Number(selectedMember.saldo).toLocaleString('id-ID')}</span>
+                            </div>
                             {statusNabung === "Deposit" ? (<div className="flex flex-col">
                                 <label htmlFor="telepon" className="text-black">Deposit Member</label>
                                 <input
@@ -1193,7 +1200,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                     selectedMember?.id,
                                     parseInt(deposit || '0'),
                                     parseInt(tarik || '0'),
-                                    'Setoran manual oleh kasir',
+                                    `${statusNabung === 'Deposit' ? `Deposit uang ${selectedMember.nama} oleh ${localStorage.getItem("username")}` : `Penarikan uang ${selectedMember.nama} oleh ${localStorage.getItem("username")}`}`,
                                     '-',
                                     true
                                 )}
