@@ -76,6 +76,112 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
     // loading screen 
     const [loading, setLoading] = useState(false);
 
+    const [transaksi, setTransaksi] = useState<Array<{ produk: Produk, qty: number }>>([]);
+
+    const handlePrint=()=>{
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) return;
+        const formatIDR = (n: number) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`;
+        const kodeTransaksi = generateKodeTransaksi();
+        const tanggalCetak = new Date();
+        const subtotal = totalSebelumDiskon;
+        const totalAkhir = totalSetelahDiskon;
+        const bayarTunai = Number(uangTunai) || 0;
+        const kekuranganLocal = Math.max(0, totalAkhir - bayarTunai);
+        const kembalianLocal = Math.max(0, bayarTunai - totalAkhir);
+        const pakaiSaldo = isSaldoCheck ? Math.min(kekuranganLocal, Number(selectedMember?.saldo ?? 0)) : 0;
+        const status = isHutang
+          ? 'pending'
+          : (selectedPayment === 'tunai' || selectedPayment === 'non-tunai')
+            ? 'paid'
+            : 'failed';
+        const printRows = transaksi.map((it, idx) => {
+        const unit = formatIDR(it.produk.harga);
+        const line = formatIDR(unit * it.qty);
+        return `
+          <tr>
+            <td style="padding:6px;border:1px solid #ddd;">${idx + 1}</td>
+            <td style="padding:6px;border:1px solid #ddd;">${it.produk.nama}</td>
+            <td style="padding:6px;border:1px solid #ddd; text-align:center;">${it.qty}</td>
+            <td style="padding:6px;border:1px solid #ddd; text-align:right;">${unit}</td>
+            <td style="padding:6px;border:1px solid #ddd; text-align:right;">${line}</td>
+          </tr>
+        `;
+      }).join('');
+        const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8"/>
+          <title>Struk Transaksi</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin:20px; color:#111; }
+            h1 { text-align:center; margin:0 0 8px; }
+            .meta { text-align:center; color:#555; margin-bottom:16px; }
+            table { width:100%; border-collapse:collapse; margin-top:10px; }
+            th { background:#f2f2f2; }
+            th, td { border:1px solid #ddd; padding:8px; font-size:12px; }
+            .right { text-align:right; }
+            .summary { margin-top:16px; }
+            .summary .row { display:flex; justify-content:space-between; margin:4px 0; }
+            .badge { font-weight:bold; }
+            .status-paid { color:#059669; }
+            .status-pending { color:#d97706; }
+            .status-failed { color:#dc2626; }
+            @media print { .no-print { display:none; } }
+          </style>
+        </head>
+        <body>
+          <h1>Struk Transaksi</h1>
+          <div class="meta">
+            Kode: <b>${kodeTransaksi}</b> ·
+            Tanggal: ${tanggalCetak.toLocaleDateString('id-ID')} ${tanggalCetak.toLocaleTimeString('id-ID')}<br/>
+            Kasir: ${localStorage.getItem('username') ?? '-'}<br/>
+            Member: ${selectedMember?.nama ?? 'Guest'}
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Produk</th>
+                <th>Qty</th>
+                <th>Harga</th>
+                <th>Jumlah</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${printRows}
+            </tbody>
+          </table>
+
+          <div class="summary">
+            <div class="row"><span>Subtotal</span><span>${formatIDR(subtotal)}</span></div>
+            <div class="row"><span>Diskon Member (${diskonPersen}%)</span><span>- ${formatIDR(potongan)}</span></div>
+            <div class="row"><span><b>Total</b></span><span><b>${formatIDR(totalAkhir)}</b></span></div>
+            <div class="row"><span>Bayar Tunai</span><span>${formatIDR(bayarTunai || totalAkhir)}</span></div>
+            ${pakaiSaldo > 0 ? `<div class="row"><span>Gunakan Saldo</span><span>${formatIDR(pakaiSaldo)}</span></div>` : ''}
+            ${kembalianLocal > 0 ? `<div class="row"><span>Kembalian</span><span>${formatIDR(kembalianLocal)}</span></div>` : ''}
+            ${isHutang ? `<div class="row"><span>Sisa Hutang</span><span>${formatIDR(kekuranganLocal)}</span></div>` : ''}
+            <div class="row"><span>Status</span>
+              <span class="badge status-${status}">${status.toUpperCase()}</span>
+            </div>
+            <div class="row"><span>Metode</span><span>${selectedPayment || '-'}</span></div>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(() => window.close(), 100);
+            }
+          </script>
+        </body>
+        </html>
+      `;
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+    }
+
     // untuk simulasi qr code
     const handleKonfirmasiPembayaran = () => {
         setShowNonTunaiModal(false);
@@ -153,7 +259,6 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                 });
             },
         });
-        console.log('DATA YANG DIKIRIM:', dataToSend);
 
     };
 
@@ -195,7 +300,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             setShowModalNabung(!showModalNabung)
         }
     }
-    const [transaksi, setTransaksi] = useState<Array<{ produk: Produk, qty: number }>>([]);
+    
 
     const tambahTransaksi = (produk: Produk) => {
         setTransaksi((prev) => {
@@ -971,7 +1076,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                         });
                                         return;
                                     }
-
+                                    handlePrint();
                                     // Jika valid, jalankan transaksi
                                     handleKonfirmasiPembayaran();
                                     setTransaksi([]);
@@ -1065,6 +1170,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             <button
                                 className="w-full bg-green-500 text-white py-2 rounded-md"
                                 onClick={() => {
+                                    handlePrint();
                                     handleKonfirmasiPembayaran();
                                     setTransaksi([]);
                                     setSelectedPayment('');
