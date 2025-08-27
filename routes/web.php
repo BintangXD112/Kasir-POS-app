@@ -63,6 +63,7 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     Route::put('/produk/{id}', [ProdukController::class, 'update'])->name('produk.update');
 
     // Tabungan Member
+    Route::get('/tabungan', [TabunganController::class, 'index'])->name('tabungan');
     Route::post('/tabungan', [TabunganController::class, 'store'])->name('tabungan.store');
 
     // Admin group

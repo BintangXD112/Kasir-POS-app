@@ -159,7 +159,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             <div class="row"><span>Subtotal</span><span>${formatIDR(subtotal)}</span></div>
             <div class="row"><span>Diskon Member (${diskonPersen}%)</span><span>- ${formatIDR(potongan)}</span></div>
             <div class="row"><span><b>Total</b></span><span><b>${formatIDR(totalAkhir)}</b></span></div>
-            <div class="row"><span>Bayar Tunai</span><span>${formatIDR(bayarTunai || totalAkhir)}</span></div>
+            <div class="row"><span>Bayar Tunai</span><span>${formatIDR(selectedPayment === 'tunai' ? bayarTunai : totalAkhir)}</span></div>
             ${pakaiSaldo > 0 ? `<div class="row"><span>Gunakan Saldo</span><span>${formatIDR(pakaiSaldo)}</span></div>` : ''}
             ${kembalianLocal > 0 ? `<div class="row"><span>Kembalian</span><span>${formatIDR(kembalianLocal)}</span></div>` : ''}
             ${isHutang ? `<div class="row"><span>Sisa Hutang</span><span>${formatIDR(kekuranganLocal)}</span></div>` : ''}
@@ -586,11 +586,14 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                     <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
                 </div>
                 <div className={`flex gap-4 w-full justify-end`}>
-                    <button onClick={() => { setTransaksi([]) }} className={`flex justify-center bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:scale-105 transition-all duration-300`}>
-                        Batalkan&nbsp;Transaksi
+                    <button onClick={() => router.visit('/tabungan')} className="flex justify-center bg-transparent text-white border border-white rounded-sm items-center px-4 cursor-pointer hover:bg-white hover:scale-105 hover:text-black transition-all duration-300">
+                        Detail&nbsp;Tabungan
                     </button>
                     <button onClick={() => router.visit('/transaksi')} className="flex justify-center bg-transparent text-white border border-white rounded-sm items-center px-4 cursor-pointer hover:bg-white hover:scale-105 hover:text-black transition-all duration-300">
                         Riwayat&nbsp;Transaksi
+                    </button>
+                    <button onClick={() => { setTransaksi([]) }} className={`flex justify-center bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:scale-105 transition-all duration-300`}>
+                        Batalkan&nbsp;Transaksi
                     </button>
                     <div onClick={toggleLogout} className={`text-white flex items-center relative cursor-pointer`}>
                         {localStorage.getItem("username")}

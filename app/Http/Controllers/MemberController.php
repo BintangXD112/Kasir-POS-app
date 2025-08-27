@@ -43,13 +43,17 @@ class MemberController extends Controller
 
     public function updateVoucher(Request $request, $id)
     {
-        $member = Member::findOrFail($id);
-        $request->validate([
-            'diskon_id' => 'nullable|exists:diskons,id',
-        ]);
-        $member->diskon_id = $request->diskon_id;
-        $member->save();
-        return response()->json(['success' => true]);
+        try{
+            $member = Member::findOrFail($id);
+            $request->validate([
+                'diskon_id' => 'nullable|exists:diskons,id',
+            ]);
+            $member->diskon_id = $request->diskon_id;
+            $member->save();
+            return response()->json(['success' => true]);
+        }catch (err){
+            return response()->json(['status' => 'error', 'message' => err]);
+        }
     }
 
     public function indexJson()

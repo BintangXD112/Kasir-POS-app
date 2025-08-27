@@ -26,7 +26,7 @@ function TabunganTable({ tabungan }) {
   return (
     <div className="p-6">
     <div className="flex justify-between">
-        <h1 className="text-3xl font-extrabold mb-6 text-gray-900 text-left">Kelola Tabungan</h1>
+        <h1 className="text-3xl font-extrabold mb-6 text-gray-900 text-left">Tabungan Member</h1>
 
         {/* Search Bar */}
         <div className="relative mb-8 max-w-">

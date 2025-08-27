@@ -80,14 +80,14 @@ export default function User({ users }) {
         });
     };
     return (
-        <div>
+        <div className={`bg-gray-100 rounded-xl p-4`}>
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Kelola User</h2>
+                <h2 className="text-xl text-black font-bold">Kelola User</h2>
                 <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow transition">Tambah User</button>
             </div>
             <div className="overflow-x-auto">
-                <table className="min-w-full bg-white rounded shadow text-sm">
-                    <thead className="bg-gray-100 uppercase">
+                <table className="min-w-full bg-transparent rounded shadow text-sm">
+                    <thead className="uppercase">
                         <tr className="border-b border-gray-200">
                             <th className="py-3 px-6 text-left font-bold text-gray-800">Nama</th>
                             <th className="py-3 px-6 text-left font-bold text-gray-800">Tipe</th>

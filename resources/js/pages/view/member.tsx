@@ -108,7 +108,7 @@ export default function Member({ members }: { members: Member[] }) {
       Swal.fire('Berhasil', 'Voucher diskon berhasil diupdate untuk member', 'success');
       fetchMembers();
     } else {
-      Swal.fire('Gagal', 'Gagal update voucher diskon', 'error');
+      Swal.fire('Gagal', 'Gagal update voucher diskon', res.message);
     }
     setLoading(false);
   };

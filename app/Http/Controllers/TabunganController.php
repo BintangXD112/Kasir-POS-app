@@ -12,7 +12,17 @@ use Illuminate\Support\Facades\Auth;
 
 class TabunganController extends Controller
 {
+    public function index()
+    {
+        $tabungan = Tabungan::with([
+            'member:id,nama',
+            'detail:id,tabungan_id,nominal,tipe,keterangan,kode_transaksi,created_at',
+        ])->get(['id','member_id','saldo']);   
 
+        return Inertia::render('tabungan', [
+            'tabungan' => $tabungan,
+        ]);
+    }
     public function store(Request $request)
     {
 
