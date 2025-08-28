@@ -9,6 +9,7 @@ interface ProdukProps {
 }
 
 export default function Produk({ produks, kategori }: ProdukProps) {
+  const formatIDR = (n: number) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`;
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState<ProdukType | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -92,7 +93,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                 className="border-b border-gray-200 hover:bg-gray-50 transition"
               >
                 <td className="py-3 px-6">{item.nama}</td>
-                <td className="py-3 px-6">{item.harga}</td>
+                <td className="py-3 px-6">{formatIDR(item.harga)}</td>
                 <td className="py-3 px-6">{item.stok}</td>
                 <td className="py-3 px-6">{item.kategori?.nama_kategori || "-"}</td>
                 <td className="py-3 px-6">

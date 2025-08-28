@@ -61,12 +61,12 @@ const TabunganPage: React.FC<TabunganPageProps> = ({ tabungan }) => {
       {/* Content */}
       <div className="flex-1 p-6">
         {/* Modern Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm min-h-[80vh] border border-slate-200 overflow-hidden">
           <div className="p-6">
           <div className="flex justify-between">
             <h1 className="text-3xl font-extrabold mb-6 text-gray-900 text-left">Tabungan</h1>
               {/* Search Bar */}
-              <div className="relative mb-8 max-w-">
+              <div className="relative mb-8">
                   <input
                   type="text"
                   placeholder="Cari nama member..."
