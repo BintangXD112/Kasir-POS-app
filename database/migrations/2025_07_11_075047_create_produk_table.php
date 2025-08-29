@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('nama');
             $table->integer('harga');
             $table->integer('stok')->default(0);
-            $table->string('gambar');
+            $table->string('gambar')->nullable();
             $table->timestamps();
 
             $table->foreign('id_kategori')

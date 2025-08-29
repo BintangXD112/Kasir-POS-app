@@ -98,7 +98,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                 <td className="py-3 px-6">{item.kategori?.nama_kategori || "-"}</td>
                 <td className="py-3 px-6">
                   <img
-                    src={`/logo/${item.gambar}`}
+                    src={`/logo/${item.gambar || 'default.png'}`}
                     alt={item.nama}
                     className="w-16 h-16 object-cover"
                   />

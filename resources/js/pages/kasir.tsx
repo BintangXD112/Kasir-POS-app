@@ -704,7 +704,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         {filterNamaProduk && filterNamaProduk.length > 0 ? (
                             filterNamaProduk.map((item) => (
                                 <div key={item.id} onClick={() => tambahTransaksi(item)} className={`flex flex-col rounded-sm border hover:scale-105 hover:shadow-md hover:shadow-gray-500 transition-all duration-300 ease-in-out cursor-pointer border-gray-300 w-[120px] h-[160px]`}>
-                                    <img src={`/logo/${item.gambar}`} alt={item.nama} className={`object-cover w-full h-20 rounded-t-sm`} />
+                                    <img src={`/logo/${item.gambar || 'default.png'}`} alt={item.nama} className={`object-cover w-full h-20 rounded-t-sm`} />
                                     <div className={`p-2 rounded-b-sm`}>
                                         <p className={`text-gray-600 text-sm font-semibold truncate`}>{item.nama}</p>
                                         <p className={`text-gray-500 text-xs`}>Rp. {item.harga.toLocaleString('id-ID')}</p>
