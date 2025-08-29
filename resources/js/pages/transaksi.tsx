@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { PageProps } from '../types/index';
 import { router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
@@ -47,14 +47,22 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
   const [printDateFrom, setPrintDateFrom] = useState('');
   const [printDateTo, setPrintDateTo] = useState('');
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('id-ID', {
+  // ====== ⬇️ STATE & LOGIC PAGINATION  ⬇️ ======
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  // Reset ke halaman 1 kalau filter/sort/pageSize berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, sortBy, sortOrder, pageSize]);
+  // ====== ⬆️ STATE & LOGIC PAGINATION  ⬆️ ======
+
+  const formatCurrency = (amount: number): string =>
+    new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
-  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -88,17 +96,20 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
     }
   };
 
-  const filteredTransaksi = transaksi
-    .filter(trx => {
-      const matchesSearch = trx.kode_transaksi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (trx.member?.nama?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+  // Filter + sort
+  const filteredTransaksi = useMemo(() => {
+    const filtered = transaksi.filter(trx => {
+      const matchesSearch =
+        trx.kode_transaksi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (trx.member?.nama?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
       const matchesStatus = statusFilter === 'all' || trx.status === statusFilter;
       return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
+    });
+
+    const sorted = filtered.sort((a, b) => {
       let aValue: any = a[sortBy as keyof Transaksi];
       let bValue: any = b[sortBy as keyof Transaksi];
-      
+
       if (sortBy === 'total') {
         aValue = a.total;
         bValue = b.total;
@@ -106,18 +117,37 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
         aValue = new Date(a.created_at || '').getTime();
         bValue = new Date(b.created_at || '').getTime();
       }
-      
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
+
+      if (sortOrder === 'asc') return aValue > bValue ? 1 : -1;
+      return aValue < bValue ? 1 : -1;
     });
 
+    return sorted;
+  }, [transaksi, searchTerm, statusFilter, sortBy, sortOrder]);
+
+  // ====== ⬇️ DERIVED PAGINATION  ⬇️ ======
+  const totalItems = filteredTransaksi.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentSafe = Math.min(Math.max(currentPage, 1), totalPages);
+  const startIndex = (currentSafe - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const pagedTransaksi = filteredTransaksi.slice(startIndex, endIndex);
+
+  // Buat list nomor halaman (dengan "..." bila banyak)
+  const getPageNumbers = (current: number, total: number): (number | '...')[] => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+    if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+    if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  };
+  const pageNumbers = getPageNumbers(currentSafe, totalPages);
+  // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
+
   const handlePrint = () => {
-    // Filter transaksi berdasarkan tanggal yang dipilih
     let dataToPrint = filteredTransaksi;
-    
+
     if (printDateFrom) {
       dataToPrint = dataToPrint.filter(trx => {
         const trxDate = new Date(trx.created_at || '');
@@ -125,21 +155,20 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
         return trxDate >= fromDate;
       });
     }
-    
+
     if (printDateTo) {
       dataToPrint = dataToPrint.filter(trx => {
         const trxDate = new Date(trx.created_at || '');
         const toDate = new Date(printDateTo);
-        toDate.setHours(23, 59, 59, 999); // Set ke akhir hari
+        toDate.setHours(23, 59, 59, 999);
         return trxDate <= toDate;
       });
     }
 
-    // Buat window baru untuk print
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const printContent = `
+    const html = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -157,24 +186,20 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
           .status-paid { color: #059669; }
           .status-pending { color: #d97706; }
           .status-cancelled { color: #dc2626; }
-          @media print {
-            body { margin: 0; }
-            .no-print { display: none; }
-          }
+          @media print { body { margin: 0; } .no-print { display: none; } }
         </style>
       </head>
       <body>
         <div class="header">
           <h1>Laporan Transaksi</h1>
           <div class="date-range">
-            ${printDateFrom || printDateTo ? 
-              `Periode: ${printDateFrom ? new Date(printDateFrom).toLocaleDateString('id-ID') : 'Awal'} - ${printDateTo ? new Date(printDateTo).toLocaleDateString('id-ID') : 'Akhir'}` : 
-              'Semua Transaksi'
-            }
+            ${printDateFrom || printDateTo
+              ? `Periode: ${printDateFrom ? new Date(printDateFrom).toLocaleDateString('id-ID') : 'Awal'} - ${printDateTo ? new Date(printDateTo).toLocaleDateString('id-ID') : 'Akhir'}`
+              : 'Semua Transaksi'}
           </div>
           <p>Dicetak pada: ${new Date().toLocaleDateString('id-ID')} ${new Date().toLocaleTimeString('id-ID')}</p>
         </div>
-        
+
         <table>
           <thead>
             <tr>
@@ -203,16 +228,16 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
             `).join('')}
           </tbody>
         </table>
-        
+
         <div class="summary">
           <h3>Ringkasan</h3>
           <p><strong>Total Transaksi:</strong> ${dataToPrint.length}</p>
-<p><strong>Total Pendapatan:</strong> Rp ${dataToPrint.reduce((sum, trx) => Number(sum) + Number(trx.total), 0).toLocaleString('id-ID')}</p>
+          <p><strong>Total Pendapatan:</strong> Rp ${dataToPrint.reduce((sum, trx) => Number(sum) + Number(trx.total), 0).toLocaleString('id-ID')}</p>
           <p><strong>Transaksi Paid:</strong> ${dataToPrint.filter(trx => trx.status === 'paid').length}</p>
           <p><strong>Transaksi Pending:</strong> ${dataToPrint.filter(trx => trx.status === 'pending').length}</p>
           <p><strong>Transaksi Cancelled:</strong> ${dataToPrint.filter(trx => trx.status === 'cancelled').length}</p>
         </div>
-        
+
         <script>
           window.onload = function() {
             window.print();
@@ -223,15 +248,12 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
       </html>
     `;
 
-    printWindow.document.write(printContent);
+    printWindow.document.write(html);
     printWindow.document.close();
     setShowPrintModal(false);
   };
 
-
-
-  // klik untuk melunasi
-  const handleLunas = (id) => {
+  const handleLunas = (id: number) => {
     Swal.fire({
       title: 'Tandai Lunas?',
       text: 'Transaksi ini akan ditandai sebagai sudah dibayar.',
@@ -242,12 +264,8 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
     }).then((result) => {
       if (result.isConfirmed) {
         router.post(route('transaksi.lunas', id), {}, {
-          onSuccess: () => {
-            Swal.fire('Sukses!', 'Transaksi berhasil ditandai lunas.', 'success');
-          },
-          onError: () => {
-            Swal.fire('Gagal!', 'Terjadi kesalahan saat memproses.', 'error');
-          }
+          onSuccess: () => Swal.fire('Sukses!', 'Transaksi berhasil ditandai lunas.', 'success'),
+          onError: () => Swal.fire('Gagal!', 'Terjadi kesalahan saat memproses.', 'error')
         });
       }
     });
@@ -297,7 +315,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                   className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
               </div>
-              
+
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -309,7 +327,6 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                 <option value="cancelled">Cancelled</option>
               </select>
 
-              {/* Print Button */}
               <button
                 onClick={() => setShowPrintModal(true)}
                 className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 font-medium"
@@ -319,9 +336,8 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                 </svg>
                 Print
               </button>
-              
             </div>
-            
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-black text-slate-700">Urutkan:</label>
               <select
@@ -336,6 +352,8 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
               <button
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                 className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                aria-label="Toggle sort order"
+                title="Toggle sort order"
               >
                 {sortOrder === 'asc' ? '↑' : '↓'}
               </button>
@@ -358,7 +376,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                   </svg>
                 </button>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -371,7 +389,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
                     Tanggal Sampai (Opsional)
@@ -383,7 +401,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                
+
                 <div className="flex items-center gap-3 pt-4">
                   <button
                     onClick={handlePrint}
@@ -403,102 +421,71 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
           </div>
         )}
 
-        {/* Modern Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        {/* Tabel */}
+        <div className="bg-white relative pb-20 rounded-xl min-h-[65vh] shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    Transaksi
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    Member
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    Total
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    Pembayaran
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    Produk
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    Waktu
-                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Transaksi</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Member</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Total</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Pembayaran</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Produk</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Waktu</th>
                 </tr>
               </thead>
+
               <tbody className="bg-white divide-y divide-slate-100">
-                {filteredTransaksi.map((trx, index) => (
-                    <tr
-                      key={trx.id}
-                      className={`hover:bg-slate-50 transition-colors duration-150 ${
-                        trx.status === 'pending' ? 'cursor-pointer' : ''
-                      }`}
-                      onClick={() => {
-                        if (trx.status === 'pending') {
-                          handleLunas(trx.id);
-                        }
-                      }}
-                    >
+                {pagedTransaksi.map((trx) => (
+                  <tr
+                    key={trx.id}
+                    className={`hover:bg-slate-50 transition-colors duration-150 ${trx.status === 'pending' ? 'cursor-pointer' : ''}`}
+                    onClick={() => {
+                      if (trx.status === 'pending') handleLunas(trx.id);
+                    }}
+                  >
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <div className="font-mono text-sm font-semibold text-slate-900">
-                          {trx.kode_transaksi}
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          ID: {trx.id}
-                        </div>
+                        <div className="font-mono text-sm font-semibold text-slate-900">{trx.kode_transaksi}</div>
+                        <div className="text-xs text-slate-500">ID: {trx.id}</div>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold mr-3">
                           {trx.member?.nama?.charAt(0) || 'G'}
                         </div>
                         <div>
-                          <div className="font-medium text-slate-900">
-                            {trx.member?.nama || 'Guest'}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {trx.member ? 'Member' : 'Non Member'}
-                          </div>
+                          <div className="font-medium text-slate-900">{trx.member?.nama || 'Guest'}</div>
+                          <div className="text-xs text-slate-500">{trx.member ? 'Member' : 'Non Member'}</div>
                         </div>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4">
-                      <div className="text-lg font-bold text-slate-900">
-                        {formatCurrency(trx.total)}
-                      </div>
+                      <div className="text-lg font-bold text-slate-900">{formatCurrency(trx.total)}</div>
                     </td>
-                    
+
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="text-slate-500">
-                          {getPaymentMethodIcon(trx.metode_pembayaran)}
-                        </div>
-                        <span className="text-sm font-medium text-slate-700 capitalize">
-                          {trx.metode_pembayaran}
-                        </span>
+                        <div className="text-slate-500">{getPaymentMethodIcon(trx.metode_pembayaran)}</div>
+                        <span className="text-sm font-medium text-slate-700 capitalize">{trx.metode_pembayaran}</span>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(trx.status)}`}>
                         {trx.status}
                       </span>
                     </td>
-                    
+
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">
-                          {trx.detail.slice(0, 3).map((d, idx) => (
+                          {trx.detail.slice(0, 3).map((d) => (
                             <img
                               key={d.id}
                               src={`/logo/${d.produk.gambar}`}
@@ -522,33 +509,99 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                         </div>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
                         <div className="text-sm font-medium text-slate-900">
-                          
-                          {trx.status === "pending" ? trx.created_at && new Date(trx.created_at).toLocaleDateString('id-ID') : trx.waktu_bayar && new Date(trx.waktu_bayar).toLocaleDateString('id-ID')}
+                          {trx.status === "pending"
+                            ? trx.created_at && new Date(trx.created_at).toLocaleDateString('id-ID')
+                            : trx.waktu_bayar && new Date(trx.waktu_bayar).toLocaleDateString('id-ID')}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {trx.status === "pending" ? trx.created_at && new Date(trx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : trx.waktu_bayar && new Date(trx.waktu_bayar).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                        </div>                        
+                          {trx.status === "pending"
+                            ? trx.created_at && new Date(trx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                            : trx.waktu_bayar && new Date(trx.waktu_bayar).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            {/* Kosong */}
+            {filteredTransaksi.length === 0 && (
+              <div className="text-center py-12">
+                <svg className="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 className="mt-2 text-sm font-medium text-slate-900">Tidak ada transaksi</h3>
+                <p className="mt-1 text-sm text-slate-500">Tidak ada transaksi yang sesuai dengan filter yang dipilih.</p>
+              </div>
+            )}
           </div>
-          
-          {filteredTransaksi.length === 0 && (
-            <div className="text-center py-12">
-              <svg className="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-slate-900">Tidak ada transaksi</h3>
-              <p className="mt-1 text-sm text-slate-500">Tidak ada transaksi yang sesuai dengan filter yang dipilih.</p>
+
+          {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
+          {filteredTransaksi.length > 0 && (
+            <div className="flex flex-col sm:flex-row absolute bottom-0 left-0 right-0 items-center justify-between px-6 py-4 border-t border-slate-200 gap-3">
+              <div className="text-sm text-slate-600">
+                Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
+                <span className="font-semibold">{endIndex}</span> dari
+                <span className="font-semibold"> {totalItems}</span> transaksi
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentSafe === 1}
+                  aria-label="Halaman sebelumnya"
+                >
+                  Prev
+                </button>
+
+                {pageNumbers.map((p, idx) =>
+                  p === '...' ? (
+                    <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p as number)}
+                      aria-current={currentSafe === p ? 'page' : undefined}
+                      className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
+                        currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+
+                <button
+                  className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentSafe === totalPages}
+                  aria-label="Halaman berikutnya"
+                >
+                  Next
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-600">Per halaman:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="px-2 py-2 border rounded-lg text-sm"
+                >
+                  {[10, 25, 50, 100].map(sz => (
+                    <option key={sz} value={sz}>{sz}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
+          {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
         </div>
       </div>
     </div>

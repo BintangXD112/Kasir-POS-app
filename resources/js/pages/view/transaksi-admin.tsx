@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PageProps } from '../types/index';
 import { router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
@@ -46,6 +46,15 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [printDateFrom, setPrintDateFrom] = useState('');
   const [printDateTo, setPrintDateTo] = useState('');
+
+   // ====== ⬇️ STATE & LOGIC PAGINATION  ⬇️ ======
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  // Reset ke halaman 1 kalau filter/sort/pageSize berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, sortBy, sortOrder, pageSize]);
+  // ====== ⬆️ STATE & LOGIC PAGINATION  ⬆️ ======
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -252,6 +261,25 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
     maximumFractionDigits: 0,
   }).format(amount);
 };
+// ====== ⬇️ DERIVED PAGINATION  ⬇️ ======
+  const totalItems = filteredTransaksi.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentSafe = Math.min(Math.max(currentPage, 1), totalPages);
+  const startIndex = (currentSafe - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const pagedTransaksi = filteredTransaksi.slice(startIndex, endIndex);
+
+  // Buat list nomor halaman (dengan "..." bila banyak)
+  const getPageNumbers = (current: number, total: number): (number | '...')[] => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+    if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+    if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  };
+  const pageNumbers = getPageNumbers(currentSafe, totalPages);
+  // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
   return (
     <>
       {/* Content */}
@@ -379,7 +407,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
         )}
 
         {/* Modern Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl relative pb-20 shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50">
@@ -408,7 +436,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-100">
-                {filteredTransaksi.map((trx, index) => (
+                {pagedTransaksi.map((trx, index) => (
                     <tr
                       key={trx.id}
                       className={`hover:bg-slate-50 transition-colors duration-150 ${
@@ -524,6 +552,67 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
               <p className="mt-1 text-sm text-slate-500">Tidak ada transaksi yang sesuai dengan filter yang dipilih.</p>
             </div>
           )}
+          {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
+          {filteredTransaksi.length > 0 && (
+            <div className="flex flex-col sm:flex-row absolute bottom-0 left-0 right-0 items-center justify-between px-6 py-4 border-t border-slate-200 gap-3">
+              <div className="text-sm text-slate-600">
+                Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
+                <span className="font-semibold">{endIndex}</span> dari
+                <span className="font-semibold"> {totalItems}</span> transaksi
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentSafe === 1}
+                  aria-label="Halaman sebelumnya"
+                >
+                  Prev
+                </button>
+
+                {pageNumbers.map((p, idx) =>
+                  p === '...' ? (
+                    <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p as number)}
+                      aria-current={currentSafe === p ? 'page' : undefined}
+                      className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
+                        currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+
+                <button
+                  className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentSafe === totalPages}
+                  aria-label="Halaman berikutnya"
+                >
+                  Next
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-600">Per halaman:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="px-2 py-2 border rounded-lg text-sm"
+                >
+                  {[10, 25, 50, 100].map(sz => (
+                    <option key={sz} value={sz}>{sz}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+          {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
         </div>
       </div>
     </>

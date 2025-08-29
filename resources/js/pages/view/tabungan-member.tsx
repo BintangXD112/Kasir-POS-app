@@ -1,9 +1,18 @@
 import { router } from '@inertiajs/react';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 
 function TabunganTable({ tabungan }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedIds, setExpandedIds] = useState(new Set());
+
+  // ====== ⬇️ STATE & LOGIC PAGINATION  ⬇️ ======
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  // Reset ke halaman 1 kalau filter/sort/pageSize berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, pageSize]);
+  // ====== ⬆️ STATE & LOGIC PAGINATION  ⬆️ ======
 
   // Filter data berdasarkan search term
   const filteredTabungan = useMemo(() => {
@@ -22,9 +31,28 @@ function TabunganTable({ tabungan }) {
       return newSet;
     });
   };
+  // ====== ⬇️ DERIVED PAGINATION  ⬇️ ======
+  const totalItems = filteredTabungan.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentSafe = Math.min(Math.max(currentPage, 1), totalPages);
+  const startIndex = (currentSafe - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const pagedTabungan = filteredTabungan.slice(startIndex, endIndex);
 
+  // Buat list nomor halaman (dengan "..." bila banyak)
+  const getPageNumbers = (current: number, total: number): (number | '...')[] => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+    if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+    if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  };
+  const pageNumbers = getPageNumbers(currentSafe, totalPages);
+  // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
+  
   return (
-    <div className="p-6">
+    <div className="px-6 pt-6 relative pb-20">
     <div className="flex justify-between">
         <h1 className="text-3xl font-extrabold mb-6 text-gray-900 text-left">Tabungan Member</h1>
 
@@ -66,7 +94,7 @@ function TabunganTable({ tabungan }) {
         <p className="text-center text-gray-500 text-lg italic">Tidak ada data</p>
       ) : (
         <div className="space-y-6">
-          {filteredTabungan.map(({ id, member, saldo, detail }) => {
+          {pagedTabungan.map(({ id, member, saldo, detail }) => {
             const isExpanded = expandedIds.has(id);
             return (
               <div
@@ -158,6 +186,67 @@ function TabunganTable({ tabungan }) {
           })}
         </div>
       )}
+      {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
+            {filteredTabungan.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t absolute bottom-0 left-0 right-0 border-slate-200 gap-3">
+                <div className="text-sm text-slate-600">
+                  Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
+                  <span className="font-semibold">{endIndex}</span> dari
+                  <span className="font-semibold"> {totalItems}</span> tabungan
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentSafe === 1}
+                    aria-label="Halaman sebelumnya"
+                  >
+                    Prev
+                  </button>
+
+                  {pageNumbers.map((p, idx) =>
+                    p === '...' ? (
+                      <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => setCurrentPage(p as number)}
+                        aria-current={currentSafe === p ? 'page' : undefined}
+                        className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
+                          currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentSafe === totalPages}
+                    aria-label="Halaman berikutnya"
+                  >
+                    Next
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-600">Per halaman:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className="px-2 py-2 border rounded-lg text-sm"
+                  >
+                    {[10, 25, 50, 100].map(sz => (
+                      <option key={sz} value={sz}>{sz}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+            {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
     </div>
   );
 }

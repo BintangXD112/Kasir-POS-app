@@ -50,6 +50,15 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
     };
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    // ====== ⬇️ STATE & LOGIC PAGINATION  ⬇️ ======
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(12);
+  // Reset ke halaman 1 kalau filter/sort/pageSize berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, pageSize]);
+  // ====== ⬆️ STATE & LOGIC PAGINATION  ⬆️ ======
+
     const [statusNabung, setStatusNabung]= useState("Deposit")
 
     const scrollLeft = () => {
@@ -580,6 +589,25 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
     };
 
 
+    // ====== ⬇️ DERIVED PAGINATION  ⬇️ ======
+  const totalItems = filterNamaProduk.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentSafe = Math.min(Math.max(currentPage, 1), totalPages);
+  const startIndex = (currentSafe - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const pagedProduk = filterNamaProduk.slice(startIndex, endIndex);
+
+  // Buat list nomor halaman (dengan "..." bila banyak)
+  const getPageNumbers = (current: number, total: number): (number | '...')[] => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+    if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+    if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  };
+  const pageNumbers = getPageNumbers(currentSafe, totalPages);
+  // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
 
 
     return (
@@ -631,7 +659,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                 </div>
             </div>
             <div className={`flex h-full p-4 w-full`}>
-                <div className={`w-4/6 h-full bg-white rounded-lg p-4`}>
+                <div className={`w-4/6 h-full bg-white rounded-lg pt-4 pb-20 relative px-4`}>
                     <div className={`flex items-center mb-4`}>
                         <div className={`relative w-full`}>
                             <input type="text" placeholder='Cari Produk' className={`text-black placeholder-gray-500 border-gray-500 border p-2 focus:outline-none rounded-full w-full`} value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value) }} />
@@ -702,7 +730,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                     </div>
                     <div className={`grid grid-cols-6 gap-4 mt-4 p-2 [scrollbar-width:thin] overflow-y-auto max-h-[375px] overflow-x-hidden`}>
                         {filterNamaProduk && filterNamaProduk.length > 0 ? (
-                            filterNamaProduk.map((item) => (
+                            pagedProduk.map((item) => (
                                 <div key={item.id} onClick={() => tambahTransaksi(item)} className={`flex flex-col rounded-sm border hover:scale-105 hover:shadow-md hover:shadow-gray-500 transition-all duration-300 ease-in-out cursor-pointer border-gray-300 w-[120px] h-[160px]`}>
                                     <img src={`/logo/${item.gambar || 'default.png'}`} alt={item.nama} className={`object-cover w-full h-20 rounded-t-sm`} />
                                     <div className={`p-2 rounded-b-sm`}>
@@ -719,6 +747,67 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         )}
 
                     </div>
+                    {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
+                    {filterNamaProduk.length > 0 && (
+                      <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t absolute bottom-0 left-0 right-0 border-slate-200 gap-3">
+                        <div className="text-sm text-slate-600">
+                          Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
+                          <span className="font-semibold">{endIndex}</span> dari
+                          <span className="font-semibold"> {totalItems}</span> produk
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentSafe === 1}
+                            aria-label="Halaman sebelumnya"
+                          >
+                            Prev
+                          </button>
+
+                          {pageNumbers.map((p, idx) =>
+                            p === '...' ? (
+                              <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
+                            ) : (
+                              <button
+                                key={p}
+                                onClick={() => setCurrentPage(p as number)}
+                                aria-current={currentSafe === p ? 'page' : undefined}
+                                className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
+                                  currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
+                                }`}
+                              >
+                                {p}
+                              </button>
+                            )
+                          )}
+
+                          <button
+                            className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentSafe === totalPages}
+                            aria-label="Halaman berikutnya"
+                          >
+                            Next
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-slate-600">Per halaman:</span>
+                          <select
+                            value={pageSize}
+                            onChange={(e) => setPageSize(Number(e.target.value))}
+                            className="px-2 py-2 border rounded-lg text-sm"
+                          >
+                            {[12, 24, 48, 96].map(sz => (
+                              <option key={sz} value={sz}>{sz}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                    {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
                 </div>
                 <div className="ml-4 flex-1 relative overflow-x-auto shadow-md sm:rounded-lg bg-white h-full w-full">
                     <div className={`flex items-center my-2 px-2 gap-2`}>
