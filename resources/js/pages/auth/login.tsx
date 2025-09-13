@@ -40,6 +40,7 @@ export default function Login({ status, users }: LoginProps) {
     setData('nama_user', nama_user); // ✅ wajib set nama_user di useForm
     localStorage.setItem("username", nama_user);
     localStorage.setItem("tipe_user", tipe_user);
+    errors.kode_user = '';
     setData('kode_user', ''); // kosongkan input kode
   };
 

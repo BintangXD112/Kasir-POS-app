@@ -106,7 +106,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             : 'failed';
         const printRows = transaksi.map((it, idx) => {
         const unit = formatIDR(it.produk.harga);
-        const line = formatIDR(unit * it.qty);
+        const line = formatIDR(it.produk.harga * it.qty);
         return `
           <tr>
             <td style="padding:6px;border:1px solid #ddd;">${idx + 1}</td>
@@ -832,7 +832,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             </button>
                         </div>
                     </div>
-                    <div className="flex-1 overflow-x-hidden overflow-y-auto h-[330px]">
+                    <div className="flex-1 overflow-x-hidden overflow-y-auto h-[315px]">
                         <table className="min-w-full table-fixed text-sm text-left text-black">
                             <thead className="text-xs text-black uppercase bg-gray-100">
                                 <tr>

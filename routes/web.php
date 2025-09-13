@@ -7,6 +7,7 @@ use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\UsageDiskonController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ProdukController;
 
@@ -69,7 +70,7 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     // Admin group
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('dashboard');
-        Route::get('/voucher-usage', [AdminController::class, 'voucherUsage'])->name('voucher.usage');
+        Route::get('/voucher-usage', [UsageDiskonController::class, 'index'])->name('usage-diskon.index');
         Route::get('/transaksi', [AdminController::class, 'transaksiAdmin'])->name('transaksi');
 
         // Voucher Diskon

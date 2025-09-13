@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaksi;
 use Inertia\Inertia;
 use App\Models\DetailTransaksi;
+use App\Models\UsageDiskon;
 use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -120,6 +121,15 @@ class TransaksiController extends Controller
                 // update kolom total_transaksi di member
                 $member->total_transaksi = $totalTransaksiMember;
                 $member->save();
+            }
+
+            if ($member?->diskon_id != 0){
+                $usagediskon = UsageDiskon::create([
+                    'member_id' => $member->id,
+                    'transaksi_id' => $transaksi->id,
+                    'diskon_id' => $member->diskon_id,
+                    'waktu_transaksi' => now(),
+                ]);
             }
 
             DB::commit();

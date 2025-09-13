@@ -8,9 +8,13 @@ function getCsrfToken() {
   return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 }
 
-export default function Member({ members }: { members: Member[] }) {
+export default function Member() {
+  useEffect(()=>{
+    fetchMembers();
+    setLoading(false);
+  },[])
   const [searchTerm, setSearchTerm] = useState('');
-  const [membersList, setMembersList] = useState<Member[]>(members);
+  const [membersList, setMembersList] = useState<Member[]>('');
   const [member, setMember] = useState({ nama: '', alamat: '', telepon: '' });
 
   // ====== ⬇️ STATE & LOGIC PAGINATION  ⬇️ ======
@@ -99,7 +103,7 @@ export default function Member({ members }: { members: Member[] }) {
     setShowModalEditMember(true);
   };
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [showModalTambahMember, setShowModalTambahMember] = useState(false);
   const [showModalEditMember, setShowModalEditMember] = useState(false);
 
@@ -127,7 +131,8 @@ export default function Member({ members }: { members: Member[] }) {
       Swal.fire('Berhasil', 'Voucher diskon berhasil diupdate untuk member', 'success');
       fetchMembers();
     } else {
-      Swal.fire('Gagal', 'Gagal update voucher diskon', res.message);
+      window.location.reload()
+      Swal.fire('Gagal', res.message, 'error');
     }
     setLoading(false);
   };
@@ -151,7 +156,6 @@ export default function Member({ members }: { members: Member[] }) {
   };
   const pageNumbers = getPageNumbers(currentSafe, totalPages);
   // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
-
   return (
     <div className="px-6 pt-6 pb-20 relative max-w-full min-h-[70vh] mx-auto bg-gray-100 rounded-xl shadow text-black">
       <div className="flex justify-between mb-4 items-center">
@@ -173,7 +177,8 @@ export default function Member({ members }: { members: Member[] }) {
               <th className="py-3 px-6 text-center">Aksi</th>
             </tr>
           </thead>
-          <tbody>
+          {loading ? <div className="text-center py-8">Loading...</div> : (
+            <tbody>
             {filteredMember.length > 0 && pagedMember.map((member) => (
               <tr key={member.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
                 <td className="py-3 px-6">{member.id}</td>
@@ -212,6 +217,7 @@ export default function Member({ members }: { members: Member[] }) {
               </tr>
             ))}
           </tbody>
+            )}
         </table>
         {filteredMember.length === 0 && (
               <div className="text-center py-12">
@@ -309,7 +315,7 @@ export default function Member({ members }: { members: Member[] }) {
                 const allErrors = errors
                   ? Object.values(errors).flat().join('\n')
                   : 'Terjadi kesalahan';
-                Swal.fire('Gagal', allErrors, 'error');
+                Swal.fire('Gagal', allErrors, 'success');
               },
             }
           );

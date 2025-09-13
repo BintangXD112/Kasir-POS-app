@@ -35,10 +35,12 @@ class AuthenticatedSessionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'nama_user' => 'required|string',
             'kode_user' => 'required|string',
         ]);
 
-        $user = \App\Models\User::where('kode_user', $request->kode_user)->first();
+        $user = \App\Models\User::where('nama_user', $request->nama_user)
+        ->where('kode_user', $request->kode_user)->first();
         if (!$user) {
             return back()->withErrors(['kode_user' => 'Kode user salah.']);
         }
