@@ -34,7 +34,7 @@ export default function Home({ users, members, produks, pemasukan_bulan_ini, tra
         </div>
       </div>
 
-      <div className="p-6 max-w-full mx-auto bg-gray-100 rounded-xl shadow text-black mt-5">
+      <div className="p-6 max-w-full mx-auto bg-gray-100 min-h-[45vh] rounded-xl shadow text-black mt-5">
         <h2 className="text-xl font-semibold mb-4">Data Users</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left">
@@ -44,7 +44,7 @@ export default function Home({ users, members, produks, pemasukan_bulan_ini, tra
                 <th className="py-3 px-6">Kode User</th>
                 <th className="py-3 px-6">Tipe User</th>
                 <th className="py-3 px-6">Dibuat</th>
-                <th className="py-3 px-6">Status</th>
+                <th className="py-3 px-6 text-center">Status Akun</th>
               </tr>
             </thead>
             <tbody>
@@ -61,7 +61,7 @@ export default function Home({ users, members, produks, pemasukan_bulan_ini, tra
                       ? new Date(user.created_at).toLocaleDateString('id-ID')
                       : '-'}
                   </td>
-                  <td className="py-3 px-6">
+                  <td className="py-3 px-6 text-center">
                     <span className={`bg-${user.status === 'active' ? 'green' : 'red'}-500 text-white text-xs font-semibold px-4 py-1 rounded-full shadow-sm`}>
                         {user.status === 'active' ? 'Aktif' : 'Non-Aktif'}
                     </span>

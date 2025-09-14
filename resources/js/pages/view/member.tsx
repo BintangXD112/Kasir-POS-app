@@ -157,7 +157,7 @@ export default function Member() {
   const pageNumbers = getPageNumbers(currentSafe, totalPages);
   // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
   return (
-    <div className="px-6 pt-6 pb-20 relative max-w-full min-h-[70vh] mx-auto bg-gray-100 rounded-xl shadow text-black">
+    <div className="px-6 pt-6 pb-20 relative max-w-full min-h-[75vh] mx-auto bg-gray-100 rounded-xl shadow text-black">
       <div className="flex justify-between mb-4 items-center">
         <h2 className="text-xl font-semibold">Kelola Member</h2>
         <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari nama member" />

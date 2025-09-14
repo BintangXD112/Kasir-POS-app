@@ -80,7 +80,7 @@ export default function User({ users }) {
         });
     };
     return (
-        <div className={`bg-gray-100 rounded-xl p-4`}>
+        <div className={`bg-gray-100 rounded-xl p-4 min-h-[75vh]`}>
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl text-black font-bold">Kelola User</h2>
                 <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow transition">Tambah User</button>
@@ -91,7 +91,7 @@ export default function User({ users }) {
                         <tr className="border-b border-gray-200">
                             <th className="py-3 px-6 text-left font-bold text-gray-800">Nama</th>
                             <th className="py-3 px-6 text-left font-bold text-gray-800">Tipe</th>
-                            <th className="py-3 px-6 text-left font-bold text-gray-800">Status</th>
+                            <th className="py-3 px-6 text-center font-bold text-gray-800">Status Akun</th>
                             <th className="py-3 px-6 text-center font-bold text-gray-800">Aksi</th>
                         </tr>
                     </thead>
@@ -100,15 +100,8 @@ export default function User({ users }) {
                             <tr key={user.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
                                 <td className="py-3 px-6 text-gray-900 font-medium">{user.nama_user}</td>
                                 <td className="py-3 px-6 text-gray-900 font-medium">{user.tipe_user}</td>
-                                <td className="py-3 px-6">
-                                    {editId === user.id ? (
-                                        <select name="status" value={editForm.status} onChange={handleEditChange} className="border rounded px-2 py-1 text-gray-900 font-medium">
-                                            <option value="active">Aktif</option>
-                                            <option value="non-active">Non Aktif</option>
-                                        </select>
-                                    ) : (
-                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{user.status === 'active' ? 'Aktif' : 'Non Aktif'}</span>
-                                    )}
+                                <td className="py-3 px-6 text-center">
+                                    <span className={`px-2 py-1 rounded text-xs font-semibold ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{user.status === 'active' ? 'Aktif' : 'Non Aktif'}</span>
                                 </td>
                                 <td className="py-3 px-6 flex gap-2 justify-center">
                                     <button onClick={() => handleDelete(user.id)} className="bg-red-500 cursor-pointer text-white w-16 mr-4 py-2 rounded-md">Hapus</button>

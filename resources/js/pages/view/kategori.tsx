@@ -87,7 +87,7 @@ export default function Kategori({ kategori }: { kategori: KategoriType[] }) {
   // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
 
   return (
-    <div className="px-6 pt-6 pb-20 relative max-w-full mx-auto bg-gray-100 rounded-xl shadow text-black">
+    <div className="px-6 pt-6 pb-20 relative max-w-full mx-auto min-h-[75vh] bg-gray-100 rounded-xl shadow text-black">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Data kategori produk</h2>
         <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari nama kategori" />

@@ -281,9 +281,12 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
   const pageNumbers = getPageNumbers(currentSafe, totalPages);
   // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
   return (
-    <>
+    <div className="bg-gray-100 rounded-xl shadow">
       {/* Content */}
-      <div className="flex-1 p-6">
+      <div className="pl-6 pt-6 flex item-center">
+        <h2 className="text-xl font-semibold mb-4">Riwayat Transaksi</h2>
+      </div>
+      <div className="flex-1 pb-6 pt-4 px-6">
         {/* Filter & Search */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -615,7 +618,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
           {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
