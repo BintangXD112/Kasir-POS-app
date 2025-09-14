@@ -18,15 +18,21 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
-        $data = $request->validate([
-            'nama_user' => 'required|string',
-            'tipe_user' => 'required|in:admin,kasir',
-            'kode_user' => 'required|string|unique:users,kode_user,' . $id,
-            'status' => 'required|in:active,non-active',
-        ]);
-        $user->update($data);
-        return redirect()->back()->with('status', 'User updated successfully');
+        try
+        {
+            $user = User::findOrFail($id);
+            $data = $request->validate([
+                'nama_user' => 'required|string',
+                'tipe_user' => 'required|in:admin,kasir',
+                'kode_user' => 'required|string|unique:users,kode_user,' . $id,
+                'account' => 'required|in:active,non-active',
+            ]);
+            $user->update($data);
+            return redirect()->back()->with('status', 'User updated successfully');
+        }catch(err)
+        {
+            return redirect()->back()->with('status', 'User updated error');
+        }
     }
 
     public function destroy($id)

@@ -8,7 +8,7 @@ export default function User({ users }) {
         nama_user: '',
         tipe_user: 'kasir',
         kode_user: '',
-        status: 'active',
+        account: 'active',
     });
     const [editId, setEditId] = useState(null);
     const [editForm, setEditForm] = useState({});
@@ -25,7 +25,7 @@ export default function User({ users }) {
         router.post('/admin/users', form, {
             onSuccess: () => {
                 setShowModal(false);
-                setForm({ nama_user: '', tipe_user: 'kasir', kode_user: '', status: 'active' });
+                setForm({ nama_user: '', tipe_user: 'kasir', kode_user: '', account: 'active' });
                 Swal.fire({ icon: 'success', title: 'Berhasil', text: 'User berhasil ditambahkan', timer: 1500, showConfirmButton: false });
             },
             onError: () => {
@@ -39,7 +39,7 @@ export default function User({ users }) {
             nama_user: user.nama_user,
             tipe_user: user.tipe_user,
             kode_user: user.kode_user,
-            status: user.status,
+            account: user.account,
         });
         setShowEditModal(true);
     };
@@ -92,6 +92,7 @@ export default function User({ users }) {
                             <th className="py-3 px-6 text-left font-bold text-gray-800">Nama</th>
                             <th className="py-3 px-6 text-left font-bold text-gray-800">Tipe</th>
                             <th className="py-3 px-6 text-center font-bold text-gray-800">Status Akun</th>
+                            <th className="py-3 px-6 text-center font-bold text-gray-800">Status</th>
                             <th className="py-3 px-6 text-center font-bold text-gray-800">Aksi</th>
                         </tr>
                     </thead>
@@ -101,7 +102,10 @@ export default function User({ users }) {
                                 <td className="py-3 px-6 text-gray-900 font-medium">{user.nama_user}</td>
                                 <td className="py-3 px-6 text-gray-900 font-medium">{user.tipe_user}</td>
                                 <td className="py-3 px-6 text-center">
-                                    <span className={`px-2 py-1 rounded text-xs font-semibold ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{user.status === 'active' ? 'Aktif' : 'Non Aktif'}</span>
+                                    <span className={`px-2 py-1 rounded text-xs font-semibold ${user.account === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{user.account === 'active' ? 'Aktif' : 'Non-Aktif'}</span>
+                                </td>
+                                <td className="py-3 px-6 text-center">
+                                    <span className={`px-2 py-1 rounded text-xs font-semibold ${user.status === 'Online' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{user.status}</span>
                                 </td>
                                 <td className="py-3 px-6 flex gap-2 justify-center">
                                     <button onClick={() => handleDelete(user.id)} className="bg-red-500 cursor-pointer text-white w-16 mr-4 py-2 rounded-md">Hapus</button>
@@ -146,8 +150,8 @@ export default function User({ users }) {
                                 <input name="kode_user" value={form.kode_user} onChange={handleChange} placeholder="Kode User" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400 font-medium" required />
                             </div>
                             <div>
-                                <label className="block mb-1 font-semibold text-gray-800">Status</label>
-                                <select name="status" value={form.status} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 font-medium">
+                                <label className="block mb-1 font-semibold text-gray-800">Status Akun</label>
+                                <select name="account" value={form.account} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 font-medium">
                                     <option value="active">Aktif</option>
                                     <option value="non-active">Non Aktif</option>
                                 </select>
@@ -194,8 +198,8 @@ export default function User({ users }) {
                                 <input name="kode_user" value={editForm.kode_user || ''} onChange={handleEditChange} placeholder="Kode User" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400 font-medium" required />
                             </div>
                             <div>
-                                <label className="block mb-1 font-semibold text-gray-800">Status</label>
-                                <select name="status" value={editForm.status || ''} onChange={handleEditChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 font-medium">
+                                <label className="block mb-1 font-semibold text-gray-800">Status Akun</label>
+                                <select name="account" value={editForm.account || ''} onChange={handleEditChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 font-medium">
                                     <option value="active">Aktif</option>
                                     <option value="non-active">Non Aktif</option>
                                 </select>

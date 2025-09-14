@@ -18,13 +18,15 @@ class DatabaseSeeder extends Seeder
             'nama_user' => 'Admin',
             'tipe_user' => 'admin',
             'kode_user' => 'admin123',
-            'status' => 'active',
+            'account' => 'active',
+            'status' => 'Offline',
         ]);
         User::factory()->create([
             'nama_user' => 'Kasir',
             'tipe_user' => 'kasir',
             'kode_user' => 'kasir123',
-            'status' => 'active',
+            'account' => 'active',
+            'status' => 'Offline',
         ]);
         $this->call([
             KategoriSeeder::class,

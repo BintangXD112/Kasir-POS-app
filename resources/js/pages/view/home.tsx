@@ -62,8 +62,8 @@ export default function Home({ users, members, produks, pemasukan_bulan_ini, tra
                       : '-'}
                   </td>
                   <td className="py-3 px-6 text-center">
-                    <span className={`bg-${user.status === 'active' ? 'green' : 'red'}-500 text-white text-xs font-semibold px-4 py-1 rounded-full shadow-sm`}>
-                        {user.status === 'active' ? 'Aktif' : 'Non-Aktif'}
+                    <span className={`bg-${user.status === 'Online' ? 'green' : 'red'}-500 text-white text-xs font-semibold px-4 py-1 rounded-full shadow-sm`}>
+                        {user.status}
                     </span>
                   </td>
                 </tr>

@@ -44,7 +44,7 @@ class AuthenticatedSessionController extends Controller
         if (!$user) {
             return back()->withErrors(['kode_user' => 'Kode user salah.']);
         }
-        if ($user->status === 'non-active') {
+        if ($user->account === 'non-active') {
             return back()->withErrors(['kode_user' => 'Akun nonaktif, hubungi admin.']);
         }
 
@@ -56,12 +56,15 @@ class AuthenticatedSessionController extends Controller
             'keterangan' => 'Login berhasil',
         ]);
         $redirectRoute = $user->tipe_user === 'admin' ? 'admin.dashboard' : 'kasir';
+        $user->update(['status' => 'Online']);
         return redirect()->route($redirectRoute)->with('status', 'Login berhasil!');
     }
 
     public function destroy(Request $request): RedirectResponse
     {
         $user = Auth::user(); // ✅ ambil user SEBELUM logout
+        $account = User::where('id', $user->id);
+        $account->update(['status' => 'Offline']);
         if ($user) {
             UserLog::create([
                 'user_id' => $user->id,
