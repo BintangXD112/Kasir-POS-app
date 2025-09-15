@@ -131,16 +131,18 @@ export default function VoucherDiskon() {
   // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
 
   return (
-    <div className="px-6 pt-6 pb-20 relative max-w-full min-h-[75vh] mx-auto bg-gray-100 rounded-xl shadow text-black">
+    <div className="p-6 max-w-full min-h-[75vh] mx-auto bg-gray-100 rounded-xl shadow text-black">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Voucher Diskon</h2>
-        <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari kode voucher" />
+      </div>
+      <div className="flex justify-between items-center mb-6 bg-white shadow rounded-xl p-6">
+        <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 shadow border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari kode voucher" />
         <button onClick={() => openModal()} className="bg-blue-500 text-white px-4 py-2 rounded-md">Tambah Voucher</button>
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto pb-20 min-h-[40vh] relative bg-white rounded-xl shadow">
         {loading ? <div className="text-center py-8">Loading...</div> : (
         <table className="min-w-full text-sm text-left">
-          <thead className="bg-gray-100 uppercase">
+          <thead className="uppercase">
             <tr className="border-b border-gray-200">
               <th className="py-3 px-6">ID</th>
               <th className="py-3 px-6">Kode Voucher</th>

@@ -157,77 +157,142 @@ export default function Member() {
   const pageNumbers = getPageNumbers(currentSafe, totalPages);
   // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
   return (
-    <div className="px-6 pt-6 pb-20 relative max-w-full min-h-[75vh] mx-auto bg-gray-100 rounded-xl shadow text-black">
+    <div className="p-6 max-w-full min-h-[75vh] mx-auto bg-gray-100 rounded-xl shadow text-black">
       <div className="flex justify-between mb-4 items-center">
         <h2 className="text-xl font-semibold">Kelola Member</h2>
-        <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari nama member" />
+      </div>
+      <div className="flex justify-between items-center mb-6 bg-white shadow rounded-xl p-6">
+        <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 shadow mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari nama produk atau kategori" />
         <button onClick={() => { setShowModalTambahMember(!showModalTambahMember) }} className="bg-blue-500 text-white px-4 py-2 rounded-md">Tambah Member Baru</button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm text-left">
-          <thead className="bg-gray-100 uppercase">
-            <tr className="border-b border-gray-200">
-              <th className="py-3 px-6">ID</th>
-              <th className="py-3 px-6">Nama</th>
-              <th className="py-3 px-6">Alamat</th>
-              <th className="py-3 px-6">Nomor&nbsp;Telepon</th>
-              <th className="py-3 px-6">Voucher&nbsp;Diskon</th>
-              <th className="py-3 px-6">Total&nbsp;Transaksi</th>
-              <th className="py-3 px-6">Tanggal&nbsp;Daftar</th>
-              <th className="py-3 px-6 text-center">Aksi</th>
-            </tr>
-          </thead>
-          {loading ? <div className="text-center py-8">Loading...</div> : (
-            <tbody>
-            {filteredMember.length > 0 && pagedMember.map((member) => (
-              <tr key={member.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
-                <td className="py-3 px-6">{member.id}</td>
-                <td className="py-3 px-6">{convertSpacesToNbsp(member.nama)}</td>
-                <td className="py-3 px-6">{member.alamat}</td>
-                <td className="py-3 px-6">{member.telepon}</td>
-                <td className="py-3 px-6">
-                  <select
-                    className="border rounded p-2"
-                    value={member.diskon_id || ''}
-                    onChange={e => handleVoucherChange(member.id, e.target.value ? Number(e.target.value) : null)}
-                    disabled={loading}
-                  >
-                    <option value="">-- Tidak Ada Voucher --</option>
-                    {vouchers.map(v => (
-                      <option key={v.id} value={v.id}>{v.kode_voucher} - {v.jumlah_diskon}%</option>
-                    ))}
-                  </select>
-                </td>
-                <td className="py-3 px-6 text-center">{member.total_transaksi}</td>
-                <td className="py-3 px-6">{member.tanggal_daftar}</td>
-                <td className="py-3 px-6 flex justify-center gap-4">
-                <button
-                    onClick={()=> handleDelete(member.id)}
-                    className="bg-red-500 text-white w-16 py-2 rounded-md cursor-pointer"
-                  >
-                    Hapus
-                  </button>
-                  <button
-                    onClick={() => openEditModal(member)}
-                    className="bg-yellow-500 text-white w-16 py-2 rounded-md cursor-pointer"
-                  >
-                    Edit
-                  </button>
-                </td>
+      <div className=" pb-20 relative bg-white rounded-xl shadow">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm text-left">
+            <thead className="uppercase">
+              <tr className="border-b border-gray-200">
+                <th className="py-3 px-6">ID</th>
+                <th className="py-3 px-6">Nama</th>
+                <th className="py-3 px-6">Alamat</th>
+                <th className="py-3 px-6">Nomor&nbsp;Telepon</th>
+                <th className="py-3 px-6">Voucher&nbsp;Diskon</th>
+                <th className="py-3 px-6">Total&nbsp;Transaksi</th>
+                <th className="py-3 px-6">Tanggal&nbsp;Daftar</th>
+                <th className="py-3 pr-6 text-center">Aksi</th>
               </tr>
-            ))}
-          </tbody>
-            )}
-        </table>
-        {filteredMember.length === 0 && (
-              <div className="text-center py-12">
-                <svg className="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-slate-900">Tidak ada Data</h3>
-                <p className="mt-1 text-sm text-slate-500">Tidak ada Data yang sesuai dengan filter yang dipilih.</p>
-              </div>
-            )}
+            </thead>
+            {loading ? <div className="text-center py-8">Loading...</div> : (
+              <tbody>
+              {filteredMember.length > 0 && pagedMember.map((member) => (
+                <tr key={member.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                  <td className="py-3 px-6">{member.id}</td>
+                  <td className="py-3 px-6">{member.nama}</td>
+                  <td className="py-3 px-6">{member.alamat}</td>
+                  <td className="py-3 px-6">{member.telepon}</td>
+                  <td className="py-3 px-6">
+                    <select
+                      className="border rounded p-2"
+                      value={member.diskon_id || ''}
+                      onChange={e => handleVoucherChange(member.id, e.target.value ? Number(e.target.value) : null)}
+                      disabled={loading}
+                    >
+                      <option value="">-- Tidak Ada Voucher --</option>
+                      {vouchers.map(v => (
+                        <option key={v.id} value={v.id}>{v.kode_voucher} - {v.jumlah_diskon}%</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="py-3 px-6 text-center">{member.total_transaksi}</td>
+                  <td className="py-3 px-6">{member.tanggal_daftar}</td>
+                  <td className="py-3 pr-6 flex justify-center gap-4">
+                  <button
+                      onClick={()=> handleDelete(member.id)}
+                      className="bg-red-500 text-white w-16 py-2 rounded-md cursor-pointer"
+                    >
+                      Hapus
+                    </button>
+                    <button
+                      onClick={() => openEditModal(member)}
+                      className="bg-yellow-500 text-white w-16 py-2 rounded-md cursor-pointer"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+              )}
+          </table>
+          {filteredMember.length === 0 && (
+                <div className="text-center py-12">
+                  <svg className="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h3 className="mt-2 text-sm font-medium text-slate-900">Tidak ada Data</h3>
+                  <p className="mt-1 text-sm text-slate-500">Tidak ada Data yang sesuai dengan filter yang dipilih.</p>
+                </div>
+              )}
+          {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
+              {filteredMember.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t absolute bottom-0 left-0 right-0 border-slate-200 gap-3">
+                  <div className="text-sm text-slate-600">
+                    Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
+                    <span className="font-semibold">{endIndex}</span> dari
+                    <span className="font-semibold"> {totalItems}</span> Member
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentSafe === 1}
+                      aria-label="Halaman sebelumnya"
+                    >
+                      Prev
+                    </button>
+
+                    {pageNumbers.map((p, idx) =>
+                      p === '...' ? (
+                        <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => setCurrentPage(p as number)}
+                          aria-current={currentSafe === p ? 'page' : undefined}
+                          className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
+                            currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
+
+                    <button
+                      className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentSafe === totalPages}
+                      aria-label="Halaman berikutnya"
+                    >
+                      Next
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-600">Per halaman:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                      className="px-2 py-2 border rounded-lg text-sm"
+                    >
+                      {[10, 25, 50, 100].map(sz => (
+                        <option key={sz} value={sz}>{sz}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+              {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
+        </div>
       </div>
       {showModalTambahMember && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -382,67 +447,6 @@ export default function Member() {
         </div>
       </form>
     )}
-      {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
-            {filteredMember.length > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t absolute bottom-0 left-0 right-0 border-slate-200 gap-3">
-                <div className="text-sm text-slate-600">
-                  Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
-                  <span className="font-semibold">{endIndex}</span> dari
-                  <span className="font-semibold"> {totalItems}</span> Member
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentSafe === 1}
-                    aria-label="Halaman sebelumnya"
-                  >
-                    Prev
-                  </button>
-
-                  {pageNumbers.map((p, idx) =>
-                    p === '...' ? (
-                      <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
-                    ) : (
-                      <button
-                        key={p}
-                        onClick={() => setCurrentPage(p as number)}
-                        aria-current={currentSafe === p ? 'page' : undefined}
-                        className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
-                          currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    )
-                  )}
-
-                  <button
-                    className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentSafe === totalPages}
-                    aria-label="Halaman berikutnya"
-                  >
-                    Next
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-600">Per halaman:</span>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => setPageSize(Number(e.target.value))}
-                    className="px-2 py-2 border rounded-lg text-sm"
-                  >
-                    {[10, 25, 50, 100].map(sz => (
-                      <option key={sz} value={sz}>{sz}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-            {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
     </div>
   );
 }

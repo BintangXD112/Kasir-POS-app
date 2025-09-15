@@ -79,10 +79,12 @@ export default function VoucherUsage() {
   // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
 
   return (
-    <div className="px-6 pt-6 pb-20 relative max-w-full min-h-[75vh] mx-auto bg-gray-100 rounded-xl shadow text-black">
+    <div className="p-6 max-w-full min-h-[75vh] mx-auto bg-gray-100 rounded-xl shadow text-black">
       <div className={`flex justify-between items-center`}>
         <h2 className="text-xl font-semibold mb-4 w-1/3">Penggunaan Voucher</h2>
-        <div className="flex w-full justify-end gap-8">
+      </div>
+      <div className="flex justify-between items-center mb-6 bg-white shadow rounded-xl p-6">
+        <div className="flex w-full justify-between gap-8">
           <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari nama member atau kode transaksi" />
           <select
                 value={statusFilter}
@@ -96,10 +98,10 @@ export default function VoucherUsage() {
               </select>
         </div>
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto pb-20 min-h-[40vh] relative bg-white rounded-xl shadow">
         {loading ? <div className="text-center py-8">Loading...</div> : (
         <table className="min-w-full text-sm text-left">
-          <thead className="bg-gray-100 uppercase">
+          <thead className="uppercase">
             <tr className="border-b border-gray-200">
               <th className="py-3 px-6">Member</th>
               <th className="py-3 px-6">Kode Voucher</th>
@@ -134,7 +136,7 @@ export default function VoucherUsage() {
                 <div className="text-sm text-slate-600">
                   Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
                   <span className="font-semibold">{endIndex}</span> dari
-                  <span className="font-semibold"> {totalItems}</span> voucher diskon
+                  <span className="font-semibold"> {totalItems}</span> penggunaan voucher
                 </div>
 
                 <div className="flex items-center gap-2">

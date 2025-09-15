@@ -284,7 +284,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
     <div className="bg-gray-100 rounded-xl shadow">
       {/* Content */}
       <div className="pl-6 pt-6 flex item-center">
-        <h2 className="text-xl font-semibold mb-4">Riwayat Transaksi</h2>
+        <h2 className="text-xl font-semibold">Riwayat Transaksi</h2>
       </div>
       <div className="flex-1 pb-6 pt-4 px-6">
         {/* Filter & Search */}

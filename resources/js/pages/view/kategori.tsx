@@ -87,15 +87,22 @@ export default function Kategori({ kategori }: { kategori: KategoriType[] }) {
   // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
 
   return (
-    <div className="px-6 pt-6 pb-20 relative max-w-full mx-auto min-h-[75vh] bg-gray-100 rounded-xl shadow text-black">
+    <div className="p-6 max-w-full mx-auto min-h-[75vh] bg-gray-100 rounded-xl shadow text-black">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Data kategori produk</h2>
-        <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari nama kategori" />
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={() => setShowAddModal(true)}>Tambah kategori</button>
       </div>
-      <div className="overflow-x-auto">
+      <div className="flex justify-between items-center mb-6 bg-white shadow rounded-xl p-6">
+        <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 shadow mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari nama produk atau kategori" />
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          onClick={() => setShowAddModal(true)}
+        >
+          Tambah kategori produk
+        </button>
+      </div>
+      <div className="overflow-x-auto min-h-[40vh] bg-white relative pb-20 rounded-xl shadow">
         <table className="min-w-full text-sm text-left">
-          <thead className="bg-gray-100 uppercase">
+          <thead className="uppercase">
             <tr className="border-b border-gray-200">
               <th className="py-3 px-6">Nama Kategori</th>
               <th className="py-3 px-6 text-center">Aksi</th>

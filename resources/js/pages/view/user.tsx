@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
 export default function User({ users }) {
     const [showModal, setShowModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('')
+    const [statusFilter, setStatusFilter] = useState('')
     const [form, setForm] = useState({
         nama_user: '',
         tipe_user: 'kasir',
@@ -13,6 +15,15 @@ export default function User({ users }) {
     const [editId, setEditId] = useState(null);
     const [editForm, setEditForm] = useState({});
     const [showEditModal, setShowEditModal] = useState(false);
+
+     // ====== ⬇️ STATE & LOGIC PAGINATION  ⬇️ ======
+      const [currentPage, setCurrentPage] = useState(1);
+      const [pageSize, setPageSize] = useState<number>(10);
+      // Reset ke halaman 1 kalau filter/sort/pageSize berubah
+      useEffect(() => {
+        setCurrentPage(1);
+      }, [searchTerm, pageSize]);
+      // ====== ⬆️ STATE & LOGIC PAGINATION  ⬆️ ======
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -43,6 +54,23 @@ export default function User({ users }) {
         });
         setShowEditModal(true);
     };
+
+    const filteredUser = useMemo(()=>{
+        let out = users;
+        if(searchTerm !== ""){
+            const q = searchTerm.toLowerCase()
+            out = out.filter(item=>
+                item.nama_user.toLowerCase().includes(q)
+                )
+        }
+        if(statusFilter !== ""){
+            out = out.filter(item=>
+                item.tipe_user.toLowerCase() === statusFilter.toLowerCase()
+                )
+        }
+        return out;
+    }, [users, searchTerm, statusFilter])
+
     const handleEditSubmit = (e) => {
         e.preventDefault();
         router.put(`/admin/users/${editId}`, editForm, {
@@ -79,13 +107,46 @@ export default function User({ users }) {
             }
         });
     };
+    // ====== ⬇️ DERIVED PAGINATION  ⬇️ ======
+      const totalItems = filteredUser.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+      const currentSafe = Math.min(Math.max(currentPage, 1), totalPages);
+      const startIndex = (currentSafe - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, totalItems);
+      const pagedUser = filteredUser.slice(startIndex, endIndex);
+
+      // Buat list nomor halaman (dengan "..." bila banyak)
+      const getPageNumbers = (current: number, total: number): (number | '...')[] => {
+        if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+        if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+        if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+
+        return [1, '...', current - 1, current, current + 1, '...', total];
+      };
+      const pageNumbers = getPageNumbers(currentSafe, totalPages);
+      // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
     return (
         <div className={`bg-gray-100 rounded-xl p-4 min-h-[75vh]`}>
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl text-black font-bold">Kelola User</h2>
+            </div>
+            <div className="flex justify-between items-center mb-6 bg-white shadow rounded-xl p-6">
+                <div className="flex w-5/6 gap-8">
+                    <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari nama user" />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      >
+                        <option value="">Semua tipe user</option>
+                        <option value="admin">Admin</option>
+                        <option value="kasir">Kasir</option>
+                    </select>
+                </div>
                 <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow transition">Tambah User</button>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto pb-20 min-h-[40vh] relative bg-white rounded-xl shadow">
                 <table className="min-w-full bg-transparent rounded shadow text-sm">
                     <thead className="uppercase">
                         <tr className="border-b border-gray-200">
@@ -97,7 +158,7 @@ export default function User({ users }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map((user) => (
+                        {filteredUser.length > 0 && pagedUser.map(user => (
                             <tr key={user.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
                                 <td className="py-3 px-6 text-gray-900 font-medium">{user.nama_user}</td>
                                 <td className="py-3 px-6 text-gray-900 font-medium">{user.tipe_user}</td>
@@ -115,6 +176,76 @@ export default function User({ users }) {
                         ))}
                     </tbody>
                 </table>
+                {filteredUser.length === 0 && (
+                  <div className="text-center py-12">
+                    <svg className="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 className="mt-2 text-sm font-medium text-slate-900">Tidak ada Data</h3>
+                    <p className="mt-1 text-sm text-slate-500">Tidak ada Data yang sesuai dengan filter yang dipilih.</p>
+                  </div>
+                )}
+            {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
+                {filteredUser.length > 0 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t absolute bottom-0 left-0 right-0 border-slate-200 gap-3">
+                    <div className="text-sm text-slate-600">
+                      Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
+                      <span className="font-semibold">{endIndex}</span> dari
+                      <span className="font-semibold"> {totalItems}</span> user
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentSafe === 1}
+                        aria-label="Halaman sebelumnya"
+                      >
+                        Prev
+                      </button>
+
+                      {pageNumbers.map((p, idx) =>
+                        p === '...' ? (
+                          <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
+                        ) : (
+                          <button
+                            key={p}
+                            onClick={() => setCurrentPage(p as number)}
+                            aria-current={currentSafe === p ? 'page' : undefined}
+                            className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
+                              currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        )
+                      )}
+
+                      <button
+                        className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentSafe === totalPages}
+                        aria-label="Halaman berikutnya"
+                      >
+                        Next
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-slate-600">Per halaman:</span>
+                      <select
+                        value={pageSize}
+                        onChange={(e) => setPageSize(Number(e.target.value))}
+                        className="px-2 py-2 border rounded-lg text-sm"
+                      >
+                        {[10, 25, 50, 100].map(sz => (
+                          <option key={sz} value={sz}>{sz}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+                {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
             </div>
             {/* Modal Tambah User */}
             {showModal && (
