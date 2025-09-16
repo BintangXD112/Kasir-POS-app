@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
 import React, { useState, useMemo, useEffect } from 'react';
 
-function TabunganTable({ tabungan }) {
+function TabunganTable({ tabungan, currentTheme }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedIds, setExpandedIds] = useState(new Set());
 
@@ -21,6 +21,32 @@ function TabunganTable({ tabungan }) {
       item.member?.nama.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, tabungan]);
+
+  const appBg =
+    currentTheme === 'auto' ? 'bg-gray-100 dark:bg-zinc-950'
+    : currentTheme === 'Dark' ? 'bg-zinc-950'
+    : 'bg-gray-100';
+
+  const card =
+    currentTheme === 'auto'
+      ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
+      : currentTheme === 'Dark'
+      ? 'bg-zinc-900 border border-zinc-800'
+      : 'bg-white border border-zinc-200';
+
+  const text =
+    currentTheme === 'auto' ? 'text-zinc-900 dark:text-zinc-100'
+    : currentTheme === 'Dark' ? 'text-zinc-100'
+    : 'text-zinc-900';
+  const subText =
+    currentTheme === 'auto' ? 'text-zinc-500 dark:text-zinc-400'
+    : currentTheme === 'Dark' ? 'text-zinc-400'
+    : 'text-zinc-500';
+  const rowHover =
+    currentTheme === 'auto' ? 'hover:bg-slate-50 dark:hover:bg-zinc-800/60'
+    : currentTheme === 'Dark' ? 'hover:bg-zinc-800/60'
+    : 'hover:bg-slate-50';
+  const borderSoft = currentTheme === 'Dark' ? 'border-zinc-800' : 'border-slate-200';
 
   // Toggle expand / collapse
   const toggleExpand = (id) => {
@@ -52,22 +78,27 @@ function TabunganTable({ tabungan }) {
   // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
   
   return (
-    <div className="px-6 pt-6 relative pb-20">
+    <div className={`px-6 pt-6 relative pb-20 ${appBg} rounded-xl min-h-[75vh]`}>
     <div className="flex justify-between">
-        <h1 className="text-3xl font-extrabold mb-6 text-gray-900 text-left">Tabungan Member</h1>
+        <h1 className="text-3xl font-extrabold mb-6 text-left">Tabungan Member</h1>
 
         {/* Search Bar */}
         <div className="relative mb-8 max-w-">
             <input
             type="text"
             placeholder="Cari nama member..."
-            className="w-full pl-12 pr-10 py-3 rounded-xl border border-indigo-500 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-600 transition" 
+            className={`w-full shadow mx-4 pl-8 rounded-xl p-3 border
+            ${currentTheme === 'auto'
+              ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
+              : currentTheme === 'Dark'
+              ? 'border-zinc-700 bg-zinc-800 text-zinc-100'
+              : 'border-slate-300 bg-white text-zinc-900'}`}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             aria-label="Cari nama member"
             />
             <svg
-            className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none"
+            className="w-5 h-5 text-gray-400 absolute left-6 top-1/2 transform -translate-y-1/2 pointer-events-none"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             stroke="currentColor"
@@ -99,7 +130,7 @@ function TabunganTable({ tabungan }) {
             return (
               <div
                 key={id}
-                className="bg-white rounded-2xl shadow-md p-6 border border-gray-200"
+                className={`${card} rounded-2xl shadow-md p-6 border border-gray-200`}
                 aria-expanded={isExpanded}
               >
                 {/* Header */}
@@ -115,18 +146,18 @@ function TabunganTable({ tabungan }) {
                 }}
                 >
                 <div className="flex flex-col w-1/2">
-                    <span className="text-xs text-gray-500 uppercase tracking-wide">Nama Member</span>
-                    <h2 className="text-lg font-semibold text-gray-900">{member?.nama ?? '—'}</h2>
+                    <span className="text-xs uppercase tracking-wide">Nama Member</span>
+                    <h2 className="text-lg font-semibold">{member?.nama ?? '—'}</h2>
                 </div>
                 <div className="flex flex-col w-1/2 items-end">
-                    <span className="text-xs text-gray-500 uppercase tracking-wide">Total Saldo</span>
-                    <div className="text-indigo-600 font-bold text-lg">
+                    <span className="text-xs uppercase tracking-wide">Total Saldo</span>
+                    <div className="font-bold text-lg">
                     Rp {Number(saldo ?? 0).toLocaleString()}
                     </div>
                 </div>
                 <button
                     aria-label={isExpanded ? 'Collapse detail transaksi' : 'Expand detail transaksi'}
-                    className="ml-4 text-indigo-600 hover:text-indigo-800 focus:outline-none"
+                    className="ml-4 focus:outline-none"
                 >
                     {isExpanded ? (
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
@@ -186,67 +217,76 @@ function TabunganTable({ tabungan }) {
           })}
         </div>
       )}
-      {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
-            {filteredTabungan.length > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t absolute bottom-0 left-0 right-0 border-slate-200 gap-3">
-                <div className="text-sm text-slate-600">
-                  Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
-                  <span className="font-semibold">{endIndex}</span> dari
-                  <span className="font-semibold"> {totalItems}</span> tabungan
-                </div>
+      {/* pagination */}
+        {filteredTabungan.length > 0 && (
+          <div className={`flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t ${borderSoft} absolute bottom-0 left-0 right-0 gap-3`}>
+            <div className={`text-sm ${subText}`}>
+              Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
+              <span className="font-semibold">{endIndex}</span> dari
+              <span className="font-semibold"> {totalItems}</span> Member
+            </div>
 
-                <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <button
+                className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
+                  ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentSafe === 1}
+                aria-label="Halaman sebelumnya"
+              >
+                Prev
+              </button>
+
+              {pageNumbers.map((p, idx) =>
+                p === '...' ? (
+                  <span key={`dots-${idx}`} className={`px-2 select-none ${subText}`}>…</span>
+                ) : (
                   <button
-                    className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentSafe === 1}
-                    aria-label="Halaman sebelumnya"
+                    key={p}
+                    onClick={() => setCurrentPage(p as number)}
+                    aria-current={currentSafe === p ? 'page' : undefined}
+                    className={`px-3 py-2 border rounded-lg text-sm transition-all cursor-pointer
+                      ${currentSafe === p
+                        ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/90'
+                        : currentTheme === 'Dark'
+                        ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
+                        : 'border-slate-300 hover:bg-blue-600 hover:text-white'}`}
                   >
-                    Prev
+                    {p}
                   </button>
+                )
+              )}
 
-                  {pageNumbers.map((p, idx) =>
-                    p === '...' ? (
-                      <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
-                    ) : (
-                      <button
-                        key={p}
-                        onClick={() => setCurrentPage(p as number)}
-                        aria-current={currentSafe === p ? 'page' : undefined}
-                        className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
-                          currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    )
-                  )}
+              <button
+                className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
+                  ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentSafe === totalPages}
+                aria-label="Halaman berikutnya"
+              >
+                Next
+              </button>
+            </div>
 
-                  <button
-                    className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentSafe === totalPages}
-                    aria-label="Halaman berikutnya"
-                  >
-                    Next
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-600">Per halaman:</span>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => setPageSize(Number(e.target.value))}
-                    className="px-2 py-2 border rounded-lg text-sm"
-                  >
-                    {[10, 25, 50, 100].map(sz => (
-                      <option key={sz} value={sz}>{sz}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-            {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
+            <div className="flex items-center gap-2">
+              <span className={`text-sm ${subText}`}>Per halaman:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className={`px-2 py-2 border rounded-lg text-sm
+                  ${currentTheme === 'auto'
+                    ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800'
+                    : currentTheme === 'Dark'
+                    ? 'border-zinc-700 bg-zinc-800'
+                    : 'border-slate-300 bg-white'}`}
+              >
+                {[10, 25, 50, 100].map(sz => (
+                  <option key={sz} value={sz}>{sz}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

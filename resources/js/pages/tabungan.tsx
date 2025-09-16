@@ -1,3 +1,4 @@
+
 import { router } from '@inertiajs/react';
 import { PageProps } from '../types/index';
 import React, { useState, useMemo, useEffect } from 'react';
