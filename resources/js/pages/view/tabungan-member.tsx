@@ -223,7 +223,7 @@ function TabunganTable({ tabungan, currentTheme }) {
             <div className={`text-sm ${subText}`}>
               Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
               <span className="font-semibold">{endIndex}</span> dari
-              <span className="font-semibold"> {totalItems}</span> Member
+              <span className="font-semibold"> {totalItems}</span> Tabungan Member
             </div>
 
             <div className="flex items-center gap-2">

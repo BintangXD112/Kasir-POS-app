@@ -1,6 +1,10 @@
 import React, { useEffect, useState, useMemo } from "react";
 
-export default function VoucherUsage() {
+interface VoucherUsage {
+  currentTheme: "auto" | "Light" | "Dark";
+}
+
+export default function VoucherUsage({currentTheme} : VoucherUsage) {
   const [usages, setUsages] = useState<UsageDiskon[]>([]);
   const [vouchers, setVouchers] = useState<Diskon[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,6 +18,32 @@ export default function VoucherUsage() {
     setCurrentPage(1);
   }, [searchTerm, pageSize]);
   // ====== ⬆️ STATE & LOGIC PAGINATION  ⬆️ ======
+
+  const appBg =
+    currentTheme === 'auto' ? 'bg-gray-100 dark:bg-zinc-950'
+    : currentTheme === 'Dark' ? 'bg-zinc-950'
+    : 'bg-gray-100';
+  const card =
+    currentTheme === 'auto'
+      ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
+      : currentTheme === 'Dark'
+      ? 'bg-zinc-900 border border-zinc-800'
+      : 'bg-white border border-zinc-200';
+  const text =
+    currentTheme === 'auto' ? 'text-zinc-900 dark:text-zinc-100'
+    : currentTheme === 'Dark' ? 'text-zinc-100'
+    : 'text-zinc-900';
+  const subText =
+    currentTheme === 'auto' ? 'text-zinc-500 dark:text-zinc-400'
+    : currentTheme === 'Dark' ? 'text-zinc-400'
+    : 'text-zinc-500';
+  const rowHover =
+    currentTheme === 'auto' ? 'hover:bg-slate-50 dark:hover:bg-zinc-800/60'
+    : currentTheme === 'Dark' ? 'hover:bg-zinc-800/60'
+    : 'hover:bg-slate-50';
+  const borderSoft = currentTheme === 'Dark' ? 'border-zinc-800' : 'border-slate-200';
+  const inputTheme = currentTheme === 'auto' ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900';
+
 
   const filteredUsages = useMemo(() => {
     let out = usages;
@@ -79,17 +109,17 @@ export default function VoucherUsage() {
   // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
 
   return (
-    <div className="p-6 max-w-full min-h-[75vh] mx-auto bg-gray-100 rounded-xl shadow text-black">
+    <div className={`p-6 max-w-full min-h-[75vh] mx-auto ${appBg} ${text} rounded-xl shadow text-black`}>
       <div className={`flex justify-between items-center`}>
         <h2 className="text-xl font-semibold mb-4 w-1/3">Penggunaan Voucher</h2>
       </div>
-      <div className="flex justify-between items-center mb-6 bg-white shadow rounded-xl p-6">
+      <div className={`flex justify-between items-center mb-6 ${card} shadow rounded-xl p-6`}>
         <div className="flex w-full justify-between gap-8">
-          <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari nama member atau kode transaksi" />
+          <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 ${inputTheme} rounded-xl p-4`} placeholder="Cari nama member atau kode transaksi" />
           <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className={`px-4 py-2 ${inputTheme} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
               >
                 <option value="">Semua voucher</option>
                 {vouchers.map((item, i) => (
@@ -98,10 +128,10 @@ export default function VoucherUsage() {
               </select>
         </div>
       </div>
-      <div className="overflow-x-auto pb-20 min-h-[40vh] relative bg-white rounded-xl shadow">
+      <div className={`overflow-x-auto pb-20 min-h-[40vh] ${card} relative bg-white rounded-xl shadow`}>
         {loading ? <div className="text-center py-8">Loading...</div> : (
         <table className="min-w-full text-sm text-left">
-          <thead className="uppercase">
+          <thead className={`${currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
             <tr className="border-b border-gray-200">
               <th className="py-3 px-6">Member</th>
               <th className="py-3 px-6">Kode Voucher</th>
@@ -111,7 +141,7 @@ export default function VoucherUsage() {
           </thead>
           <tbody>
             {filteredUsages.length > 0 && pagedDiskon.map((item, i) => (
-              <tr key={i} className="border-b border-gray-200 hover:bg-gray-50 transition">
+              <tr key={i} className={`${rowHover} ${borderSoft} transition`}>
                 <td className="py-3 px-6">{item.member}</td>
                 <td className="py-3 px-6">{item.kode_voucher}</td>
                 <td className="py-3 px-6">{item.kode_transaksi}</td>
@@ -132,16 +162,17 @@ export default function VoucherUsage() {
             )}
         {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
             {filteredUsages.length > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t absolute bottom-0 left-0 right-0 border-slate-200 gap-3">
-                <div className="text-sm text-slate-600">
+              <div className={`flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t ${borderSoft} absolute bottom-0 left-0 right-0 gap-3`}>
+                <div className={`text-sm ${subText}`}>
                   Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
                   <span className="font-semibold">{endIndex}</span> dari
-                  <span className="font-semibold"> {totalItems}</span> penggunaan voucher
+                  <span className="font-semibold"> {totalItems}</span> Voucher Diskon
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
-                    className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
+                    className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
+                      ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentSafe === 1}
                     aria-label="Halaman sebelumnya"
@@ -151,15 +182,18 @@ export default function VoucherUsage() {
 
                   {pageNumbers.map((p, idx) =>
                     p === '...' ? (
-                      <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
+                      <span key={`dots-${idx}`} className={`px-2 select-none ${subText}`}>…</span>
                     ) : (
                       <button
                         key={p}
                         onClick={() => setCurrentPage(p as number)}
                         aria-current={currentSafe === p ? 'page' : undefined}
-                        className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
-                          currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
-                        }`}
+                        className={`px-3 py-2 border rounded-lg text-sm transition-all cursor-pointer
+                          ${currentSafe === p
+                            ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/90'
+                            : currentTheme === 'Dark'
+                            ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
+                            : 'border-slate-300 hover:bg-blue-600 hover:text-white'}`}
                       >
                         {p}
                       </button>
@@ -167,7 +201,8 @@ export default function VoucherUsage() {
                   )}
 
                   <button
-                    className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                    className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
+                      ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentSafe === totalPages}
                     aria-label="Halaman berikutnya"
@@ -177,11 +212,16 @@ export default function VoucherUsage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-600">Per halaman:</span>
+                  <span className={`text-sm ${subText}`}>Per halaman:</span>
                   <select
                     value={pageSize}
                     onChange={(e) => setPageSize(Number(e.target.value))}
-                    className="px-2 py-2 border rounded-lg text-sm"
+                    className={`px-2 py-2 border rounded-lg text-sm
+                      ${currentTheme === 'auto'
+                        ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800'
+                        : currentTheme === 'Dark'
+                        ? 'border-zinc-700 bg-zinc-800'
+                        : 'border-slate-300 bg-white'}`}
                   >
                     {[10, 25, 50, 100].map(sz => (
                       <option key={sz} value={sz}>{sz}</option>

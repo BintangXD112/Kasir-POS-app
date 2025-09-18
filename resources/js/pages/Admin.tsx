@@ -8,10 +8,11 @@ import type { PageProps } from '@/types/type';
 import VoucherDiskon from './view/voucher-diskon';
 import Member from './view/member';
 import VoucherUsage from './view/voucher-usage';
-import User from './view/user';
+import Users from './view/user';
 import TransaksiAdminPage from './view/transaksi-admin.js';
 import TabunganMember from './view/tabungan-member.js';
 import Kategori from './view/kategori.js';
+import { House, HandCoins, PiggyBank, User, Package, Ticket } from 'lucide-react';
 
 export default function Admin() {
   const { users, members, produks, pemasukan_bulan_ini, transaksi, tabungan, kategori } =
@@ -112,6 +113,17 @@ export default function Admin() {
       ? 'hover:bg-gray-600'
       : 'hover:bg-zinc-800';
 
+      const navItems = [
+        { key: "home",            label: "Dashboard",          icon: House },
+        { key: "transaksi",       label: "Riwayat Transaksi",  icon: HandCoins },
+        { key: "member",          label: "Kelola Member",      icon: User },
+        { key: "tabungan-member", label: "Tabungan Member",    icon: PiggyBank },
+        { key: "kategori",        label: "Kategori Produk",    icon: Package },
+        { key: "produk",          label: "Kelola Produk",      icon: Package },
+        { key: "voucher-diskon",  label: "Voucher Diskon",     icon: Ticket },
+        { key: "voucher-usage",   label: "Penggunaan Voucher", icon: Ticket },
+        { key: "user",            label: "Kelola User",        icon: User },
+      ];
   return (
     <div className={`w-full h-screen ${bgApp} transition-colors`}>
       <div className="w-full h-full flex">
@@ -172,46 +184,27 @@ export default function Admin() {
           className={`${nav ? 'w-64' : 'w-0'} ${sidebarBg} transition-all duration-300 ease-in-out overflow-hidden`}
         >
           <div className={`h-screen flex flex-col ${nav ? 'block' : 'hidden'}`}>
-            <div className="p-4 border-b border-transparent/10">
+            <div className={`p-[1.1rem] border-b border-transparent/10 ${headerBg}`}>
               <h3
-                className={`text-lg font-semibold ${
-                  currentTheme === 'auto'
-                    ? 'text-zinc-900 dark:text-white'
-                    : currentTheme === 'Light'
-                    ? 'text-zinc-900'
-                    : 'text-white'
-                }`}
+                className={`text-lg font-semibold text-white`}
               >
                 Menu
               </h3>
             </div>
             <nav className="p-3 space-y-2 overflow-y-auto">
-              {[
-                { key: 'home', label: 'Dashboard', icon: 'home' },
-                { key: 'transaksi', label: 'Riwayat Transaksi', icon: 'grid' },
-                { key: 'member', label: 'Kelola Member', icon: 'users' },
-                { key: 'tabungan-member', label: 'Tabungan Member', icon: 'users' },
-                { key: 'kategori', label: 'Kategori Produk', icon: 'tray' },
-                { key: 'produk', label: 'Kelola Produk', icon: 'tray' },
-                { key: 'voucher-diskon', label: 'Voucher Diskon', icon: 'ticket' },
-                { key: 'voucher-usage', label: 'Penggunaan Voucher', icon: 'clip' },
-                { key: 'user', label: 'Kelola User', icon: 'user' },
-              ].map((item) => (
+              {navItems.map((item) => {
+              const Icon = item.icon; // <- ambil referensi dulu
+              return (
                 <a
                   key={item.key}
-                  onClick={() => {
-                    setPage(item.key);
-                    setNav(false);
-                  }}
-                  className={`${sidebarItemBase} ${
-                    page === item.key ? sidebarItemActive : sidebarItemIdle
-                  }`}
+                  onClick={() => { setPage(item.key); setNav(false); }}
+                  className={`${sidebarItemBase} ${page === item.key ? sidebarItemActive : sidebarItemIdle}`}
                 >
-                  {/* ikon sederhana */}
-                  
+                  <Icon className="mr-2 size-4" />
                   {item.label}
                 </a>
-              ))}
+              );
+            })}
             </nav>
           </div>
         </aside>
@@ -311,7 +304,7 @@ export default function Admin() {
                 {page === 'member' && <Member members={members} currentTheme={currentTheme} />}
                 {page === 'tabungan-member' && <TabunganMember tabungan={tabungan} currentTheme={currentTheme} />}
                 {page === 'voucher-usage' && <VoucherUsage currentTheme={currentTheme} />}
-                {page === 'user' && <User users={users} currentTheme={currentTheme} />}
+                {page === 'user' && <Users users={users} currentTheme={currentTheme} />}
               </div>
             </div>
           </main>

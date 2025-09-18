@@ -6,11 +6,13 @@ import { router } from "@inertiajs/react";
 interface ProdukProps {
   produks: ProdukType[];
   kategori: KategoriType[];
+  currentTheme: "auto" | "Light" | "Dark";
 }
 
-export default function Produk({ produks, kategori }: ProdukProps) {
+export default function Produk({ produks, kategori, currentTheme }: ProdukProps) {
   const formatIDR = (n: number) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`;
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState<ProdukType | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -30,6 +32,31 @@ export default function Produk({ produks, kategori }: ProdukProps) {
     setCurrentPage(1);
   }, [searchTerm, pageSize]);
   // ====== ⬆️ STATE & LOGIC PAGINATION  ⬆️ ======
+
+  const appBg =
+    currentTheme === 'auto' ? 'bg-gray-100 dark:bg-zinc-950'
+    : currentTheme === 'Dark' ? 'bg-zinc-950'
+    : 'bg-gray-100';
+  const card =
+    currentTheme === 'auto'
+      ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
+      : currentTheme === 'Dark'
+      ? 'bg-zinc-900 border border-zinc-800'
+      : 'bg-white border border-zinc-200';
+  const text =
+    currentTheme === 'auto' ? 'text-zinc-900 dark:text-zinc-100'
+    : currentTheme === 'Dark' ? 'text-zinc-100'
+    : 'text-zinc-900';
+  const subText =
+    currentTheme === 'auto' ? 'text-zinc-500 dark:text-zinc-400'
+    : currentTheme === 'Dark' ? 'text-zinc-400'
+    : 'text-zinc-500';
+  const rowHover =
+    currentTheme === 'auto' ? 'hover:bg-slate-50 dark:hover:bg-zinc-800/60'
+    : currentTheme === 'Dark' ? 'hover:bg-zinc-800/60'
+    : 'hover:bg-slate-50';
+  const borderSoft = currentTheme === 'Dark' ? 'border-zinc-800' : 'border-slate-200';
+  const inputTheme = currentTheme === 'auto' ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900';
 
   const openEditModal = (produk: ProdukType) => {
     setEditData({
@@ -72,13 +99,22 @@ export default function Produk({ produks, kategori }: ProdukProps) {
       }
     });
   };
+
   const filteredProduk = useMemo(()=>{
-    if(!searchTerm) return produks;
-    return produks.filter(item=>
-      item.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.kategori?.nama_kategori?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  })
+        let out = produks;
+        if(searchTerm !== ""){
+            const q = searchTerm.toLowerCase()
+            out = out.filter(item=>
+                item.nama.toLowerCase().includes(q)
+                )
+        }
+        if(statusFilter !== ""){
+            out = out.filter(item=>
+                item.kategori?.nama_kategori.toLowerCase() === statusFilter.toLowerCase()
+                )
+        }
+        return out;
+    }, [produks, searchTerm, statusFilter])
 
   // ====== ⬇️ DERIVED PAGINATION  ⬇️ ======
   const totalItems = filteredProduk.length;
@@ -102,12 +138,31 @@ export default function Produk({ produks, kategori }: ProdukProps) {
 
 
   return (
-    <div className="p-6 max-w-full mx-auto bg-gray-100 rounded-xl shadow text-black">
+    <div className={`p-6 max-w-full mx-auto ${appBg} ${text} rounded-xl shadow text-black`}>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Data produk</h2>
       </div>
-      <div className="flex justify-between items-center mb-6 bg-white shadow rounded-xl p-6">
-        <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 shadow mx-4 border border-slate-300 bg-white rounded-xl p-4`} placeholder="Cari nama produk atau kategori" />
+      <div className={`flex justify-between items-center mb-6 ${card} shadow rounded-xl p-6`}>
+        <div className="flex w-5/6 gap-8">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); }}
+            className={`w-1/2 shadow mx-4 rounded-xl p-3 border ${inputTheme}`}
+            placeholder="Cari nama produk..."
+          />  
+          <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className={`px-4 py-2 ${inputTheme} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+            >
+              <option value="">Semua kategori produk</option>
+              {kategori.map((item, i)=>
+                (
+                  <option value={`${item.nama_kategori}`}>{item.nama_kategori}</option>
+                  ))}
+          </select>
+        </div>
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded-md"
           onClick={() => setShowAddModal(true)}
@@ -115,9 +170,9 @@ export default function Produk({ produks, kategori }: ProdukProps) {
           Tambah produk
         </button>
       </div>
-      <div className="overflow-x-auto min-h-[40vh] relative pb-20 bg-white rounded-xl shadow">
+      <div className={`overflow-x-auto min-h-[40vh] relative pb-20 ${card} rounded-xl shadow`}>
         <table className="min-w-full text-sm text-left">
-          <thead className="uppercase">
+          <thead className={`${currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
             <tr className="border-b border-gray-200">
               <th className="py-3 px-6">Nama</th>
               <th className="py-3 px-6">Harga</th>
@@ -131,7 +186,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
             {filteredProduk.length > 0 && pagedProduk.map((item) => (
               <tr
                 key={item.id}
-                className="border-b border-gray-200 hover:bg-gray-50 transition"
+                className={`${borderSoft} ${rowHover} transition`}
               >
                 <td className="py-3 px-6">{item.nama}</td>
                 <td className="py-3 px-6">{formatIDR(item.harga)}</td>
@@ -171,18 +226,18 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                 <p className="mt-1 text-sm text-slate-500">Tidak ada data yang sesuai dengan filter yang dipilih.</p>
               </div>
             )}
-           {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
-            {filteredProduk.length > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t absolute bottom-0 left-0 right-0 border-slate-200 gap-3">
-                <div className="text-sm text-slate-600">
+           {filteredProduk.length > 0 && (
+              <div className={`flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t ${borderSoft} absolute bottom-0 left-0 right-0 gap-3`}>
+                <div className={`text-sm ${subText}`}>
                   Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
                   <span className="font-semibold">{endIndex}</span> dari
-                  <span className="font-semibold"> {totalItems}</span> produk
+                  <span className="font-semibold"> {totalItems}</span> Produk
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
-                    className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
+                    className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
+                      ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentSafe === 1}
                     aria-label="Halaman sebelumnya"
@@ -192,15 +247,18 @@ export default function Produk({ produks, kategori }: ProdukProps) {
 
                   {pageNumbers.map((p, idx) =>
                     p === '...' ? (
-                      <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
+                      <span key={`dots-${idx}`} className={`px-2 select-none ${subText}`}>…</span>
                     ) : (
                       <button
                         key={p}
                         onClick={() => setCurrentPage(p as number)}
                         aria-current={currentSafe === p ? 'page' : undefined}
-                        className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
-                          currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
-                        }`}
+                        className={`px-3 py-2 border rounded-lg text-sm transition-all cursor-pointer
+                          ${currentSafe === p
+                            ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/90'
+                            : currentTheme === 'Dark'
+                            ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
+                            : 'border-slate-300 hover:bg-blue-600 hover:text-white'}`}
                       >
                         {p}
                       </button>
@@ -208,7 +266,8 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                   )}
 
                   <button
-                    className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                    className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
+                      ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentSafe === totalPages}
                     aria-label="Halaman berikutnya"
@@ -218,11 +277,16 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-600">Per halaman:</span>
+                  <span className={`text-sm ${subText}`}>Per halaman:</span>
                   <select
                     value={pageSize}
                     onChange={(e) => setPageSize(Number(e.target.value))}
-                    className="px-2 py-2 border rounded-lg text-sm"
+                    className={`px-2 py-2 border rounded-lg text-sm
+                      ${currentTheme === 'auto'
+                        ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800'
+                        : currentTheme === 'Dark'
+                        ? 'border-zinc-700 bg-zinc-800'
+                        : 'border-slate-300 bg-white'}`}
                   >
                     {[10, 25, 50, 100].map(sz => (
                       <option key={sz} value={sz}>{sz}</option>
@@ -234,8 +298,8 @@ export default function Produk({ produks, kategori }: ProdukProps) {
             {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
         {/* Edit Modal */}
         {showEditModal && editData && (
-          <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50v backdrop-blur-sm">
-            <div className="bg-white p-6 rounded-lg w-full max-w-md">
+          <div className={`fixed inset-0 bg-opacity-50 flex items-center justify-center z-50v backdrop-blur-sm`}>
+            <div className={`${card} ${text} p-6 rounded-lg w-full max-w-md`}>
               <h2 className="text-xl font-semibold mb-4">Edit Produk</h2>
               <form
                 onSubmit={(e) => {
@@ -269,7 +333,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                   type="text"
                   value={editData?.nama ?? ""}
                   onChange={(e) => setEditData({ ...editData, nama: e.target.value })}
-                  className="w-full border p-2 mb-2 border-gray-400 rounded"
+                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
                   placeholder="Nama produk"
                   required
                 />
@@ -280,7 +344,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                   onChange={(e) =>
                     setEditData({ ...editData, harga: Number(e.target.value) })
                   }
-                  className="w-full border p-2 mb-2 border-gray-400 rounded"
+                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
                   placeholder="Harga"
                   required
                 />
@@ -291,7 +355,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                   onChange={(e) =>
                     setEditData({ ...editData, stok: Number(e.target.value) })
                   }
-                  className="w-full border p-2 mb-2 border-gray-400 rounded"
+                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
                   placeholder="Stok"
                   required
                 />
@@ -301,7 +365,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                   onChange={(e) =>
                     setEditData({ ...editData!, id_kategori: Number(e.target.value) })
                   }
-                  className="w-full border p-2 mb-2 border-gray-400 rounded"
+                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
                   required
                 >
                   {kategori.map((kat) => (
@@ -349,7 +413,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
         {/* Add Modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50v backdrop-blur-sm">
-            <div className="bg-white p-6 rounded-lg w-full max-w-md">
+            <div className={`${card} ${text} p-6 rounded-lg w-full max-w-md`}>
               <h2 className="text-xl font-semibold mb-4">Tambah Produk</h2>
               <form
                 onSubmit={(e) => {
@@ -385,7 +449,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                   type="text"
                   value={addData.nama}
                   onChange={(e) => setAddData({ ...addData, nama: e.target.value })}
-                  className="w-full border p-2 mb-2 border-gray-400 rounded"
+                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
                   placeholder="Nama produk"
                   required
                 />
@@ -394,7 +458,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                   type="number"
                   value={addData.harga}
                   onChange={(e) => setAddData({ ...addData, harga: e.target.value })}
-                  className="w-full border p-2 mb-2 border-gray-400 rounded"
+                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
                   placeholder="Harga"
                   required
                 />
@@ -403,7 +467,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                   type="number"
                   value={addData.stok}
                   onChange={(e) => setAddData({ ...addData, stok: e.target.value })}
-                  className="w-full border p-2 mb-2 border-gray-400 rounded"
+                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
                   placeholder="Stok"
                   required
                 />
@@ -413,7 +477,7 @@ export default function Produk({ produks, kategori }: ProdukProps) {
                   onChange={(e) =>
                     setAddData({ ...addData, id_kategori: Number(e.target.value) })
                   }
-                  className="w-full border p-2 mb-2 border-gray-400 rounded"
+                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
                   required
                 >
                   {kategori.map((kat) => (
