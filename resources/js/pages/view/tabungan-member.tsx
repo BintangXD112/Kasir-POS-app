@@ -179,9 +179,9 @@ function TabunganTable({ tabungan, currentTheme }) {
                       detail.map(({ created_at, tipe, nominal, keterangan }, idx) => (
                         <div
                           key={idx}
-                          className="flex justify-between items-center bg-gray-50 rounded-lg p-4 border border-gray-200"
+                          className={`flex justify-between items-center ${card} ${text} rounded-lg p-4 border border-gray-200`}
                         >
-                          <div className="flex flex-col text-gray-600 font-mono text-sm w-36 shrink-0">
+                          <div className="flex flex-col font-mono text-sm w-36 shrink-0">
                             {new Date(created_at).toLocaleString('id-ID', {
                               day: '2-digit',
                               month: 'short',
@@ -199,16 +199,16 @@ function TabunganTable({ tabungan, currentTheme }) {
                           >
                             {tipe === 'deposit' ? 'Deposit' : 'Penarikan'}
                           </div>
-                          <div className="flex-1 px-4 text-gray-700 italic truncate">
+                          <div className="flex-1 px-4 italic truncate">
                             {keterangan ?? <span className="text-gray-400">—</span>}
                           </div>
-                          <div className="font-semibold text-gray-900 whitespace-nowrap">
+                          <div className="font-semibold whitespace-nowrap">
                             Rp {Number(nominal ?? 0).toLocaleString()}
                           </div>
                         </div>
                       ))
                     ) : (
-                      <p className="text-center text-gray-400 italic">Tidak ada transaksi</p>
+                      <p className="text-center italic">Tidak ada transaksi</p>
                     )}
                   </div>
                 )}

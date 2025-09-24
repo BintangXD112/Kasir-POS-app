@@ -587,6 +587,50 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             console.log(err)
         }
     };
+    const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'auto');
+    const [theme, setTheme] = useState(false);
+
+    const bgApp =
+    currentTheme === 'auto'
+      ? 'bg-gray-50 dark:bg-zinc-950'
+      : currentTheme === 'Light'
+      ? 'bg-gray-50'
+      : 'bg-zinc-950';
+
+  const headerBg =
+    currentTheme === 'auto'
+      ? 'bg-gray-800 dark:bg-zinc-900/80'
+      : currentTheme === 'Light'
+      ? 'bg-gray-800' // header tetap gelap biar kontras
+      : 'bg-zinc-900/80';
+
+  const headerText = 'text-white';
+
+  const cardBg =
+    currentTheme === 'auto'
+      ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
+      : currentTheme === 'Light'
+      ? 'bg-white border border-zinc-200'
+      : 'bg-zinc-900 border border-zinc-800';
+
+  const inputTheme = currentTheme === 'auto' ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900';
+  const rowHover =
+        currentTheme === 'auto' ? 'hover:bg-slate-50 dark:hover:bg-zinc-800/60'
+        : currentTheme === 'Dark' ? 'hover:bg-zinc-800/60'
+        : 'hover:bg-slate-50';
+  const borderSoft = currentTheme === 'Dark' ? 'border-zinc-800' : 'border-slate-200';
+  const subText =
+        currentTheme === 'auto' ? 'text-zinc-500 dark:text-zinc-400'
+        : currentTheme === 'Dark' ? 'text-zinc-400'
+        : 'text-zinc-500';
+  const contentText =
+    currentTheme === 'auto'
+      ? 'text-zinc-900 dark:text-zinc-100'
+      : currentTheme === 'Light'
+      ? 'text-zinc-900'
+      : 'text-zinc-100';
+
+
 
 
     // ====== ⬇️ DERIVED PAGINATION  ⬇️ ======
@@ -611,8 +655,59 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
 
 
     return (
-        <div className="flex h-screen w-full bg-gray-600 flex-col gap-4">
-            <div className={`flex justify-between pt-4 px-4 bg-gray-800 py-4`}>
+        <div className={`flex h-screen w-full ${bgApp} flex-col gap-4`}>
+            {/*Tema*/}
+            <div className={`${currentTheme === 'auto' ? 'bg-zinc-50 shadow-gray-800 dark:shadow-gray-500 dark:bg-zinc-900 dark:text-white' : currentTheme === 'Light' ? 'bg-zinc-50 text-zinc-900 shadow-gray-800' : currentTheme === 'Dark' && 'bg-zinc-900 text-white shadow-gray-500'} rounded-xl transition-all py-2 gap-2 ${theme ? 'h-30 justify-end' :'h-12 justify-center'} w-12 fixed bottom-4 right-4 shadow border-slate-100 flex flex-col items-center z-10`}>
+                {theme && (
+                    <>
+                    <svg onClick={()=>setTheme(false)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                      <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
+                    </svg>
+                    {currentTheme === "auto" ? (
+                        <>
+                        <svg onClick={()=>setCurrentTheme("Dark")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                          <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
+                        </svg>
+                        <svg onClick={()=>setCurrentTheme("Light")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                          <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+                        </svg>
+                        </>
+                        ): currentTheme === "Light" ? (
+                        <>
+                        <svg onClick={()=>setCurrentTheme("Dark")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                          <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
+                        </svg>
+                        <svg onClick={()=>setCurrentTheme("auto")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                          <path fillRule="evenodd" d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
+                        </svg>
+                        </>
+                        ): currentTheme === "Dark" && (
+                        <>
+                        <svg onClick={()=>setCurrentTheme("auto")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                          <path fillRule="evenodd" d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
+                        </svg>
+                        <svg onClick={()=>setCurrentTheme("Light")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                          <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+                        </svg>
+                        </>
+                        )}
+                    </>
+                    )}
+                {currentTheme === 'auto' ? (
+                    <svg onClick={()=>setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                      <path fillRule="evenodd" d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
+                    </svg>
+                    ): currentTheme === 'Light' ? (
+                    <svg onClick={()=>setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                      <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+                    </svg>
+                    ): currentTheme === 'Dark' && (
+                    <svg onClick={()=>setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                      <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
+                    </svg>
+                    )}
+            </div>
+            <div className={`flex justify-between pt-4 px-4 ${headerBg} py-4`}>
                 <div className="w-1/6 items-center flex">
                     <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
                 </div>
@@ -659,10 +754,10 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                 </div>
             </div>
             <div className={`flex h-full p-4 w-full`}>
-                <div className={`w-4/6 h-full bg-white rounded-lg pt-4 pb-20 relative px-4`}>
+                <div className={`w-4/6 h-full ${cardBg} ${contentText} rounded-lg pt-4 pb-20 relative px-4`}>
                     <div className={`flex items-center mb-4`}>
                         <div className={`relative w-full`}>
-                            <input type="text" placeholder='Cari Produk' className={`text-black placeholder-gray-500 border-gray-500 border p-2 focus:outline-none rounded-full w-full`} value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value) }} />
+                            <input type="text" placeholder='Cari Produk' className={`${inputTheme} border p-2 rounded-full w-full`} value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value) }} />
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 font-bold text-red-500 absolute right-2 top-2 cursor-pointer">
                                 <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clipRule="evenodd" />
                             </svg>
@@ -695,7 +790,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             <div className="flex gap-2 mb-4">
                             <button
                                 className={`px-3 py-1 rounded ${
-                                selectedKategori === 'semua' ? 'bg-red-500 text-white' : 'bg-gray-300'
+                                selectedKategori === 'semua' ? 'bg-red-500 text-white' : 'bg-gray-300 text-black'
                                 }`}
                                 onClick={() => setSelectedKategori('semua')}
                             >
@@ -705,7 +800,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                 <button
                                 key={kat.id}
                                 className={`px-3 py-1 rounded w-fit ${
-                                    selectedKategori === kat.id ? 'bg-red-500 text-white' : 'bg-gray-300'
+                                    selectedKategori === kat.id ? 'bg-red-500 text-white' : 'bg-gray-300 text-black'
                                 }`}
                                 onClick={() => setSelectedKategori(kat.id)}
                                 >
@@ -731,34 +826,35 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                     <div className={`grid grid-cols-6 gap-4 mt-4 p-2 [scrollbar-width:thin] overflow-y-auto max-h-[375px] overflow-x-hidden`}>
                         {filterNamaProduk && filterNamaProduk.length > 0 ? (
                             pagedProduk.map((item) => (
-                                <div key={item.id} onClick={() => tambahTransaksi(item)} className={`flex flex-col rounded-sm border hover:scale-105 hover:shadow-md hover:shadow-gray-500 transition-all duration-300 ease-in-out cursor-pointer border-gray-300 w-[120px] h-[160px]`}>
+                                <div key={item.id} onClick={() => tambahTransaksi(item)} className={`flex flex-col rounded-sm ${borderSoft} ${subText} border hover:scale-105 hover:shadow-md hover:shadow-gray-500 transition-all duration-300 ease-in-out cursor-pointer w-[120px] h-[160px]`}>
                                     <img src={`/logo/${item.gambar || 'default.png'}`} alt={item.nama} className={`object-cover w-full h-20 rounded-t-sm`} />
                                     <div className={`p-2 rounded-b-sm`}>
-                                        <p className={`text-gray-600 text-sm font-semibold truncate`}>{item.nama}</p>
-                                        <p className={`text-gray-500 text-xs`}>Rp. {item.harga.toLocaleString('id-ID')}</p>
-                                        <p className={`text-gray-600 text-xs`}>Stok: {item.stok}</p>
+                                        <p className={`text-sm font-semibold truncate`}>{item.nama}</p>
+                                        <p className={`text-xs`}>Rp. {item.harga.toLocaleString('id-ID')}</p>
+                                        <p className={`text-xs`}>Stok: {item.stok}</p>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="col-span-6 flex justify-center items-center w-full h-[350px]">
-                                <p className="text-black text-center">Produk tidak ditemukan</p>
+                            <div className="col-span-6 flex justify-center items-center w-full h-full">
+                                <p className="text-center">Produk tidak ditemukan</p>
                             </div>
                         )}
 
                     </div>
                     {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
                     {filterNamaProduk.length > 0 && (
-                      <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t absolute bottom-0 left-0 right-0 border-slate-200 gap-3">
-                        <div className="text-sm text-slate-600">
+                      <div className={`flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t ${borderSoft} absolute bottom-0 left-0 right-0 gap-3`}>
+                        <div className={`text-sm ${subText}`}>
                           Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
                           <span className="font-semibold">{endIndex}</span> dari
-                          <span className="font-semibold"> {totalItems}</span> produk
+                          <span className="font-semibold"> {totalItems}</span> Produk
                         </div>
 
                         <div className="flex items-center gap-2">
                           <button
-                            className="px-3 py-2 border rounded-lg cursor-pointer disabled:cursor-not-allowed text-sm hover:bg-slate-50 disabled:opacity-50"
+                            className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
+                              ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={currentSafe === 1}
                             aria-label="Halaman sebelumnya"
@@ -768,15 +864,18 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
 
                           {pageNumbers.map((p, idx) =>
                             p === '...' ? (
-                              <span key={`dots-${idx}`} className="px-2 text-slate-500 select-none">…</span>
+                              <span key={`dots-${idx}`} className={`px-2 select-none ${subText}`}>…</span>
                             ) : (
                               <button
                                 key={p}
                                 onClick={() => setCurrentPage(p as number)}
                                 aria-current={currentSafe === p ? 'page' : undefined}
-                                className={`px-3 py-2 border rounded-lg text-sm hover:scale-105 transition-all cursor-pointer ${
-                                  currentSafe === p ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/50' : 'hover:text-white hover:bg-blue-600'
-                                }`}
+                                className={`px-3 py-2 border rounded-lg text-sm transition-all cursor-pointer
+                                  ${currentSafe === p
+                                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/90'
+                                    : currentTheme === 'Dark'
+                                    ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
+                                    : 'border-slate-300 hover:bg-blue-600 hover:text-white'}`}
                               >
                                 {p}
                               </button>
@@ -784,7 +883,8 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                           )}
 
                           <button
-                            className="px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                            className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
+                              ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                             disabled={currentSafe === totalPages}
                             aria-label="Halaman berikutnya"
@@ -794,13 +894,18 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-600">Per halaman:</span>
+                          <span className={`text-sm ${subText}`}>Per halaman:</span>
                           <select
                             value={pageSize}
                             onChange={(e) => setPageSize(Number(e.target.value))}
-                            className="px-2 py-2 border rounded-lg text-sm"
+                            className={`px-2 py-2 border rounded-lg text-sm
+                              ${currentTheme === 'auto'
+                                ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800'
+                                : currentTheme === 'Dark'
+                                ? 'border-zinc-700 bg-zinc-800'
+                                : 'border-slate-300 bg-white'}`}
                           >
-                            {[12, 24, 48, 96].map(sz => (
+                            {[10, 25, 50, 100].map(sz => (
                               <option key={sz} value={sz}>{sz}</option>
                             ))}
                           </select>
@@ -809,9 +914,9 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                     )}
                     {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
                 </div>
-                <div className="ml-4 flex-1 relative overflow-x-auto shadow-md sm:rounded-lg bg-white h-full w-full">
+                <div className={`ml-4 flex-1 relative overflow-x-auto shadow-md sm:rounded-lg ${cardBg} ${contentText} h-full w-full`}>
                     <div className={`flex items-center my-2 px-2 gap-2`}>
-                        <input type="text" placeholder='Masukkan nama member...' list="daftar-member" value={namaInput} onChange={e => setNamaInput(e.target.value)} className="rounded-sm bg-white text-black w-full py-4 border-slate-300 border placeholder-gray-500 px-2 focus:outline-0" />
+                        <input type="text" placeholder='Masukkan nama member...' list="daftar-member" value={namaInput} onChange={e => setNamaInput(e.target.value)} className={`${inputTheme} py-4 rounded-sm border px-2 focus:outline-0`} />
                         <datalist id="daftar-member">
                             {saran.map((item, i) => (
                                 <option key={i} value={item.nama} />
@@ -833,8 +938,8 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         </div>
                     </div>
                     <div className="flex-1 overflow-x-hidden overflow-y-auto h-[315px]">
-                        <table className="min-w-full table-fixed text-sm text-left text-black">
-                            <thead className="text-xs text-black uppercase bg-gray-100">
+                        <table className="min-w-full table-fixed text-sm text-left">
+                            <thead className={`${currentTheme === 'auto'? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
                                 <tr>
                                     <th scope="col" className="px-4 py-3 w-1/5">
                                         Product
@@ -852,8 +957,8 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             </thead>
                             <tbody>
                                 {transaksi.map((item, index) => (
-                                    <tr key={index} className="odd:bg-white even:bg-gray-100 border-b border-gray-200">
-                                        <th scope="row" className="px-6 py-4 font-medium text-black whitespace-normal truncate overflow-hidden max-w-40">
+                                    <tr key={index} className="border-b border-gray-200">
+                                        <th scope="row" className="px-6 py-4 font-medium whitespace-normal truncate overflow-hidden max-w-40">
                                             {item.produk.nama}
                                         </th>
                                         <td className="px-6 py-4 whitespace-normal">
@@ -878,14 +983,14 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             </tbody>
                         </table>
                     </div>
-                    <div className="border border-gray-300 bg-gray-100 font-bold w-full absolute bottom-28">
+                    <div className={`${currentTheme === 'auto'? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'} font-bold w-full absolute bottom-28`}>
                         <table className="w-full">
                             <tbody>
                                 <tr>
-                                    <td colSpan={3} className="px-6 py-4 text-left text-black">
+                                    <td colSpan={3} className="px-6 py-4 text-left">
                                         Subtotal
                                     </td>
-                                    <td className="text-right px-6 py-4 text-black">
+                                    <td className="text-right px-6 py-4">
                                         Rp. {transaksi.reduce((total, item) => total + (item.produk.harga * item.qty), 0).toLocaleString('id-ID')}
                                     </td>
                                 </tr>
@@ -894,11 +999,11 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                     </div>
                     <div className="w-full absolute bottom-0 left-0 items-center justify-center p-4 ">
                         <div className="flex mb-4">
-                            <div className="flex justify-center items-center w-1/2 text-black">
+                            <div className="flex justify-center items-center w-1/2">
                                 <input type="radio" id='method' name='method' className='mr-2' checked={selectedPayment === 'tunai'} onChange={() => setSelectedPayment('tunai')} />
                                 Tunai
                             </div>
-                            <div className="justify-center flex w-1/2 text-black">
+                            <div className="justify-center flex w-1/2">
                                 <input type="radio" id='method' name='method' className='mr-2' checked={selectedPayment === 'non-tunai'} onChange={() => setSelectedPayment('non-tunai')} />
                                 Non Tunai
                             </div>
@@ -964,11 +1069,11 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                 </div>
             )}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-                    <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+                <div className={`fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm`}>
+                    <div className={`${cardBg} ${contentText} rounded-lg shadow-lg w-full max-w-md`}>
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold">
                                 PEMBAYARAN Tunai
                             </h3>
                             <button
@@ -988,9 +1093,9 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         </div>
                         {/* Modal Body */}
                         {selectedMember ? (
-                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
+                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto">
                                 <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
-                                <ul className="text-sm text-gray-700 space-y-1">
+                                <ul className="text-sm space-y-1">
                                     {transaksi.map((item, index) => (
                                         <li key={index} className="flex justify-between">
                                             <span>{item.qty}x {item.produk.nama}</span>
@@ -1013,9 +1118,9 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
+                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto">
                                 <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
-                                <ul className="text-sm text-black space-y-1">
+                                <ul className="text-sm space-y-1">
                                     {transaksi.map((item, index) => (
                                         <li key={index} className="flex justify-between">
                                             <span>{item.qty}x {item.produk.nama}</span>
@@ -1023,7 +1128,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                         </li>
                                     ))}
                                 </ul>
-                                <div className="flex justify-between font-bold mt-2 text--black">
+                                <div className="flex justify-between font-bold mt-2">
                                     <span>Total:</span>
                                     <span>Rp {transaksi.reduce((total, item) => total + item.produk.harga * item.qty, 0).toLocaleString('id-ID')}</span>
                                 </div>
@@ -1032,12 +1137,12 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         {/* pembayaran */}
                         <div className="p-4 space-y-4">
                             <div className="flex justify-between">
-                                <span className="text-gray-700 font-medium">Total Harga</span>
-                                <span className="text-black font-semibold">Rp. {totalSetelahDiskon.toLocaleString('id-ID')}</span>
+                                <span className=" font-medium">Total Harga</span>
+                                <span className=" font-semibold">Rp. {totalSetelahDiskon.toLocaleString('id-ID')}</span>
                             </div>
 
                             <div className="flex justify-between items-center">
-                                <label htmlFor="uangTunai" className="text-gray-700 font-medium">Uang Tunai</label>
+                                <label htmlFor="uangTunai" className=" font-medium">Uang Tunai</label>
                                 <input
                                     type="text"
                                     id="uangTunai"
@@ -1053,7 +1158,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                             setUangTunaiDisplay(numeric.toLocaleString('id-ID')); // tampilan dengan titik
                                         }
                                     }}
-                                    className="border border-gray-300 rounded px-2 py-1 w-40 text-black"
+                                    className={`border ${inputTheme} rounded px-2 py-1 w-40 text-black`}
                                     placeholder="Masukkan nominal"
                                 />
                             </div>
@@ -1201,10 +1306,10 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             )}
             {showNonTunaiModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-                    <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+                    <div className={`${cardBg} ${contentText} rounded-lg shadow-lg w-full max-w-md`}>
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold">
                                 PEMBAYARAN Non Tunai
                             </h3>
                             <button
@@ -1223,9 +1328,9 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         {/* Modal Body */}
                         {selectedMember ? (
                             // Jika ada member (versi dengan diskon)
-                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
+                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto">
                                 <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
-                                <ul className="text-sm text-gray-700 space-y-1">
+                                <ul className="text-sm space-y-1">
                                     {transaksi.map((item, index) => (
                                         <li key={index} className="flex justify-between">
                                             <span>{item.qty}x {item.produk.nama}</span>
@@ -1253,9 +1358,9 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             </div>
                         ) : (
                             // Jika bukan member
-                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto text-black">
+                            <div className="p-4 border-b border-gray-200 max-h-48 overflow-y-auto">
                                 <h4 className="font-semibold mb-2">Ringkasan Checkout</h4>
-                                <ul className="text-sm text-gray-700 space-y-1">
+                                <ul className="text-sm space-y-1">
                                     {transaksi.map((item, index) => (
                                         <li key={index} className="flex justify-between">
                                             <span>{item.qty}x {item.produk.nama}</span>
@@ -1293,10 +1398,10 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             )}
             {showModalTambahMember && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-                    <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+                    <div className={`${cardBg} ${contentText} rounded-lg shadow-lg w-full max-w-md`}>
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold">
                                 Tambah Member
                             </h3>
                             <button
@@ -1321,7 +1426,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                     type="text"
                                     value={member.nama}
                                     onChange={(e) => setMember({ ...member, nama: e.target.value })}
-                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2"
+                                    className={`focus:outline-0 border ${inputTheme} rounded-sm p-2`}
                                 />
                             </div>
 
@@ -1331,7 +1436,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                     id="alamat"
                                     value={member.alamat}
                                     onChange={(e) => setMember({ ...member, alamat: e.target.value })}
-                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2"
+                                    className={`focus:outline-0 border ${inputTheme} rounded-sm p-2`}
                                 />
                             </div>
 
@@ -1342,7 +1447,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                     type="text"
                                     value={member.telepon}
                                     onChange={(e) => setMember({ ...member, telepon: e.target.value })}
-                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2"
+                                    className={`focus:outline-0 border ${inputTheme} rounded-sm p-2`}
                                 />
                             </div>
 
@@ -1357,10 +1462,10 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             )}
             {showModalNabung && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-                    <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+                    <div className={`${cardBg} ${contentText} rounded-lg shadow-lg w-full max-w-md`}>
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
-                            <h3 className="text-lg font-semibold text-black">
+                            <h3 className="text-lg font-semibold">
                                 Tabungan Member
                             </h3>
                             <button
@@ -1384,11 +1489,11 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                 <div onClick={()=>{setStatusNabung("Tarik")}} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Tarik" ? 'text-black' :'text-white'}`}>Tarik</div>
                             </div>
                             <div className="flex justify-between pb-4">
-                                <span className="text-gray-700 font-medium">Saldo Member</span>
-                                <span className="text-black font-semibold">Rp. {Number(selectedMember.saldo).toLocaleString('id-ID')}</span>
+                                <span className={`${contentText} font-medium`}>Saldo Member</span>
+                                <span className={`${subText} font-semibold`}>Rp. {Number(selectedMember.saldo).toLocaleString('id-ID')}</span>
                             </div>
                             {statusNabung === "Deposit" ? (<div className="flex flex-col">
-                                <label htmlFor="telepon" className="text-black">Deposit Member</label>
+                                <label htmlFor="telepon" className={`${contentText}`}>Deposit Member</label>
                                 <input
                                     id="deposit"
                                     type="text"
@@ -1404,11 +1509,11 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                             setDepositDisplay(numeric.toLocaleString('id-ID')); // tampilan dengan titik
                                         }
                                     }}
-                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2 text-black"
+                                    className={`focus:outline-0 border ${inputTheme} rounded-sm p-2`}
                                 />
                             </div>): statusNabung === "Tarik" && (
                             <div className="flex flex-col">
-                                <label htmlFor="telepon" className="text-black">Tarik Uang Member</label>
+                                <label htmlFor="telepon" className={`${contentText}`}>Tarik Uang Member</label>
                                 <input
                                     id="tarik"
                                     type="text"
@@ -1424,7 +1529,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                             setTarikDisplay(numeric.toLocaleString('id-ID')); // tampilan dengan titik
                                         }
                                     }}
-                                    className="focus:outline-0 border border-gray-300 bg-white rounded-sm p-2 text-black"
+                                    className={`focus:outline-0 border ${inputTheme} rounded-sm p-2`}
                                 />
                             </div>
                             )}

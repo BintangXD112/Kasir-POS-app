@@ -216,7 +216,7 @@ export default function Member({ currentTheme = 'Light' }: Props) {
       <div className={`relative pb-20 rounded-xl shadow overflow-x-auto min-h-[40vh] ${card}`}>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left">
-            <thead className={`${currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
+            <thead className={`${currentTheme === 'auto'? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
               <tr className={`border-b ${borderSoft}`}>
                 <th className="py-3 px-6">ID</th>
                 <th className="py-3 px-6">Nama</th>

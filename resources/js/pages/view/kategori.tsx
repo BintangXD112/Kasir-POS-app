@@ -133,7 +133,7 @@ export default function Kategori({ kategori, currentTheme }: { kategori: Kategor
       </div>
       <div className={`overflow-x-auto min-h-[40vh] ${card} relative pb-20 rounded-xl shadow`}>
         <table className="min-w-full text-sm text-left">
-          <thead className={`${currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
+          <thead className={`${currentTheme === 'auto'? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
             <tr className="border-b border-gray-200">
               <th className="py-3 px-6">Nama Kategori</th>
               <th className="py-3 px-6 text-center">Aksi</th>

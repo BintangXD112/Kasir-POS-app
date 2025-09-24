@@ -131,7 +131,7 @@ export default function VoucherUsage({currentTheme} : VoucherUsage) {
       <div className={`overflow-x-auto pb-20 min-h-[40vh] ${card} relative bg-white rounded-xl shadow`}>
         {loading ? <div className="text-center py-8">Loading...</div> : (
         <table className="min-w-full text-sm text-left">
-          <thead className={`${currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
+          <thead className={`${currentTheme === 'auto'? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
             <tr className="border-b border-gray-200">
               <th className="py-3 px-6">Member</th>
               <th className="py-3 px-6">Kode Voucher</th>

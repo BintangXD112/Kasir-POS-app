@@ -159,7 +159,7 @@ export default function User({ users, currentTheme }) {
             </div>
             <div className={`flex justify-between items-center mb-6 ${card} shadow rounded-xl p-6`}>
                 <div className="flex w-5/6 gap-8">
-                    <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 ${inputTheme} rounded-xl p-4`} placeholder="Cari nama user" />
+                    <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border ${inputTheme} rounded-xl p-4`} placeholder="Cari nama user" />
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
@@ -174,7 +174,7 @@ export default function User({ users, currentTheme }) {
             </div>
             <div className={`overflow-x-auto pb-20 min-h-[40vh] ${card} relative bg-white rounded-xl shadow`}>
                 <table className="min-w-full bg-transparent rounded shadow text-sm">
-                    <thead className={`${currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
+                    <thead className={`${currentTheme === 'auto'? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
                         <tr className="border-b border-gray-200">
                             <th className="py-3 px-6 text-left font-bold">Nama</th>
                             <th className="py-3 px-6 text-left font-bold">Tipe</th>
