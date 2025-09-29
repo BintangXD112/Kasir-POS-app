@@ -115,11 +115,11 @@ export default function VoucherUsage({currentTheme} : VoucherUsage) {
       </div>
       <div className={`flex justify-between items-center mb-6 ${card} shadow rounded-xl p-6`}>
         <div className="flex w-full justify-between gap-8">
-          <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 ${inputTheme} rounded-xl p-4`} placeholder="Cari nama member atau kode transaksi" />
+          <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border shadow ${inputTheme} rounded-xl p-4`} placeholder="Cari nama member atau kode transaksi" />
           <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className={`px-4 py-2 ${inputTheme} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                className={`px-4 py-2 border shadow ${inputTheme} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
               >
                 <option value="">Semua voucher</option>
                 {vouchers.map((item, i) => (

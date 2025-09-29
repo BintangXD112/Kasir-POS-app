@@ -159,11 +159,11 @@ export default function User({ users, currentTheme }) {
             </div>
             <div className={`flex justify-between items-center mb-6 ${card} shadow rounded-xl p-6`}>
                 <div className="flex w-5/6 gap-8">
-                    <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border ${inputTheme} rounded-xl p-4`} placeholder="Cari nama user" />
+                    <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 border shadow ${inputTheme} rounded-xl p-4`} placeholder="Cari nama user" />
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className={`px-4 py-2 ${inputTheme} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                        className={`px-4 py-2 shadow border ${inputTheme} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
                       >
                         <option value="">Semua tipe user</option>
                         <option value="admin">Admin</option>
@@ -303,22 +303,22 @@ export default function User({ users, currentTheme }) {
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
                                 <label className="block mb-1 font-semibold">Nama User</label>
-                                <input name="nama_user" value={form.nama_user} onChange={handleChange} placeholder="Nama User" className={`w-full p-2 mb-2 ${inputTheme} rounded`} required />
+                                <input name="nama_user" value={form.nama_user} onChange={handleChange} placeholder="Nama User" className={`w-full p-2 mb-2 ${inputTheme} border rounded`} required />
                             </div>
                             <div>
                                 <label className="block mb-1 font-semibold">Tipe User</label>
-                                <select name="tipe_user" value={form.tipe_user} onChange={handleChange} className={`w-full p-2 mb-2 ${inputTheme} rounded`}>
+                                <select name="tipe_user" value={form.tipe_user} onChange={handleChange} className={`w-full p-2 mb-2 ${inputTheme} border rounded`}>
                                     <option value="admin">Admin</option>
                                     <option value="kasir">Kasir</option>
                                 </select>
                             </div>
                             <div>
                                 <label className="block mb-1 font-semibold">Kode User</label>
-                                <input name="kode_user" value={form.kode_user} onChange={handleChange} placeholder="Kode User" className={`w-full p-2 mb-2 ${inputTheme} rounded`} required />
+                                <input name="kode_user" value={form.kode_user} onChange={handleChange} placeholder="Kode User" className={`w-full p-2 mb-2 ${inputTheme} border rounded`} required />
                             </div>
                             <div>
                                 <label className="block mb-1 font-semibold">Status Akun</label>
-                                <select name="account" value={form.account} onChange={handleChange} className={`w-full p-2 mb-2 ${inputTheme} rounded`}>
+                                <select name="account" value={form.account} onChange={handleChange} className={`w-full p-2 mb-2 ${inputTheme} border rounded`}>
                                     <option value="active">Aktif</option>
                                     <option value="non-active">Non Aktif</option>
                                 </select>
@@ -351,22 +351,22 @@ export default function User({ users, currentTheme }) {
                         <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
                             <div>
                                 <label className="block mb-1 font-semibold">Nama User</label>
-                                <input name="nama_user" value={editForm.nama_user || ''} onChange={handleEditChange} placeholder="Nama User" className={`w-full p-2 mb-2 ${inputTheme} rounded`} required />
+                                <input name="nama_user" value={editForm.nama_user || ''} onChange={handleEditChange} placeholder="Nama User" className={`w-full p-2 mb-2 ${inputTheme} border rounded`} required />
                             </div>
                             <div>
                                 <label className="block mb-1 font-semibold">Tipe User</label>
-                                <select name="tipe_user" value={editForm.tipe_user || ''} onChange={handleEditChange} className={`w-full p-2 mb-2 ${inputTheme} rounded`}>
+                                <select name="tipe_user" value={editForm.tipe_user || ''} onChange={handleEditChange} className={`w-full p-2 mb-2 ${inputTheme} border rounded`}>
                                     <option value="admin">Admin</option>
                                     <option value="kasir">Kasir</option>
                                 </select>
                             </div>
                             <div>
                                 <label className="block mb-1 font-semibold">Kode User</label>
-                                <input name="kode_user" value={editForm.kode_user || ''} onChange={handleEditChange} placeholder="Kode User" className={`w-full p-2 mb-2 ${inputTheme} rounded`} required />
+                                <input name="kode_user" value={editForm.kode_user || ''} onChange={handleEditChange} placeholder="Kode User" className={`w-full p-2 mb-2 ${inputTheme} border rounded`} required />
                             </div>
                             <div>
                                 <label className="block mb-1 font-semibold">Status Akun</label>
-                                <select name="account" value={editForm.account || ''} onChange={handleEditChange} className={`w-full p-2 mb-2 ${inputTheme} rounded`}>
+                                <select name="account" value={editForm.account || ''} onChange={handleEditChange} className={`w-full p-2 mb-2 ${inputTheme} border rounded`}>
                                     <option value="active">Aktif</option>
                                     <option value="non-active">Non Aktif</option>
                                 </select>

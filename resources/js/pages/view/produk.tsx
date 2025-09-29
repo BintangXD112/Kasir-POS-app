@@ -154,7 +154,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
           <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className={`px-4 py-2 ${inputTheme} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+              className={`px-4 py-2 ${inputTheme} border shadow rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
             >
               <option value="">Semua kategori produk</option>
               {kategori.map((item, i)=>

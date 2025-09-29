@@ -166,7 +166,7 @@ export default function VoucherDiskon({currentTheme} : VoucherDiskonProps) {
         <h2 className="text-xl font-semibold">Voucher Diskon</h2>
       </div>
       <div className={`flex justify-between items-center mb-6 ${card} shadow rounded-xl p-6`}>
-        <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 shadow ${inputTheme} rounded-xl p-4`} placeholder="Cari kode voucher" />
+        <input type="text" value={searchTerm} onChange={(e)=>{setSearchTerm(e.target.value)}} className={`w-1/2 mx-4 shadow border ${inputTheme} rounded-xl p-4`} placeholder="Cari kode voucher" />
         <button onClick={() => openModal()} className="bg-blue-500 text-white px-4 py-2 rounded-md">Tambah Voucher</button>
       </div>
       <div className={`overflow-x-auto pb-20 min-h-[40vh] relative ${card} rounded-xl shadow`}>
@@ -298,7 +298,7 @@ export default function VoucherDiskon({currentTheme} : VoucherDiskonProps) {
                   type="text"
                   value={editData.kode_voucher || ''}
                   onChange={(e) => setEditData({ ...editData, kode_voucher: e.target.value })}
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 border shadow ${inputTheme} rounded-sm`}
                   placeholder="Masukkan kode voucher"
                   required
                 />
@@ -307,7 +307,7 @@ export default function VoucherDiskon({currentTheme} : VoucherDiskonProps) {
                   type="text"
                   value={editData.deskripsi || ''}
                   onChange={(e) => setEditData({ ...editData, deskripsi: e.target.value })}
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 border shadow ${inputTheme} rounded-sm`}
                   placeholder="Deskripsi voucher (opsional)"
                 />
                 <h1>Jumlah Diskon (%)</h1>
@@ -326,7 +326,7 @@ export default function VoucherDiskon({currentTheme} : VoucherDiskonProps) {
                     if (num > 100) num = 100;
                     setEditData({ ...editData, jumlah_diskon: num });
                   }}
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 border shadow ${inputTheme} rounded-sm`}
                   placeholder="Masukkan jumlah diskon (misal: 25 untuk 25%)"
                   min={0}
                   max={100}

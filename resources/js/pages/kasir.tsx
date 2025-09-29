@@ -754,7 +754,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                 </div>
             </div>
             <div className={`flex h-full p-4 w-full`}>
-                <div className={`w-4/6 h-full ${cardBg} ${contentText} rounded-lg pt-4 pb-20 relative px-4`}>
+                <div className={`w-4/6 h-full ${cardBg} ${contentText} shadow rounded-lg pt-4 pb-20 relative px-4`}>
                     <div className={`flex items-center mb-4`}>
                         <div className={`relative w-full`}>
                             <input type="text" placeholder='Cari Produk' className={`${inputTheme} border p-2 rounded-full w-full`} value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value) }} />
