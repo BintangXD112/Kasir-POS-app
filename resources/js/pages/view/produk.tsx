@@ -333,7 +333,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   type="text"
                   value={editData?.nama ?? ""}
                   onChange={(e) => setEditData({ ...editData, nama: e.target.value })}
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 ${inputTheme} border rounded`}
                   placeholder="Nama produk"
                   required
                 />
@@ -344,7 +344,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   onChange={(e) =>
                     setEditData({ ...editData, harga: Number(e.target.value) })
                   }
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 ${inputTheme} border rounded`}
                   placeholder="Harga"
                   required
                 />
@@ -355,7 +355,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   onChange={(e) =>
                     setEditData({ ...editData, stok: Number(e.target.value) })
                   }
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 ${inputTheme} border rounded`}
                   placeholder="Stok"
                   required
                 />
@@ -365,7 +365,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   onChange={(e) =>
                     setEditData({ ...editData!, id_kategori: Number(e.target.value) })
                   }
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 ${inputTheme} border rounded`}
                   required
                 >
                   {kategori.map((kat) => (
@@ -449,7 +449,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   type="text"
                   value={addData.nama}
                   onChange={(e) => setAddData({ ...addData, nama: e.target.value })}
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 ${inputTheme} border rounded`}
                   placeholder="Nama produk"
                   required
                 />
@@ -458,7 +458,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   type="number"
                   value={addData.harga}
                   onChange={(e) => setAddData({ ...addData, harga: e.target.value })}
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 ${inputTheme} border rounded`}
                   placeholder="Harga"
                   required
                 />
@@ -467,7 +467,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   type="number"
                   value={addData.stok}
                   onChange={(e) => setAddData({ ...addData, stok: e.target.value })}
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 ${inputTheme} border rounded`}
                   placeholder="Stok"
                   required
                 />
@@ -477,7 +477,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   onChange={(e) =>
                     setAddData({ ...addData, id_kategori: Number(e.target.value) })
                   }
-                  className={`w-full p-2 mb-2 ${inputTheme} rounded`}
+                  className={`w-full p-2 mb-2 ${inputTheme} border rounded`}
                   required
                 >
                   {kategori.map((kat) => (
