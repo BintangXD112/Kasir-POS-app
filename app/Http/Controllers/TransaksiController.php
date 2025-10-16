@@ -46,22 +46,17 @@ class TransaksiController extends Controller
         try {
 
             $member = null;
-            if ($request->filled('nama_member')) {
-                $member = Member::where('nama', $request->nama_member)->first();
-
-                if (!$member) {
-                    return back()->withErrors(['nama_member' => 'Nama member tidak ditemukan.']);
-                }
+            if ($request->filled('member_id')) {
+                $member = Member::find($request->member_id);
             }
             $transaksi = Transaksi::create([
                 'kode_transaksi'     => $request->kode_transaksi,
                 'total'              => $request->total,
                 'user_id'            => Auth::id(),
-                'member_id'          => $member?->id,
+                'member_id'          => $request->member_id,
                 'diskon_id'          => $member?->diskon_id ?? null,
                 'metode_pembayaran'  => $request->metode,
                 'status'             => $request->status,
-                'created_at'        => $request->status === 'paid' || $request->status === 'pending'? now() : null,
                 'waktu_bayar'        => $request->status === 'paid' ? now() : null,
             ]);
 
@@ -69,6 +64,7 @@ class TransaksiController extends Controller
             $produkList = Produk::whereIn('id', $produkIds)->get()->keyBy('id');
 
             $details = [];
+            $waktuBayar = $request->status === 'paid' ? now() : null;
 
             foreach ($request->detail as $item) {
                 $produk = $produkList[$item['produk_id']];
@@ -83,16 +79,24 @@ class TransaksiController extends Controller
                     'qty'          => $item['jumlah'],
                     'harga'        => $item['harga'],
                     'created_at'   => now(),
-                    'waktu_bayar'   => now(),
+                    'waktu_bayar'   => $waktuBayar,
                 ];
 
-                // Kurangi stok
-                DB::table('produk')
-                    ->where('id', $item['produk_id'])
-                    ->decrement('stok', $item['jumlah']);
             }
 
             DetailTransaksi::insert($details);
+
+            // Bulk update stok
+            $stokUpdates = [];
+            foreach ($request->detail as $item) {
+                $stokUpdates[] = "WHEN {$item['produk_id']} THEN stok - {$item['jumlah']}";
+            }
+
+            DB::table('produk')
+                ->whereIn('id', $produkIds)
+                ->update([
+                    'stok' => DB::raw("CASE id " . implode(' ', $stokUpdates) . " END")
+                ]);
 
             DB::commit();
 
