@@ -52,22 +52,23 @@ class AdminController extends Controller
             'member:id,nama'
         ])->orderByDesc('created_at')->get();
 
-        // Rekap hutang member (transaksi pending dengan member)
+        // Rekap hutang member (transaksi pending & paid dengan member)
         $transaksiHutang = Transaksi::with(['detail.produk:id,nama,harga', 'member:id,nama,telepon'])
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'paid'])
             ->whereNotNull('member_id')
             ->orderByDesc('created_at')
             ->get();
 
         $rekapHutang = $transaksiHutang->groupBy('member_id')->map(function ($items) {
             $member = $items->first()->member;
+            $itemsPending = $items->where('status', 'pending');
             return [
                 'member_id'        => $member?->id,
                 'nama'             => $member?->nama ?? '-',
                 'telepon'          => $member?->telepon ?? '-',
-                'jumlah_transaksi' => $items->count(),
-                'total_hutang'     => $items->sum('total'),
-                'transaksi'        => $items->values(),
+                'jumlah_transaksi' => $itemsPending->count(),
+                'total_hutang'     => $itemsPending->sum('total'),
+                'transaksi'        => $items->values(), // Kirim semua (pending & paid)
             ];
         })->values();
 
