@@ -13,6 +13,7 @@ use App\Models\Tabungan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Models\UserLog;
+use App\Models\Transaksi;
 
 
 class AdminController extends Controller
@@ -51,6 +52,37 @@ class AdminController extends Controller
             'member:id,nama'
         ])->orderByDesc('created_at')->get();
 
+        // Rekap hutang member (transaksi pending dengan member)
+        $transaksiHutang = Transaksi::with(['detail.produk:id,nama,harga', 'member:id,nama,telepon'])
+            ->where('status', 'pending')
+            ->whereNotNull('member_id')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $rekapHutang = $transaksiHutang->groupBy('member_id')->map(function ($items) {
+            $member = $items->first()->member;
+            return [
+                'member_id'        => $member?->id,
+                'nama'             => $member?->nama ?? '-',
+                'telepon'          => $member?->telepon ?? '-',
+                'jumlah_transaksi' => $items->count(),
+                'total_hutang'     => $items->sum('total'),
+                'transaksi'        => $items->values(),
+            ];
+        })->values();
+
+        // Data pembelian stok (untuk halaman inline admin)
+        $pembelianStok = \App\Models\PembelianStok::with([
+            'produk:id,nama,stok,harga',
+            'user:id,nama_user',
+        ])->orderByDesc('created_at')->get();
+
+        $produkList = \App\Models\Produk::select('id', 'nama', 'stok', 'harga')->orderBy('nama')->get();
+
+        $totalBulanIniStok = \App\Models\PembelianStok::whereBetween('created_at', [
+            now()->startOfMonth(), now()->endOfMonth()
+        ])->sum('total_harga');
+
         return Inertia::render('Admin', [
             'users' => $users,
             'members' => $members,
@@ -59,6 +91,10 @@ class AdminController extends Controller
             'transaksi' => $transaksi,
             'tabungan' => $tabungan,
             'kategori' => $kategori,
+            'rekap_hutang' => $rekapHutang,
+            'pembelian_stok' => $pembelianStok,
+            'produk_list' => $produkList,
+            'total_bulan_ini_stok' => $totalBulanIniStok,
         ]);
     }
 

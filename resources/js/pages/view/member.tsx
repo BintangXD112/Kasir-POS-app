@@ -18,26 +18,26 @@ export default function Member({ currentTheme = 'Light' }: Props) {
   // ===== theme classes
   const appBg =
     currentTheme === 'auto' ? 'bg-gray-100 dark:bg-zinc-950'
-    : currentTheme === 'Dark' ? 'bg-zinc-950'
-    : 'bg-gray-100';
+      : currentTheme === 'Dark' ? 'bg-zinc-950'
+        : 'bg-gray-100';
   const card =
     currentTheme === 'auto'
       ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
       : currentTheme === 'Dark'
-      ? 'bg-zinc-900 border border-zinc-800'
-      : 'bg-white border border-zinc-200';
+        ? 'bg-zinc-900 border border-zinc-800'
+        : 'bg-white border border-zinc-200';
   const text =
     currentTheme === 'auto' ? 'text-zinc-900 dark:text-zinc-100'
-    : currentTheme === 'Dark' ? 'text-zinc-100'
-    : 'text-zinc-900';
+      : currentTheme === 'Dark' ? 'text-zinc-100'
+        : 'text-zinc-900';
   const subText =
     currentTheme === 'auto' ? 'text-zinc-500 dark:text-zinc-400'
-    : currentTheme === 'Dark' ? 'text-zinc-400'
-    : 'text-zinc-500';
+      : currentTheme === 'Dark' ? 'text-zinc-400'
+        : 'text-zinc-500';
   const rowHover =
     currentTheme === 'auto' ? 'hover:bg-slate-50 dark:hover:bg-zinc-800/60'
-    : currentTheme === 'Dark' ? 'hover:bg-zinc-800/60'
-    : 'hover:bg-slate-50';
+      : currentTheme === 'Dark' ? 'hover:bg-zinc-800/60'
+        : 'hover:bg-slate-50';
   const borderSoft = currentTheme === 'Dark' ? 'border-zinc-800' : 'border-slate-200';
 
   // ===== state
@@ -117,8 +117,8 @@ export default function Member({ currentTheme = 'Light' }: Props) {
         setShowModalTambahMember(false);
         fetchMembers();
       },
-      onError: (errors: Record<string, string[]>) => {
-        const allErrors = errors ? Object.values(errors).flat().join('\n') : 'Terjadi kesalahan';
+      onError: (errors: Record<string, string>) => {
+        const allErrors = errors ? Object.values(errors).join('\n') : 'Terjadi kesalahan';
         Swal.fire({ icon: 'error', title: 'Gagal!', text: allErrors });
       },
     });
@@ -201,8 +201,8 @@ export default function Member({ currentTheme = 'Light' }: Props) {
             ${currentTheme === 'auto'
               ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
               : currentTheme === 'Dark'
-              ? 'border-zinc-700 bg-zinc-800 text-zinc-100'
-              : 'border-slate-300 bg-white text-zinc-900'}`}
+                ? 'border-zinc-700 bg-zinc-800 text-zinc-100'
+                : 'border-slate-300 bg-white text-zinc-900'}`}
           placeholder="Cari nama member..."
         />
         <button
@@ -216,7 +216,7 @@ export default function Member({ currentTheme = 'Light' }: Props) {
       <div className={`relative pb-20 rounded-xl shadow overflow-x-auto min-h-[40vh] ${card}`}>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left">
-            <thead className={`${currentTheme === 'auto'? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
+            <thead className={`${currentTheme === 'auto' ? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
               <tr className={`border-b ${borderSoft}`}>
                 <th className="py-3 px-6">ID</th>
                 <th className="py-3 px-6">Nama</th>
@@ -262,8 +262,8 @@ export default function Member({ currentTheme = 'Light' }: Props) {
                         ${currentTheme === 'auto'
                           ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800'
                           : currentTheme === 'Dark'
-                          ? 'border-zinc-700 bg-zinc-800'
-                          : 'border-slate-300 bg-white'}`}
+                            ? 'border-zinc-700 bg-zinc-800'
+                            : 'border-slate-300 bg-white'}`}
                       value={m.diskon_id || ''}
                       onChange={(e) => handleVoucherChange(m.id, e.target.value ? Number(e.target.value) : null)}
                       disabled={loading}
@@ -332,8 +332,8 @@ export default function Member({ currentTheme = 'Light' }: Props) {
                       ${currentSafe === p
                         ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/90'
                         : currentTheme === 'Dark'
-                        ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
-                        : 'border-slate-300 hover:bg-blue-600 hover:text-white'}`}
+                          ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
+                          : 'border-slate-300 hover:bg-blue-600 hover:text-white'}`}
                   >
                     {p}
                   </button>
@@ -360,8 +360,8 @@ export default function Member({ currentTheme = 'Light' }: Props) {
                   ${currentTheme === 'auto'
                     ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800'
                     : currentTheme === 'Dark'
-                    ? 'border-zinc-700 bg-zinc-800'
-                    : 'border-slate-300 bg-white'}`}
+                      ? 'border-zinc-700 bg-zinc-800'
+                      : 'border-slate-300 bg-white'}`}
               >
                 {[10, 25, 50, 100].map(sz => (
                   <option key={sz} value={sz}>{sz}</option>

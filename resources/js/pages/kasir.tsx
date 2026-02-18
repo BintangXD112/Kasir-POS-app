@@ -13,8 +13,8 @@ interface DashboardProps extends PageProps {
 }
 
 export interface Kategori {
-  id: number;
-  nama_kategori: string;
+    id: number;
+    nama_kategori: string;
 }
 
 export interface Produk {
@@ -51,15 +51,15 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // ====== ⬇️ STATE & LOGIC PAGINATION  ⬇️ ======
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(12);
-  // Reset ke halaman 1 kalau filter/sort/pageSize berubah
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, pageSize]);
-  // ====== ⬆️ STATE & LOGIC PAGINATION  ⬆️ ======
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState<number>(12);
+    // Reset ke halaman 1 kalau filter/sort/pageSize berubah
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, pageSize]);
+    // ====== ⬆️ STATE & LOGIC PAGINATION  ⬆️ ======
 
-    const [statusNabung, setStatusNabung]= useState("Deposit")
+    const [statusNabung, setStatusNabung] = useState("Deposit")
 
     const scrollLeft = () => {
         if (scrollRef.current) {
@@ -87,7 +87,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
 
     const [transaksi, setTransaksi] = useState<Array<{ produk: Produk, qty: number }>>([]);
 
-    const handlePrint=()=>{
+    const handlePrint = () => {
         const printWindow = window.open('', '_blank');
         if (!printWindow) return;
         const formatIDR = (n: number) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`;
@@ -100,14 +100,14 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
         const kembalianLocal = Math.max(0, bayarTunai - totalAkhir);
         const pakaiSaldo = isSaldoCheck ? Math.min(kekuranganLocal, Number(selectedMember?.saldo ?? 0)) : 0;
         const status = isHutang
-          ? 'pending'
-          : (selectedPayment === 'tunai' || selectedPayment === 'non-tunai')
-            ? 'paid'
-            : 'failed';
+            ? 'pending'
+            : (selectedPayment === 'tunai' || selectedPayment === 'non-tunai')
+                ? 'paid'
+                : 'failed';
         const printRows = transaksi.map((it, idx) => {
-        const unit = formatIDR(it.produk.harga);
-        const line = formatIDR(it.produk.harga * it.qty);
-        return `
+            const unit = formatIDR(it.produk.harga);
+            const line = formatIDR(it.produk.harga * it.qty);
+            return `
           <tr>
             <td style="padding:6px;border:1px solid #ddd;">${idx + 1}</td>
             <td style="padding:6px;border:1px solid #ddd;">${it.produk.nama}</td>
@@ -116,7 +116,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             <td style="padding:6px;border:1px solid #ddd; text-align:right;">${line}</td>
           </tr>
         `;
-      }).join('');
+        }).join('');
         const printContent = `
         <!DOCTYPE html>
         <html>
@@ -206,7 +206,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                 Swal.showLoading();
             }
         });
-        
+
         const kode_transaksi = generateKodeTransaksi();
         const dataToSend = {
             kode_transaksi,
@@ -239,14 +239,14 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
 
                 if (isTabung) {
                     handleTabunganMember(
-                        selectedMember?.id, 
-                        kembalian, 
-                        0, 
+                        selectedMember?.id,
+                        kembalian,
+                        0,
                         'Kembalian belanja',
-                        kode_transaksi, 
+                        kode_transaksi,
                         false,
                     );
-                    
+
                 }
                 // Proses ke TabunganController jika menggunakan saldo
                 if (isSaldoCheck) {
@@ -288,14 +288,14 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
     const [uangTunaiDisplay, setUangTunaiDisplay] = useState('');
     const [showNonTunaiModal, setShowNonTunaiModal] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState('');
-    const [selectedKategori, setSelectedKategori] = useState<number | 'semua'>( 'semua' );
+    const [selectedKategori, setSelectedKategori] = useState<number | 'semua'>('semua');
     const filterNamaProduk = produk.filter((item) => {
-    const matchNama = item.nama.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchKategori = selectedKategori === 'semua' ? true : item.id_kategori === selectedKategori;
-    return matchNama && matchKategori;
+        const matchNama = item.nama.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchKategori = selectedKategori === 'semua' ? true : item.id_kategori === selectedKategori;
+        return matchNama && matchKategori;
     });
 
-    
+
     const [showModalNabung, setShowModalNabung] = useState(false)
     const funcShowModalNabung = () => {
         if (namaInput === "") {
@@ -309,7 +309,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             setShowModalNabung(!showModalNabung)
         }
     }
-    
+
 
     const tambahTransaksi = (produk: Produk) => {
         setTransaksi((prev) => {
@@ -426,7 +426,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
         if (localStorage.getItem("tipe_user") !== "kasir") {
             window.location.href = "/login";
         }
-    },[handleLogout])
+    }, [handleLogout])
 
 
     // logika diskon 
@@ -547,13 +547,13 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         executeRequest();
                     }
                 });
-            } else if(selectedMember.saldo < Number(tarik)) {
+            } else if ((selectedMember?.saldo ?? 0) < Number(tarik)) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal',
                     text: 'Saldo tidak mencukupi',
                 })
-            }else{
+            } else {
                 Swal.fire({
                     title: 'Yakin?',
                     text: 'Melakukan Penarikan',
@@ -591,145 +591,153 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
     const [theme, setTheme] = useState(false);
 
     const bgApp =
-    currentTheme === 'auto'
-      ? 'bg-gray-50 dark:bg-zinc-950'
-      : currentTheme === 'Light'
-      ? 'bg-gray-50'
-      : 'bg-zinc-950';
+        currentTheme === 'auto'
+            ? 'bg-gray-50 dark:bg-zinc-950'
+            : currentTheme === 'Light'
+                ? 'bg-gray-50'
+                : 'bg-zinc-950';
 
-  const headerBg =
-    currentTheme === 'auto'
-      ? 'bg-gray-800 dark:bg-zinc-900/80'
-      : currentTheme === 'Light'
-      ? 'bg-gray-800' // header tetap gelap biar kontras
-      : 'bg-zinc-900/80';
+    const headerBg =
+        currentTheme === 'auto'
+            ? 'bg-gray-800 dark:bg-zinc-900/80'
+            : currentTheme === 'Light'
+                ? 'bg-gray-800' // header tetap gelap biar kontras
+                : 'bg-zinc-900/80';
 
-  const headerText = 'text-white';
+    const headerText = 'text-white';
 
-  const cardBg =
-    currentTheme === 'auto'
-      ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
-      : currentTheme === 'Light'
-      ? 'bg-white border border-zinc-200'
-      : 'bg-zinc-900 border border-zinc-800';
+    const cardBg =
+        currentTheme === 'auto'
+            ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
+            : currentTheme === 'Light'
+                ? 'bg-white border border-zinc-200'
+                : 'bg-zinc-900 border border-zinc-800';
 
-  const inputTheme = currentTheme === 'auto' ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900';
-  const rowHover =
+    const inputTheme = currentTheme === 'auto' ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900';
+    const rowHover =
         currentTheme === 'auto' ? 'hover:bg-slate-50 dark:hover:bg-zinc-800/60'
-        : currentTheme === 'Dark' ? 'hover:bg-zinc-800/60'
-        : 'hover:bg-slate-50';
-  const borderSoft = currentTheme === 'Dark' ? 'border-zinc-800' : 'border-slate-200';
-  const subText =
+            : currentTheme === 'Dark' ? 'hover:bg-zinc-800/60'
+                : 'hover:bg-slate-50';
+    const borderSoft = currentTheme === 'Dark' ? 'border-zinc-800' : 'border-slate-200';
+    const subText =
         currentTheme === 'auto' ? 'text-zinc-500 dark:text-zinc-400'
-        : currentTheme === 'Dark' ? 'text-zinc-400'
-        : 'text-zinc-500';
-  const contentText =
-    currentTheme === 'auto'
-      ? 'text-zinc-900 dark:text-zinc-100'
-      : currentTheme === 'Light'
-      ? 'text-zinc-900'
-      : 'text-zinc-100';
+            : currentTheme === 'Dark' ? 'text-zinc-400'
+                : 'text-zinc-500';
+    const contentText =
+        currentTheme === 'auto'
+            ? 'text-zinc-900 dark:text-zinc-100'
+            : currentTheme === 'Light'
+                ? 'text-zinc-900'
+                : 'text-zinc-100';
 
 
 
 
     // ====== ⬇️ DERIVED PAGINATION  ⬇️ ======
-  const totalItems = filterNamaProduk.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  const currentSafe = Math.min(Math.max(currentPage, 1), totalPages);
-  const startIndex = (currentSafe - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalItems);
-  const pagedProduk = filterNamaProduk.slice(startIndex, endIndex);
+    const totalItems = filterNamaProduk.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    const currentSafe = Math.min(Math.max(currentPage, 1), totalPages);
+    const startIndex = (currentSafe - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalItems);
+    const pagedProduk = filterNamaProduk.slice(startIndex, endIndex);
 
-  // Buat list nomor halaman (dengan "..." bila banyak)
-  const getPageNumbers = (current: number, total: number): (number | '...')[] => {
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    // Buat list nomor halaman (dengan "..." bila banyak)
+    const getPageNumbers = (current: number, total: number): (number | '...')[] => {
+        if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
 
-    if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
-    if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+        if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+        if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
 
-    return [1, '...', current - 1, current, current + 1, '...', total];
-  };
-  const pageNumbers = getPageNumbers(currentSafe, totalPages);
-  // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
+        return [1, '...', current - 1, current, current + 1, '...', total];
+    };
+    const pageNumbers = getPageNumbers(currentSafe, totalPages);
+    // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
 
 
     return (
         <div className={`flex h-screen w-full ${bgApp} flex-col gap-4`}>
             {/*Tema*/}
-            <div className={`${currentTheme === 'auto' ? 'bg-zinc-50 shadow-gray-800 dark:shadow-gray-500 dark:bg-zinc-900 dark:text-white' : currentTheme === 'Light' ? 'bg-zinc-50 text-zinc-900 shadow-gray-800' : currentTheme === 'Dark' && 'bg-zinc-900 text-white shadow-gray-500'} rounded-xl transition-all py-2 gap-2 ${theme ? 'h-30 justify-end' :'h-12 justify-center'} w-12 fixed bottom-4 right-4 shadow border-slate-100 flex flex-col items-center z-10`}>
+            <div className={`${currentTheme === 'auto' ? 'bg-zinc-50 shadow-gray-800 dark:shadow-gray-500 dark:bg-zinc-900 dark:text-white' : currentTheme === 'Light' ? 'bg-zinc-50 text-zinc-900 shadow-gray-800' : currentTheme === 'Dark' && 'bg-zinc-900 text-white shadow-gray-500'} rounded-xl transition-all py-2 gap-2 ${theme ? 'h-30 justify-end' : 'h-12 justify-center'} w-12 fixed bottom-4 right-4 shadow border-slate-100 flex flex-col items-center z-10`}>
                 {theme && (
                     <>
-                    <svg onClick={()=>setTheme(false)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
-                      <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
-                    </svg>
-                    {currentTheme === "auto" ? (
-                        <>
-                        <svg onClick={()=>setCurrentTheme("Dark")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
-                          <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
+                        <svg onClick={() => setTheme(false)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                            <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
                         </svg>
-                        <svg onClick={()=>setCurrentTheme("Light")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
-                          <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
-                        </svg>
-                        </>
-                        ): currentTheme === "Light" ? (
-                        <>
-                        <svg onClick={()=>setCurrentTheme("Dark")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
-                          <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
-                        </svg>
-                        <svg onClick={()=>setCurrentTheme("auto")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
-                          <path fillRule="evenodd" d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
-                        </svg>
-                        </>
-                        ): currentTheme === "Dark" && (
-                        <>
-                        <svg onClick={()=>setCurrentTheme("auto")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
-                          <path fillRule="evenodd" d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
-                        </svg>
-                        <svg onClick={()=>setCurrentTheme("Light")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
-                          <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
-                        </svg>
-                        </>
+                        {currentTheme === "auto" ? (
+                            <>
+                                <svg onClick={() => setCurrentTheme("Dark")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                                    <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
+                                </svg>
+                                <svg onClick={() => setCurrentTheme("Light")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                                    <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+                                </svg>
+                            </>
+                        ) : currentTheme === "Light" ? (
+                            <>
+                                <svg onClick={() => setCurrentTheme("Dark")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                                    <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
+                                </svg>
+                                <svg onClick={() => setCurrentTheme("auto")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                                    <path fillRule="evenodd" d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
+                                </svg>
+                            </>
+                        ) : currentTheme === "Dark" && (
+                            <>
+                                <svg onClick={() => setCurrentTheme("auto")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                                    <path fillRule="evenodd" d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
+                                </svg>
+                                <svg onClick={() => setCurrentTheme("Light")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 rounded hover:bg-gray-500 transition-all">
+                                    <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+                                </svg>
+                            </>
                         )}
                     </>
-                    )}
+                )}
                 {currentTheme === 'auto' ? (
-                    <svg onClick={()=>setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
-                      <path fillRule="evenodd" d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
+                    <svg onClick={() => setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                        <path fillRule="evenodd" d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clipRule="evenodd" />
                     </svg>
-                    ): currentTheme === 'Light' ? (
-                    <svg onClick={()=>setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
-                      <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+                ) : currentTheme === 'Light' ? (
+                    <svg onClick={() => setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                        <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
                     </svg>
-                    ): currentTheme === 'Dark' && (
-                    <svg onClick={()=>setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
-                      <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
+                ) : currentTheme === 'Dark' && (
+                    <svg onClick={() => setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                        <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
                     </svg>
-                    )}
+                )}
             </div>
             <div className={`flex justify-between pt-4 px-4 ${headerBg} py-4`}>
                 <div className="w-1/6 items-center flex">
                     <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
                 </div>
                 <div className={`flex gap-4 w-full justify-end`}>
+                    <button onClick={() => router.visit('/hutang')} className="flex justify-center bg-transparent gap-2 text-white border border-amber-400 rounded-sm items-center px-4 cursor-pointer hover:bg-amber-400 hover:scale-105 hover:text-black transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                            <path d="M12 7.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+                            <path fillRule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 0 1 1.5 14.625v-9.75ZM8.25 9.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM18.75 9a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V9.75a.75.75 0 0 0-.75-.75h-.008ZM4.5 9.75A.75.75 0 0 1 5.25 9h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75V9.75Z" clipRule="evenodd" />
+                            <path d="M2.25 18a.75.75 0 0 0 0 1.5c5.4 0 10.63.722 15.6 2.075 1.19.324 2.4-.558 2.4-1.82V18.75a.75.75 0 0 0-.75-.75H2.25Z" />
+                        </svg>
+                        Rekap&nbsp;Hutang
+                    </button>
                     <button onClick={() => router.visit('/tabungan')} className="flex justify-center bg-transparent gap-2 text-white border border-white rounded-sm items-center px-4 cursor-pointer hover:bg-white hover:scale-105 hover:text-black transition-all duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                          <path d="M12 7.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
-                          <path fillRule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 0 1 1.5 14.625v-9.75ZM8.25 9.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM18.75 9a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V9.75a.75.75 0 0 0-.75-.75h-.008ZM4.5 9.75A.75.75 0 0 1 5.25 9h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75V9.75Z" clipRule="evenodd" />
-                          <path d="M2.25 18a.75.75 0 0 0 0 1.5c5.4 0 10.63.722 15.6 2.075 1.19.324 2.4-.558 2.4-1.82V18.75a.75.75 0 0 0-.75-.75H2.25Z" />
+                            <path d="M12 7.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+                            <path fillRule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 0 1 1.5 14.625v-9.75ZM8.25 9.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM18.75 9a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V9.75a.75.75 0 0 0-.75-.75h-.008ZM4.5 9.75A.75.75 0 0 1 5.25 9h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75V9.75Z" clipRule="evenodd" />
+                            <path d="M2.25 18a.75.75 0 0 0 0 1.5c5.4 0 10.63.722 15.6 2.075 1.19.324 2.4-.558 2.4-1.82V18.75a.75.75 0 0 0-.75-.75H2.25Z" />
                         </svg>
                         Detail&nbsp;Tabungan
                     </button>
                     <button onClick={() => router.visit('/transaksi')} className="flex justify-center gap-2 bg-transparent text-white border border-white rounded-sm items-center px-4 cursor-pointer hover:bg-white hover:scale-105 hover:text-black transition-all duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                          <path fillRule="evenodd" d="M7.502 6h7.128A3.375 3.375 0 0 1 18 9.375v9.375a3 3 0 0 0 3-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 0 0-.673-.05A3 3 0 0 0 15 1.5h-1.5a3 3 0 0 0-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6ZM13.5 3A1.5 1.5 0 0 0 12 4.5h4.5A1.5 1.5 0 0 0 15 3h-1.5Z" clipRule="evenodd" />
-                          <path fillRule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 0 1 3 20.625V9.375ZM6 12a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V12Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM6 15a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V15Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM6 18a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V18Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
+                            <path fillRule="evenodd" d="M7.502 6h7.128A3.375 3.375 0 0 1 18 9.375v9.375a3 3 0 0 0 3-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 0 0-.673-.05A3 3 0 0 0 15 1.5h-1.5a3 3 0 0 0-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6ZM13.5 3A1.5 1.5 0 0 0 12 4.5h4.5A1.5 1.5 0 0 0 15 3h-1.5Z" clipRule="evenodd" />
+                            <path fillRule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 0 1 3 20.625V9.375ZM6 12a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V12Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM6 15a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V15Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM6 18a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V18Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
                         </svg>
                         Riwayat&nbsp;Transaksi
                     </button>
                     <button onClick={() => { setTransaksi([]) }} className={`flex justify-center gap-2 bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:scale-105 transition-all duration-300`}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                          <path fillRule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clipRule="evenodd" />
+                            <path fillRule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clipRule="evenodd" />
                         </svg>
                         Batalkan&nbsp;Transaksi
                     </button>
@@ -776,10 +784,10 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             title="Scroll Left"
                         >
                             {/* Tombol scroll left (panah kiri) */}
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" 
-                            viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7 7-7" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M20 19l-7-7 7-7" />
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7 7-7" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M20 19l-7-7 7-7" />
                             </svg>
                         </div>
 
@@ -788,25 +796,23 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             className={`overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex-grow`}
                         >
                             <div className="flex gap-2 mb-4">
-                            <button
-                                className={`px-3 py-1 rounded ${
-                                selectedKategori === 'semua' ? 'bg-red-500 text-white' : 'bg-gray-300 text-black'
-                                }`}
-                                onClick={() => setSelectedKategori('semua')}
-                            >
-                                Semua
-                            </button>
-                            {kategori.map((kat) => (
                                 <button
-                                key={kat.id}
-                                className={`px-3 py-1 rounded w-fit ${
-                                    selectedKategori === kat.id ? 'bg-red-500 text-white' : 'bg-gray-300 text-black'
-                                }`}
-                                onClick={() => setSelectedKategori(kat.id)}
+                                    className={`px-3 py-1 rounded ${selectedKategori === 'semua' ? 'bg-red-500 text-white' : 'bg-gray-300 text-black'
+                                        }`}
+                                    onClick={() => setSelectedKategori('semua')}
                                 >
-                                {kat.nama_kategori}
+                                    Semua
                                 </button>
-                            ))}
+                                {kategori.map((kat) => (
+                                    <button
+                                        key={kat.id}
+                                        className={`px-3 py-1 rounded w-fit ${selectedKategori === kat.id ? 'bg-red-500 text-white' : 'bg-gray-300 text-black'
+                                            }`}
+                                        onClick={() => setSelectedKategori(kat.id)}
+                                    >
+                                        {kat.nama_kategori}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
@@ -816,10 +822,10 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             title="Scroll Right"
                         >
                             {/* Tombol scroll right (panah kanan) */}
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" 
-                            viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 5l7 7-7 7" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 5l7 7-7 7" />
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 5l7 7-7 7" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 5l7 7-7 7" />
                             </svg>
                         </div>
                     </div>
@@ -844,73 +850,73 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                     </div>
                     {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
                     {filterNamaProduk.length > 0 && (
-                      <div className={`flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t ${borderSoft} absolute bottom-0 left-0 right-0 gap-3`}>
-                        <div className={`text-sm ${subText}`}>
-                          Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
-                          <span className="font-semibold">{endIndex}</span> dari
-                          <span className="font-semibold"> {totalItems}</span> Produk
-                        </div>
+                        <div className={`flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t ${borderSoft} absolute bottom-0 left-0 right-0 gap-3`}>
+                            <div className={`text-sm ${subText}`}>
+                                Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
+                                <span className="font-semibold">{endIndex}</span> dari
+                                <span className="font-semibold"> {totalItems}</span> Produk
+                            </div>
 
-                        <div className="flex items-center gap-2">
-                          <button
-                            className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
+                            <div className="flex items-center gap-2">
+                                <button
+                                    className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
                               ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentSafe === 1}
-                            aria-label="Halaman sebelumnya"
-                          >
-                            Prev
-                          </button>
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentSafe === 1}
+                                    aria-label="Halaman sebelumnya"
+                                >
+                                    Prev
+                                </button>
 
-                          {pageNumbers.map((p, idx) =>
-                            p === '...' ? (
-                              <span key={`dots-${idx}`} className={`px-2 select-none ${subText}`}>…</span>
-                            ) : (
-                              <button
-                                key={p}
-                                onClick={() => setCurrentPage(p as number)}
-                                aria-current={currentSafe === p ? 'page' : undefined}
-                                className={`px-3 py-2 border rounded-lg text-sm transition-all cursor-pointer
+                                {pageNumbers.map((p, idx) =>
+                                    p === '...' ? (
+                                        <span key={`dots-${idx}`} className={`px-2 select-none ${subText}`}>…</span>
+                                    ) : (
+                                        <button
+                                            key={p}
+                                            onClick={() => setCurrentPage(p as number)}
+                                            aria-current={currentSafe === p ? 'page' : undefined}
+                                            className={`px-3 py-2 border rounded-lg text-sm transition-all cursor-pointer
                                   ${currentSafe === p
-                                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/90'
-                                    : currentTheme === 'Dark'
-                                    ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
-                                    : 'border-slate-300 hover:bg-blue-600 hover:text-white'}`}
-                              >
-                                {p}
-                              </button>
-                            )
-                          )}
+                                                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-600/90'
+                                                    : currentTheme === 'Dark'
+                                                        ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
+                                                        : 'border-slate-300 hover:bg-blue-600 hover:text-white'}`}
+                                        >
+                                            {p}
+                                        </button>
+                                    )
+                                )}
 
-                          <button
-                            className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
+                                <button
+                                    className={`px-3 py-2 border rounded-lg text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50
                               ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentSafe === totalPages}
-                            aria-label="Halaman berikutnya"
-                          >
-                            Next
-                          </button>
-                        </div>
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentSafe === totalPages}
+                                    aria-label="Halaman berikutnya"
+                                >
+                                    Next
+                                </button>
+                            </div>
 
-                        <div className="flex items-center gap-2">
-                          <span className={`text-sm ${subText}`}>Per halaman:</span>
-                          <select
-                            value={pageSize}
-                            onChange={(e) => setPageSize(Number(e.target.value))}
-                            className={`px-2 py-2 border rounded-lg text-sm
+                            <div className="flex items-center gap-2">
+                                <span className={`text-sm ${subText}`}>Per halaman:</span>
+                                <select
+                                    value={pageSize}
+                                    onChange={(e) => setPageSize(Number(e.target.value))}
+                                    className={`px-2 py-2 border rounded-lg text-sm
                               ${currentTheme === 'auto'
-                                ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800'
-                                : currentTheme === 'Dark'
-                                ? 'border-zinc-700 bg-zinc-800'
-                                : 'border-slate-300 bg-white'}`}
-                          >
-                            {[10, 25, 50, 100].map(sz => (
-                              <option key={sz} value={sz}>{sz}</option>
-                            ))}
-                          </select>
+                                            ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800'
+                                            : currentTheme === 'Dark'
+                                                ? 'border-zinc-700 bg-zinc-800'
+                                                : 'border-slate-300 bg-white'}`}
+                                >
+                                    {[10, 25, 50, 100].map(sz => (
+                                        <option key={sz} value={sz}>{sz}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
-                      </div>
                     )}
                     {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
                 </div>
@@ -939,7 +945,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                     </div>
                     <div className="flex-1 overflow-x-hidden overflow-y-auto h-[315px]">
                         <table className="min-w-full table-fixed text-sm text-left">
-                            <thead className={`${currentTheme === 'auto'? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
+                            <thead className={`${currentTheme === 'auto' ? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}>
                                 <tr>
                                     <th scope="col" className="px-4 py-3 w-1/5">
                                         Product
@@ -983,7 +989,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             </tbody>
                         </table>
                     </div>
-                    <div className={`${currentTheme === 'auto'? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'} font-bold w-full absolute bottom-28`}>
+                    <div className={`${currentTheme === 'auto' ? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'} font-bold w-full absolute bottom-28`}>
                         <table className="w-full">
                             <tbody>
                                 <tr>
@@ -1164,7 +1170,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             </div>
                             {uangTunai !== '' && Number(uangTunai) < Number(totalSetelahDiskon) && selectedMember?.nama ? (
                                 <div>
-                                    { kekurangan > 0 && (
+                                    {kekurangan > 0 && (
                                         <div className="flex justify-between pb-4">
                                             <span className="text-gray-700 font-medium">Kekurangan</span>
                                             <span className="text-black font-semibold">
@@ -1190,7 +1196,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                                 const kekurangan = Math.max(0, totalSetelahDiskon - Number(uangTunai));
 
                                                 // Cek saldo kosong
-                                                if (saldo === '0') {
+                                                if (saldo === 0) {
                                                     Swal.fire('Saldo Kosong', 'Tabungan member ini masih nol.', 'warning');
                                                     setIsSaldoCheck(false);
                                                     return;
@@ -1484,13 +1490,13 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         {/* Modal Body */}
                         <div className={`p-4 space-y-4 text-black`}>
                             <div className={`flex w-full h-10 justify-between relative rounded-full p-2 bg-gray-900`}>
-                                <div className={` w-1/2 h-2/3 top-1.5 z-0 ${statusNabung === "Deposit" ? '' :statusNabung === "Tarik" && 'translate-x-48'} bg-white rounded-full absolute transition-all duration-300 ease-in-out`}>&nbsp;</div>
-                                <div onClick={()=>{setStatusNabung("Deposit")}} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Deposit" ? 'text-black' :'text-white'}`}>Deposit</div>
-                                <div onClick={()=>{setStatusNabung("Tarik")}} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Tarik" ? 'text-black' :'text-white'}`}>Tarik</div>
+                                <div className={` w-1/2 h-2/3 top-1.5 z-0 ${statusNabung === "Deposit" ? '' : statusNabung === "Tarik" && 'translate-x-48'} bg-white rounded-full absolute transition-all duration-300 ease-in-out`}>&nbsp;</div>
+                                <div onClick={() => { setStatusNabung("Deposit") }} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Deposit" ? 'text-black' : 'text-white'}`}>Deposit</div>
+                                <div onClick={() => { setStatusNabung("Tarik") }} className={`w-1/2 items-center flex justify-center z-10 transition-all font-bold ${statusNabung === "Tarik" ? 'text-black' : 'text-white'}`}>Tarik</div>
                             </div>
                             <div className="flex justify-between pb-4">
                                 <span className={`${contentText} font-medium`}>Saldo Member</span>
-                                <span className={`${subText} font-semibold`}>Rp. {Number(selectedMember.saldo).toLocaleString('id-ID')}</span>
+                                <span className={`${subText} font-semibold`}>Rp. {Number(selectedMember?.saldo ?? 0).toLocaleString('id-ID')}</span>
                             </div>
                             {statusNabung === "Deposit" ? (<div className="flex flex-col">
                                 <label htmlFor="telepon" className={`${contentText}`}>Deposit Member</label>
@@ -1504,49 +1510,49 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                                             setDeposit('');
                                             setDepositDisplay('');
                                         } else {
-                                            const numeric = parseInt(raw,10);
+                                            const numeric = parseInt(raw, 10);
                                             setDeposit(numeric); // angka asli
                                             setDepositDisplay(numeric.toLocaleString('id-ID')); // tampilan dengan titik
                                         }
                                     }}
                                     className={`focus:outline-0 border ${inputTheme} rounded-sm p-2`}
                                 />
-                            </div>): statusNabung === "Tarik" && (
-                            <div className="flex flex-col">
-                                <label htmlFor="telepon" className={`${contentText}`}>Tarik Uang Member</label>
-                                <input
-                                    id="tarik"
-                                    type="text"
-                                    value={tarikDisplay}
-                                    onChange={(e) => {
-                                        const raw = e.target.value.replace(/\D/g, '');
-                                        if (raw === '') {
-                                            setTarik('');
-                                            setTarikDisplay('');
-                                        } else {
-                                            const numeric = parseInt(raw,10);
-                                            setTarik(numeric); // angka asli
-                                            setTarikDisplay(numeric.toLocaleString('id-ID')); // tampilan dengan titik
-                                        }
-                                    }}
-                                    className={`focus:outline-0 border ${inputTheme} rounded-sm p-2`}
-                                />
-                            </div>
+                            </div>) : statusNabung === "Tarik" && (
+                                <div className="flex flex-col">
+                                    <label htmlFor="telepon" className={`${contentText}`}>Tarik Uang Member</label>
+                                    <input
+                                        id="tarik"
+                                        type="text"
+                                        value={tarikDisplay}
+                                        onChange={(e) => {
+                                            const raw = e.target.value.replace(/\D/g, '');
+                                            if (raw === '') {
+                                                setTarik('');
+                                                setTarikDisplay('');
+                                            } else {
+                                                const numeric = parseInt(raw, 10);
+                                                setTarik(numeric); // angka asli
+                                                setTarikDisplay(numeric.toLocaleString('id-ID')); // tampilan dengan titik
+                                            }
+                                        }}
+                                        className={`focus:outline-0 border ${inputTheme} rounded-sm p-2`}
+                                    />
+                                </div>
                             )}
                         </div>
                         <div className="p-4 space-y-4">
                             <button
                                 onClick={() => handleTabunganMember(
                                     selectedMember?.id,
-                                    parseInt(deposit || '0'),
-                                    parseInt(tarik || '0'),
-                                    `${statusNabung === 'Deposit' ? `Deposit uang ${selectedMember.nama} oleh ${localStorage.getItem("username")}` : `Penarikan uang ${selectedMember.nama} oleh ${localStorage.getItem("username")}`}`,
+                                    parseInt(String(deposit || '0')),
+                                    parseInt(String(tarik || '0')),
+                                    `${statusNabung === 'Deposit' ? `Deposit uang ${selectedMember?.nama} oleh ${localStorage.getItem("username")}` : `Penarikan uang ${selectedMember?.nama} oleh ${localStorage.getItem("username")}`}`,
                                     '-',
                                     true
                                 )}
                                 className="w-full bg-blue-500 text-white py-2 rounded-md font-semibold"
                             >
-                                {statusNabung === "Deposit" ?'Depositkan uang' :'Tarik uang'}
+                                {statusNabung === "Deposit" ? 'Depositkan uang' : 'Tarik uang'}
                             </button>
 
                         </div>

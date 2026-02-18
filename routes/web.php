@@ -4,12 +4,13 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\KasirController;
 use App\Http\Controllers\TransaksiController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UsageDiskonController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\HutangController;
+use App\Http\Controllers\PembelianStokController;
 
 
 // Redirect berdasarkan login
@@ -18,17 +19,10 @@ Route::get('/', function () {
         return redirect()->route(Auth::user()->tipe_user === 'admin' ? 'admin.dashboard' : 'kasir');
     }
     return redirect()->route('login');
-});
+})->name('home');
 
-// Halaman login inertia
-Route::get('/login', [AuthenticatedSessionController::class, 'create'])
-    ->middleware('guest')
-    ->name('login');
 
-// Logout
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('logout');
+// Login & logout sudah didefinisikan di auth.php
 
 // Route untuk user yang sudah login
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -67,6 +61,11 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     Route::get('/tabungan', [TabunganController::class, 'index'])->name('tabungan');
     Route::post('/tabungan', [TabunganController::class, 'store'])->name('tabungan.store');
 
+    // Rekap Hutang Member (kasir & admin)
+    Route::get('/hutang', [HutangController::class, 'index'])->name('hutang.index');
+    Route::post('/hutang/{id}/lunas', [HutangController::class, 'lunas'])->name('hutang.lunas');
+    Route::post('/hutang/{memberId}/lunas-semua', [HutangController::class, 'lunasSemuaMember'])->name('hutang.lunas-semua');
+
     // Admin group
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('dashboard');
@@ -86,6 +85,10 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
             Route::get('/', [MemberController::class, 'indexJson'])->name('member.index');
             Route::put('{id}/voucher', [MemberController::class, 'updateVoucher'])->name('member.voucher.update');
         });
+
+        // Pembelian Stok (admin only)
+        Route::get('/pembelian-stok', [PembelianStokController::class, 'index'])->name('pembelian-stok.index');
+        Route::post('/pembelian-stok', [PembelianStokController::class, 'store'])->name('pembelian-stok.store');
 
 
     });
