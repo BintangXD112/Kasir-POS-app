@@ -5,6 +5,8 @@ import { useMobileNavigation } from '../hooks/use-mobile-navigation';
 import { Link, router } from '@inertiajs/react';
 import { icons, LogOut } from 'lucide-react';
 import QRCodePembayaran from '../components/qrcodepaymentmodal';
+import MenuBar from '@/components/menu-bar.tsx'
+import qz from 'qz-tray'
 import Swal from 'sweetalert2';
 
 interface DashboardProps extends PageProps {
@@ -87,109 +89,49 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
 
     const [transaksi, setTransaksi] = useState<Array<{ produk: Produk, qty: number }>>([]);
 
-    const handlePrint = () => {
-        const printWindow = window.open('', '_blank');
-        if (!printWindow) return;
-        const formatIDR = (n: number) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`;
-        const kodeTransaksi = generateKodeTransaksi();
-        const tanggalCetak = new Date();
-        const subtotal = totalSebelumDiskon;
-        const totalAkhir = totalSetelahDiskon;
-        const bayarTunai = Number(uangTunai) || 0;
-        const kekuranganLocal = Math.max(0, totalAkhir - bayarTunai);
-        const kembalianLocal = Math.max(0, bayarTunai - totalAkhir);
-        const pakaiSaldo = isSaldoCheck ? Math.min(kekuranganLocal, Number(selectedMember?.saldo ?? 0)) : 0;
-        const status = isHutang
-            ? 'pending'
-            : (selectedPayment === 'tunai' || selectedPayment === 'non-tunai')
-                ? 'paid'
-                : 'failed';
-        const printRows = transaksi.map((it, idx) => {
-            const unit = formatIDR(it.produk.harga);
-            const line = formatIDR(it.produk.harga * it.qty);
-            return `
-          <tr>
-            <td style="padding:6px;border:1px solid #ddd;">${idx + 1}</td>
-            <td style="padding:6px;border:1px solid #ddd;">${it.produk.nama}</td>
-            <td style="padding:6px;border:1px solid #ddd; text-align:center;">${it.qty}</td>
-            <td style="padding:6px;border:1px solid #ddd; text-align:right;">${unit}</td>
-            <td style="padding:6px;border:1px solid #ddd; text-align:right;">${line}</td>
-          </tr>
-        `;
-        }).join('');
-        const printContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8"/>
-          <title>Struk Transaksi</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin:20px; color:#111; }
-            h1 { text-align:center; margin:0 0 8px; }
-            .meta { text-align:center; color:#555; margin-bottom:16px; }
-            table { width:100%; border-collapse:collapse; margin-top:10px; }
-            th { background:#f2f2f2; }
-            th, td { border:1px solid #ddd; padding:8px; font-size:12px; }
-            .right { text-align:right; }
-            .summary { margin-top:16px; }
-            .summary .row { display:flex; justify-content:space-between; margin:4px 0; }
-            .badge { font-weight:bold; }
-            .status-paid { color:#059669; }
-            .status-pending { color:#d97706; }
-            .status-failed { color:#dc2626; }
-            @media print { .no-print { display:none; } }
-          </style>
-        </head>
-        <body>
-          <h1>Struk Transaksi</h1>
-          <div class="meta">
-            Kode: <b>${kodeTransaksi}</b> ·
-            Tanggal: ${tanggalCetak.toLocaleDateString('id-ID')} ${tanggalCetak.toLocaleTimeString('id-ID')}<br/>
-            Kasir: ${localStorage.getItem('username') ?? '-'}<br/>
-            Member: ${selectedMember?.nama ?? 'Guest'}
-          </div>
+    const handlePrint = async () => {
+      try {
+        
+        await qz.websocket.connect();
 
-          <table>
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Produk</th>
-                <th>Qty</th>
-                <th>Harga</th>
-                <th>Jumlah</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${printRows}
-            </tbody>
-          </table>
+        const printer = await qz.printers.find("EPSON TM-U220"); 
+        // ganti sesuai nama printer di komputer kamu
 
-          <div class="summary">
-            <div class="row"><span>Subtotal</span><span>${formatIDR(subtotal)}</span></div>
-            <div class="row"><span>Diskon Member (${diskonPersen}%)</span><span>- ${formatIDR(potongan)}</span></div>
-            <div class="row"><span><b>Total</b></span><span><b>${formatIDR(totalAkhir)}</b></span></div>
-            <div class="row"><span>Bayar Tunai</span><span>${formatIDR(selectedPayment === 'tunai' ? bayarTunai : totalAkhir)}</span></div>
-            ${pakaiSaldo > 0 ? `<div class="row"><span>Gunakan Saldo</span><span>${formatIDR(pakaiSaldo)}</span></div>` : ''}
-            ${kembalianLocal > 0 ? `<div class="row"><span>Kembalian</span><span>${formatIDR(kembalianLocal)}</span></div>` : ''}
-            ${isHutang ? `<div class="row"><span>Sisa Hutang</span><span>${formatIDR(kekuranganLocal)}</span></div>` : ''}
-            <div class="row"><span>Status</span>
-              <span class="badge status-${status}">${status.toUpperCase()}</span>
-            </div>
-            <div class="row"><span>Metode</span><span>${selectedPayment || '-'}</span></div>
-          </div>
+        const config = qz.configs.create(printer, {
+          size: { width: 76, height: 200 },
+          units: "mm",
+        });
 
-          <script>
-            window.onload = function() {
-              window.print();
-              setTimeout(() => window.close(), 100);
-            }
-          </script>
-        </body>
-        </html>
-      `;
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-    }
+        const data = [{
+          type: 'raw',
+          format: 'plain',
+          data: `
+            CBT 18
+            Toko Kedelai, Garam, dan Kunyit
+            Jl.Cibuntu Sayuran No.18 Bandung
+            --------------------------------
+            ${transaksi.map((it, i) =>
+            `${i+1}. ${it.produk.nama}
+            ${it.qty} x ${it.produk.harga}
+            `).join("\n")}
+            --------------------------------
+            TOTAL: ${totalSetelahDiskon}
+            --------------------------------
+            TERIMA KASIH
+            Tunjukan struk ini kepada petugas timbang,
+            sebagai alat bukti pembelian yang sah.
+
+            \n\n\n
+            `
+                }];
+
+        await qz.print(config, data);
+        await qz.websocket.disconnect();
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
     // untuk simulasi qr code
     const handleKonfirmasiPembayaran = () => {
@@ -707,40 +649,11 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                     </svg>
                 )}
             </div>
-            <div className={`flex justify-between pt-4 px-4 ${headerBg} py-4`}>
-                <div className="w-1/6 items-center flex">
-                    <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
-                </div>
-                <div className={`flex gap-4 w-full justify-end`}>
-                    <button onClick={() => router.visit('/hutang')} className="flex justify-center bg-transparent gap-2 text-white border border-amber-400 rounded-sm items-center px-4 cursor-pointer hover:bg-amber-400 hover:scale-105 hover:text-black transition-all duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                            <path d="M12 7.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
-                            <path fillRule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 0 1 1.5 14.625v-9.75ZM8.25 9.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM18.75 9a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V9.75a.75.75 0 0 0-.75-.75h-.008ZM4.5 9.75A.75.75 0 0 1 5.25 9h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75V9.75Z" clipRule="evenodd" />
-                            <path d="M2.25 18a.75.75 0 0 0 0 1.5c5.4 0 10.63.722 15.6 2.075 1.19.324 2.4-.558 2.4-1.82V18.75a.75.75 0 0 0-.75-.75H2.25Z" />
-                        </svg>
-                        Rekap&nbsp;Hutang
-                    </button>
-                    <button onClick={() => router.visit('/tabungan')} className="flex justify-center bg-transparent gap-2 text-white border border-white rounded-sm items-center px-4 cursor-pointer hover:bg-white hover:scale-105 hover:text-black transition-all duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                            <path d="M12 7.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
-                            <path fillRule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 0 1 1.5 14.625v-9.75ZM8.25 9.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM18.75 9a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V9.75a.75.75 0 0 0-.75-.75h-.008ZM4.5 9.75A.75.75 0 0 1 5.25 9h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75V9.75Z" clipRule="evenodd" />
-                            <path d="M2.25 18a.75.75 0 0 0 0 1.5c5.4 0 10.63.722 15.6 2.075 1.19.324 2.4-.558 2.4-1.82V18.75a.75.75 0 0 0-.75-.75H2.25Z" />
-                        </svg>
-                        Detail&nbsp;Tabungan
-                    </button>
-                    <button onClick={() => router.visit('/transaksi')} className="flex justify-center gap-2 bg-transparent text-white border border-white rounded-sm items-center px-4 cursor-pointer hover:bg-white hover:scale-105 hover:text-black transition-all duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                            <path fillRule="evenodd" d="M7.502 6h7.128A3.375 3.375 0 0 1 18 9.375v9.375a3 3 0 0 0 3-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 0 0-.673-.05A3 3 0 0 0 15 1.5h-1.5a3 3 0 0 0-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6ZM13.5 3A1.5 1.5 0 0 0 12 4.5h4.5A1.5 1.5 0 0 0 15 3h-1.5Z" clipRule="evenodd" />
-                            <path fillRule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 0 1 3 20.625V9.375ZM6 12a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V12Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM6 15a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V15Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM6 18a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V18Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
-                        </svg>
-                        Riwayat&nbsp;Transaksi
-                    </button>
-                    <button onClick={() => { setTransaksi([]) }} className={`flex justify-center gap-2 bg-transparent text-white border border-red-500 rounded-sm items-center px-4 cursor-pointer hover:bg-red-500 hover:scale-105 transition-all duration-300`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                            <path fillRule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clipRule="evenodd" />
-                        </svg>
-                        Batalkan&nbsp;Transaksi
-                    </button>
+            <div className={`flex flex-col ${headerBg} px-4 py-4`}>
+                <div className={`flex justify-between`}>
+                    <div className="w-1/6 items-center flex">
+                        <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
+                    </div>
                     <div onClick={toggleLogout} className={`text-white flex items-center relative cursor-pointer`}>
                         {localStorage.getItem("username")}
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`size-4 ml-2 ${showLogout ? 'rotate-180' : ''} transition-transform duration-150 ease-in-out`}>
@@ -760,6 +673,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         )}
                     </div>
                 </div>
+                <MenuBar/>
             </div>
             <div className={`flex h-full p-4 w-full`}>
                 <div className={`w-4/6 h-full ${cardBg} ${contentText} shadow rounded-lg pt-4 pb-20 relative px-4`}>

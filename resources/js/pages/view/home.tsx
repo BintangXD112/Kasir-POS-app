@@ -1,6 +1,6 @@
 import React from 'react';
 import { User, Member, Produk } from '@/types/type';
-import CountUp from '../createdComponents/CountUp/CountUp';
+import CountUp from '@/components/count-up';
 
 interface PageProps {
   users: User[];

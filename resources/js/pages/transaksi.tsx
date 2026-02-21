@@ -66,10 +66,11 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
 
   const getStatusBadge = (status: string) => {
     const base = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border";
+    const theme = currentTheme
     const map: Record<string, string> = {
-      paid: `${base} bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800`,
-      pending: `${base} bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800`,
-      cancelled: `${base} bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800`,
+      paid: `${base} ${theme === 'auto' ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800' : theme === 'Light' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-emerald-900/30 text-emerald-300 border-emerald-800'}`,
+      pending: `${base} ${theme === 'auto' ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800' : theme === 'Light' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-amber-900/30 text-amber-300 border-amber-800'}`,
+      cancelled: `${base} ${theme === 'auto' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800' : theme === 'Light' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-red-900/30 text-red-300 border-red-800'}`,
     };
     return map[status] || `${base} bg-gray-100 text-gray-800 border-gray-200 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700`;
   };
@@ -573,7 +574,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                     </td>
 
                     <td className="px-6 py-4">
-                      <span className={getStatusBadge(trx.status)}>{trx.status}</span>
+                      <span className={getStatusBadge(trx.status)}>{trx.status === 'paid' ? 'Lunas' : 'Belum Lunas'}</span>
                     </td>
 
                     <td className="px-6 py-4">

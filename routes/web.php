@@ -34,7 +34,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // ADD INERTIA MIDDLEWARE HERE
 Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->group(function () {
     // Kasir & Transaksi
-    Route::get('/kasir', [KasirController::class, 'index'])->name('kasir');
+    Route::get('/kasir', [KasirController::class, 'index'])->name('kasir.dashboard');
+    Route::get('/beli', [KasirController::class, 'beli'])->name('kasir');
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi');
     Route::post('/transaksi', [TransaksiController::class, 'store'])->name('transaksi.store');
     Route::post('/transaksi/lunas/{id}', [TransaksiController::class, 'lunas'])->name('transaksi.lunas');

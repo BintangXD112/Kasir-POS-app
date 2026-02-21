@@ -55,7 +55,7 @@ class AuthenticatedSessionController extends Controller
             'action' => 'login',
             'keterangan' => 'Login berhasil',
         ]);
-        $redirectRoute = $user->tipe_user === 'admin' ? 'admin.dashboard' : 'kasir';
+        $redirectRoute = $user->tipe_user === 'admin' ? 'admin.dashboard' : 'kasir.dashboard';
         $user->update(['status' => 'Online']);
         return redirect()->route($redirectRoute)->with('status', 'Login berhasil!');
     }

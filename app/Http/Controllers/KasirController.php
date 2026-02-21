@@ -10,7 +10,7 @@ use Inertia\Inertia;
 
 class KasirController extends Controller
 {
-    public function index()
+    public function beli()
     {
         // Ambil semua kategori, tapi hanya id dan nama saja
         $kategori = Kategori::all()->map(function($item) {
@@ -25,5 +25,10 @@ class KasirController extends Controller
             'transaksi' => Transaksi::all(),
             'kategori' => $kategori,
         ]);
+    }
+
+    public function index()
+    {
+        return Inertia::render('kasir-dashboard');
     }
 }
