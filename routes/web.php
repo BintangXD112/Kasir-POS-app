@@ -63,7 +63,7 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     Route::post('/tabungan', [TabunganController::class, 'store'])->name('tabungan.store');
 
     // Rekap Hutang Member (kasir & admin)
-    Route::get('/hutang', [HutangController::class, 'index'])->name('hutang.index');
+    Route::get('/bayar', [HutangController::class, 'index'])->name('hutang.index');
     Route::post('/hutang/{id}/lunas', [HutangController::class, 'lunas'])->name('hutang.lunas');
     Route::post('/hutang/{memberId}/lunas-semua', [HutangController::class, 'lunasSemuaMember'])->name('hutang.lunas-semua');
 
