@@ -11,6 +11,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\HutangController;
 use App\Http\Controllers\PembelianStokController;
+use Inertia\Inertia;
 
 
 // Redirect berdasarkan login
@@ -47,6 +48,14 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     Route::put('/member/{id}', [MemberController::class, 'update'])->name('member.update');
     Route::get('/members/{id}', [MemberController::class, 'show'])->name('member.show');
     Route::get('/member/list', [MemberController::class, 'list']);
+    Route::get('/member', function () {
+    return Inertia::render('view/member-kasir');
+    });
+// ...existing code...
+Route::get('/stock', [PembelianStokController::class, 'index']);
+Route::get('/stock', function () {
+    return Inertia::render('view/pembelian-stok');
+});
 
     // Kategori
     Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');

@@ -31,6 +31,10 @@ const formatDate = (d: string | null) =>
     d ? new Date(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
 
 export default function PembelianStokComponent({ pembelian, produk, total_bulan_ini, currentTheme }: Props) {
+    pembelian = [],
+  produk = [],
+  total_bulan_ini = 0,
+  currentTheme = 'auto';
     const [search, setSearch] = useState("");
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({ produk_id: "", jumlah: "", harga_beli: "", keterangan: "" });
@@ -145,18 +149,29 @@ export default function PembelianStokComponent({ pembelian, produk, total_bulan_
     return (
         <div>
             {/* Header */}
-            <div className="pl-6 pt-6 flex items-center justify-between pr-6">
-                <h2 className={`text-xl font-semibold ${text}`}>Rekap Stok Pembelian</h2>
-                <button
-                    onClick={() => setShowForm(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Tambah Pembelian
-                </button>
-            </div>
+<div className="pl-6 pt-6 flex items-center justify-between pr-6">
+    <div className="flex items-center gap-4">
+        <button
+            onClick={() => router.visit('/kasir')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium transition-colors"
+        >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Kembali ke Kasir
+        </button>
+        <h2 className={`text-xl font-semibold ${text}`}>Rekap Stok Pembelian</h2>
+    </div>
+    <button
+        onClick={() => setShowForm(true)}
+        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
+    >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        Tambah Pembelian
+    </button>
+</div>
 
             <div className="p-6 space-y-4">
                 {/* Summary Cards */}

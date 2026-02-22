@@ -49,51 +49,65 @@ class HutangController extends Controller
      * Menerima nominal_bayar opsional (untuk dicatat di waktu_bayar)
      */
     public function lunas(Request $request, $id)
-    {
-        $trx = Transaksi::where('id', $id)
-            ->where('status', 'pending')
-            ->firstOrFail();
+{
+    $trx = Transaksi::findOrFail($id);
 
-        $trx->status      = 'paid';
-        $trx->waktu_bayar = now();
-        // Simpan nominal yang dibayar jika dikirim (opsional, untuk info)
-        if ($request->has('nominal_bayar')) {
-            $trx->nominal_bayar = $request->nominal_bayar;
-        }
-        $trx->save();
+    $bayar = (int) $request->nominal_bayar;
 
-        return back()->with('message', 'Hutang berhasil dilunasi.');
+    if ($bayar <= 0) {
+        return back()->withErrors(['msg' => 'Nominal tidak valid']);
     }
+
+    // 🔥 kalau bayar kurang
+    if ($bayar < $trx->total) {
+        $trx->total = $trx->total - $bayar; // kurangi hutang
+        $trx->status = 'pending'; // tetap pending
+    } else {
+        // 🔥 kalau bayar cukup / lebih
+        $trx->total = 0;
+        $trx->status = 'paid';
+    }
+
+    $trx->save();
+
+    return back()->with('success', 'Pembayaran berhasil');
+}
 
     /**
      * Lunasi SEMUA hutang satu member sekaligus
      */
     public function lunasSemuaMember(Request $request, $memberId)
-    {
-        $request->validate([
-            'nominal_bayar' => 'nullable|numeric|min:0',
-        ]);
+{
+    $bayar = (int) $request->nominal_bayar;
 
-        DB::beginTransaction();
-        try {
-            $transaksi = Transaksi::where('member_id', $memberId)
-                ->where('status', 'pending')
-                ->get();
-
-            foreach ($transaksi as $trx) {
-                $trx->status      = 'paid';
-                $trx->waktu_bayar = now();
-                if ($request->has('nominal_bayar')) {
-                    $trx->nominal_bayar = $request->nominal_bayar;
-                }
-                $trx->save();
-            }
-
-            DB::commit();
-            return back()->with('message', 'Semua hutang member berhasil dilunasi.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => $e->getMessage()]);
-        }
+    if ($bayar <= 0) {
+        return back()->withErrors(['msg' => 'Nominal tidak valid']);
     }
+
+    // Ambil semua transaksi pending milik member
+    $transaksi = Transaksi::where('member_id', $memberId)
+        ->where('status', 'pending')
+        ->orderBy('created_at', 'asc') // penting biar urut
+        ->get();
+
+    foreach ($transaksi as $trx) {
+        if ($bayar <= 0) break;
+
+        if ($bayar >= $trx->total) {
+            // 🔥 lunasi transaksi ini
+            $bayar -= $trx->total;
+            $trx->total = 0;
+            $trx->status = 'paid';
+        } else {
+            // 🔥 bayar sebagian
+            $trx->total -= $bayar;
+            $bayar = 0;
+            $trx->status = 'pending';
+        }
+
+        $trx->save();
+    }
+
+    return back()->with('success', 'Pembayaran berhasil');
+}
 }

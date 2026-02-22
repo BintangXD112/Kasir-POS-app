@@ -94,7 +94,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
         
         await qz.websocket.connect();
 
-        const printer = await qz.printers.find("EPSON TM-U220"); 
+        const printer = await qz.printers.find("POS58 Printer"); 
         // ganti sesuai nama printer di komputer kamu
 
         const config = qz.configs.create(printer, {
@@ -118,8 +118,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
             TOTAL: ${totalSetelahDiskon}
             --------------------------------
             TERIMA KASIH
-            Tunjukan struk ini kepada petugas timbang,
-            sebagai alat bukti pembelian yang sah.
+            Simpan struk ini sebagai bukti pembayaran yang sah.
 
             \n\n\n
             `

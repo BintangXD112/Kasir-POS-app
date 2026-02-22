@@ -32,6 +32,7 @@ class PembelianStokController extends Controller
             'pembelian'      => $pembelian,
             'produk'         => $produk,
             'total_bulan_ini' => $totalBulanIni,
+            'currentTheme'   => 'Light', // atau ambil dari user/session jika ada
             'auth'           => ['user' => Auth::user()],
         ]);
     }

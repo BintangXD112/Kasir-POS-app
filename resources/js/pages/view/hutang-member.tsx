@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
+import qz from 'qz-tray'
 
 declare const route: (name: string, params?: any) => string;
 
@@ -39,7 +40,11 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState<number>(10);
 
-    useEffect(() => { setCurrentPage(1); }, [searchTerm, pageSize]);
+    const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+
+    useEffect(() => { setCurrentPage(1); }, [searchTerm, pageSize, selectedMemberId]);
+    // kalau memilih member, kosongkan kotak pencarian
+    useEffect(() => { setSearchTerm(''); }, [selectedMemberId]);
 
     // ===== THEME HELPERS =====
     const card =
@@ -75,12 +80,20 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
                 : 'border-slate-300 bg-white text-zinc-900';
 
     // ===== FILTER & PAGINATION =====
-    const filtered = useMemo(() =>
-        rekap.filter(m =>
+    const filtered = useMemo(() => {
+    if (selectedMemberId) {
+        return rekap.filter(m => m.member_id === selectedMemberId);
+    }
+
+    if (searchTerm) {
+        return rekap.filter(m =>
             m.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            m.telepon.includes(searchTerm)
-        ), [rekap, searchTerm]
-    );
+            m.telepon.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+
+    return [];
+}, [rekap, searchTerm, selectedMemberId]);
 
     const totalItems = filtered.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -88,6 +101,77 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
     const startIndex = (currentSafe - 1) * pageSize;
     const endIndex = Math.min(startIndex + pageSize, totalItems);
     const paged = filtered.slice(startIndex, endIndex);
+
+    const handlePrintHutang = async (member: RekapMember, nominalBayar: number = 0) => {
+    try {
+        await qz.websocket.connect();
+
+        const printer = await qz.printers.find("POS58 Printer");
+
+        const config = qz.configs.create(printer, {
+            size: { width: 58, height: 200 },
+            units: "mm",
+        });
+
+        const line = "-".repeat(32);
+
+        const totalHutang = member.total_hutang;
+        const sisa = totalHutang - nominalBayar;
+
+        let statusText = "";
+        if (sisa <= 0) {
+            statusText = "HUTANG LUNAS";
+        } else {
+            statusText = `SISA HUTANG: ${formatCurrency(sisa)}`;
+        }
+
+        const transaksiText = member.transaksi
+            .filter(trx => trx.status === 'pending')
+            .map((trx, i) => {
+                return `${i + 1}. ${trx.kode_transaksi}
+${formatCurrency(trx.total)}
+${formatDate(trx.created_at)}`;
+            })
+            .join("\n\n");
+
+        const data = [{
+            type: 'raw',
+            format: 'plain',
+            data: `
+CBT 18
+Toko Kedelai, Garam, dan Kunyit
+Jl.Cibuntu Sayuran No.18 Bandung
+${line}
+*** STRUK HUTANG ***
+${line}
+Nama : ${member.nama}
+Telp : ${member.telepon}
+${line}
+${transaksiText || 'Tidak ada hutang'}
+${line}
+TOTAL HUTANG :
+${formatCurrency(totalHutang)}
+
+DIBAYAR :
+${formatCurrency(nominalBayar)}
+
+${line}
+${statusText}
+${line}
+Terima Kasih
+Simpan struk ini sebagai bukti pembayaran yang sah.
+
+
+`
+        }];
+
+        await qz.print(config, data);
+        await qz.websocket.disconnect();
+
+    } catch (err) {
+        console.error("Print gagal:", err);
+    }
+};
 
     const getPageNumbers = (current: number, total: number): (number | '...')[] => {
         if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -111,7 +195,7 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
     // Lunasi satu transaksi — tampilkan input nominal
     const handleLunas = (transaksiId: number, namaMember: string, totalTrx: number) => {
         Swal.fire({
-            title: 'Lunasi Hutang',
+            title: 'Bayar Hutang',
             html: `
         <p class="text-sm mb-3">Hutang <b>${namaMember}</b></p>
         <p class="text-sm mb-2">Total tagihan: <b>${formatCurrency(totalTrx)}</b></p>
@@ -124,7 +208,7 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
             showCancelButton: true,
             confirmButtonColor: '#059669',
             cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Lunasi',
+            confirmButtonText: 'Bayar',
             cancelButtonText: 'Batal',
             didOpen: () => {
                 const input = document.getElementById('swal-nominal') as HTMLInputElement;
@@ -157,11 +241,15 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
                     preserveScroll: true,
                     onSuccess: () => Swal.fire({
                         icon: 'success', title: 'Berhasil!',
-                        html: `Hutang dilunasi.<br/>Nominal: <b>${formatCurrency(result.value)}</b>`,
+                        html: `Hutang dibayar.<br/>Nominal: <b>${formatCurrency(result.value)}</b>`,
                         timer: 2000, showConfirmButton: false,
                     }),
                     onError: () => Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan.' }),
                 });
+                const member = rekap.find(m => m.nama === namaMember);
+                if (member) {
+                    handlePrintHutang(member, result.value);
+                }
             }
         });
     };
@@ -169,7 +257,7 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
     // Lunasi SEMUA hutang satu member — satu request ke backend
     const handleLunasSemuaMember = (member: RekapMember) => {
         Swal.fire({
-            title: 'Lunasi Semua Hutang',
+            title: 'Bayar Semua Hutang',
             html: `
         <p class="text-sm mb-2">Member: <b>${member.nama}</b></p>
         <p class="text-sm mb-2">${member.jumlah_transaksi} transaksi · Total: <b>${formatCurrency(member.total_hutang)}</b></p>
@@ -182,7 +270,7 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
             showCancelButton: true,
             confirmButtonColor: '#059669',
             cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Lunasi Semua',
+            confirmButtonText: 'Bayar Semua',
             cancelButtonText: 'Batal',
             didOpen: () => {
                 const input = document.getElementById('swal-nominal-semua') as HTMLInputElement;
@@ -214,12 +302,13 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
                 router.post(route('hutang.lunas-semua', member.member_id), { nominal_bayar: result.value }, {
                     preserveScroll: true,
                     onSuccess: () => Swal.fire({
-                        icon: 'success', title: 'Semua hutang dilunasi!',
+                        icon: 'success', title: 'hutang dibayar!',
                         html: `Nominal dibayar: <b>${formatCurrency(result.value)}</b>`,
                         timer: 2000, showConfirmButton: false,
                     }),
                     onError: () => Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan.' }),
                 });
+                handlePrintHutang(member, result.value);
             }
         });
     };
@@ -251,89 +340,137 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
                             </div>
                         </div>
 
+
                         {/* Search */}
                         <div className="relative flex-1 max-w-md">
-                            <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${subText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            <input
-                                type="text"
-                                placeholder="Cari nama atau telepon member..."
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                                className={`w-full pl-10 pr-4 py-2 rounded-lg border focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all ${inputCls}`}
-                            />
-                            {searchTerm && (
-                                <button onClick={() => setSearchTerm('')} className={`absolute right-3 top-1/2 -translate-y-1/2 ${subText} hover:opacity-80`}>×</button>
-                            )}
-                        </div>
+                        <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${subText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+
+                        <input
+                            type="text"
+                            placeholder="Cari nama atau telepon member..."
+                            value={searchTerm}
+                            onChange={e => {
+                                setSearchTerm(e.target.value);
+                                setSelectedMemberId(null);
+                            }}
+                            className={`w-full pl-10 pr-10 py-2 rounded-lg border focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all ${inputCls}`}
+                        />
+
+                        {/* CLEAR */}
+                        {searchTerm && (
+                            <button
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    setSelectedMemberId(null);
+                                }}
+                                className={`absolute right-3 top-1/2 -translate-y-1/2 ${subText}`}
+                            >
+                                ×
+                            </button>
+                        )}
+
+                        {/* AUTOCOMPLETE */}
+                        {searchTerm && !selectedMemberId && (
+                            <div className="absolute z-10 mt-1 w-full rounded-lg border bg-white dark:bg-zinc-800 shadow max-h-60 overflow-auto">
+                                {filtered.length > 0 ? (
+                                    filtered.slice(0, 5).map(m => (
+                                        <div
+                                            key={m.member_id}
+                                            onClick={() => {
+                                                setSelectedMemberId(m.member_id);
+                                                setSearchTerm(m.nama);
+                                            }}
+                                            className="px-4 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-zinc-700 text-sm"
+                                        >
+                                            <p className="font-medium">{m.nama}</p>
+                                            <p className="text-xs text-gray-500">{m.telepon}</p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="px-4 py-2 text-sm text-gray-500">
+                                        Tidak ada hutang
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                     </div>
                 </div>
 
                 {/* Member List */}
                 <div className={`${card} relative pb-20 rounded-xl shadow-sm overflow-hidden`}>
                     <div className="p-6 space-y-4">
-                        {filtered.length === 0 ? (
+                        {!selectedMemberId ? (
                             <div className="text-center py-12">
                                 <svg className={`mx-auto h-12 w-12 ${subText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <h3 className={`mt-2 text-sm font-medium ${text}`}>Tidak ada hutang!</h3>
-                                <p className={`mt-1 text-sm ${subText}`}>Semua member sudah melunasi hutangnya.</p>
+                                <h3 className={`mt-2 text-sm font-medium ${text}`}>Silakan pilih member terlebih dahulu.</h3>
+                                <p className={`mt-1 text-sm ${subText}`}>Daftar hutang akan muncul setelah memilih member.</p>
                             </div>
                         ) : (
-                            paged.map(member => {
-                                const isExpanded = expandedIds.has(member.member_id);
-                                return (
-                                    <div key={member.member_id} className={`${card} rounded-xl overflow-hidden shadow-sm`}>
-                                        {/* Member Row */}
-                                        <div
-                                            className={`flex items-center cursor-pointer select-none p-4 ${rowHover} transition-colors`}
-                                            onClick={() => toggleExpand(member.member_id)}
-                                            role="button"
-                                            tabIndex={0}
-                                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') toggleExpand(member.member_id); }}
-                                        >
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-400 to-orange-500 flex items-center justify-center text-white font-bold text-base shadow mr-4 shrink-0">
-                                                {member.nama.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className={`font-semibold ${text}`}>{member.nama}</p>
-                                                <p className={`text-sm ${subText}`}>{member.telepon} · {member.jumlah_transaksi} transaksi pending</p>
-                                            </div>
-                                            <div className="text-right mr-4">
-                                                <p className={`text-xs ${subText}`}>Total Hutang</p>
-                                                <p className="font-bold text-red-500">{formatCurrency(member.total_hutang)}</p>
-                                            </div>
-                                            <button
-                                                onClick={e => { e.stopPropagation(); handleLunasSemuaMember(member); }}
-                                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors mr-3 shrink-0"
+                            filtered.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <svg className={`mx-auto h-12 w-12 ${subText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <h3 className={`mt-2 text-sm font-medium ${text}`}>Tidak ada hutang!</h3>
+                                    <p className={`mt-1 text-sm ${subText}`}>Member ini tidak punya hutang.</p>
+                                </div>
+                            ) : (
+                                filtered.slice(startIndex, endIndex).map(member => {
+                                    const isExpanded = expandedIds.has(member.member_id);
+                                    return (
+                                        <div key={member.member_id} className={`${card} rounded-xl overflow-hidden shadow-sm`}>
+                                            {/* Member Row */}
+                                            <div
+                                                className={`flex items-center cursor-pointer select-none p-4 ${rowHover} transition-colors`}
+                                                onClick={() => toggleExpand(member.member_id)}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') toggleExpand(member.member_id); }}
                                             >
-                                                Lunasi Semua
-                                            </button>
-                                            <svg className={`w-5 h-5 ${subText} transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
-
-                                        {/* Expanded Detail */}
-                                        {isExpanded && (
-                                            <div className={`border-t ${borderSoft}`}>
-                                                <div className={`${softBg} px-5 py-2`}>
-                                                    <p className={`text-xs font-semibold uppercase tracking-wider ${subText}`}>Detail Transaksi Hutang</p>
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-400 to-orange-500 flex items-center justify-center text-white font-bold text-base shadow mr-4 shrink-0">
+                                                    {member.nama.charAt(0).toUpperCase()}
                                                 </div>
-                                                <div className="overflow-x-auto">
-                                                    <table className="min-w-full">
-                                                        <thead className={softBg}>
-                                                            <tr className={`border-b ${borderSoft}`}>
-                                                                {['Kode Transaksi', 'Total', 'Metode', 'Status', 'Tanggal', 'Aksi'].map(h => (
-                                                                    <th key={h} className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${subText}`}>{h}</th>
-                                                                ))}
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {member.transaksi.map(trx => (
-                                                                <tr key={trx.id} className={`border-b ${borderSoft} ${rowHover} transition-colors`}>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={`font-semibold ${text}`}>{member.nama}</p>
+                                                    <p className={`text-sm ${subText}`}>{member.telepon} · {member.jumlah_transaksi} transaksi pending</p>
+                                                </div>
+                                                <div className="text-right mr-4">
+                                                    <p className={`text-xs ${subText}`}>Total Hutang</p>
+                                                    <p className="font-bold text-red-500">{formatCurrency(member.total_hutang)}</p>
+                                                </div>
+                                                <button
+                                                    onClick={e => { e.stopPropagation(); handleLunasSemuaMember(member); }}
+                                                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors mr-3 shrink-0"
+                                                >
+                                                    Bayar Semua
+                                                </button>
+                                                <svg className={`w-5 h-5 ${subText} transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </div>
+                                            {/* Expanded Detail */}
+                                            {isExpanded && (
+                                                <div className={`border-t ${borderSoft}`}>
+                                                    <div className={`${softBg} px-5 py-2`}>
+                                                        <p className={`text-xs font-semibold uppercase tracking-wider ${subText}`}>Detail Transaksi Hutang</p>
+                                                    </div>
+                                                    <div className="overflow-x-auto">
+                                                        <table className="min-w-full">
+                                                            <thead className={softBg}>
+                                                                <tr className={`border-b ${borderSoft}`}>
+                                                                    {['Kode Transaksi', 'Total', 'Metode', 'Status', 'Tanggal', 'Aksi'].map(h => (
+                                                                        <th key={h} className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${subText}`}>{h}</th>
+                                                                    ))}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {member.transaksi.map(trx => (
+                                                                    <tr key={trx.id} className={`border-b ${borderSoft} ${rowHover} transition-colors`}>
                                                                     <td className="px-5 py-3">
                                                                         <span className={`font-mono text-sm font-medium ${text}`}>{trx.kode_transaksi}</span>
                                                                     </td>
@@ -357,21 +494,21 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
                                                                                 onClick={() => handleLunas(trx.id, member.nama, trx.total)}
                                                                                 className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors"
                                                                             >
-                                                                                Lunasi
+                                                                                Bayar
                                                                             </button>
                                                                         )}
                                                                     </td>
                                                                 </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })
-                        )}
+                                            )}
+                                        </div>
+                                    );
+                                })
+                            ))}
                     </div>
 
                     {/* Pagination */}
