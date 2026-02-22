@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Produk;
 use App\Models\Transaksi;
-use App\Models\Kategori;
+use App\Models\JenisProduk;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,18 +12,18 @@ class KasirController extends Controller
 {
     public function beli()
     {
-        // Ambil semua kategori, tapi hanya id dan nama saja
-        $kategori = Kategori::all()->map(function($item) {
+        // Ambil semua jenis produk, tapi hanya id dan nama saja
+        $jenis_produk = JenisProduk::all()->map(function($item) {
             return [
                 'id' => $item->id,
-                'nama_kategori' => $item->nama_kategori, // sesuaikan nama kolom
+                'nama_jenis_produk' => $item->nama_jenis_produk, // sesuaikan nama kolom
             ];
         });
 
         return Inertia::render('kasir', [
-            'produk' => Produk::with('kategori')->get(),
+            'produk' => Produk::with('jenis_produk')->get(),
             'transaksi' => Transaksi::all(),
-            'kategori' => $kategori,
+            'jenis_produk' => $jenis_produk,
         ]);
     }
 

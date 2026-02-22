@@ -16,7 +16,7 @@ class ProdukSeeder extends Seeder
         DB::table('produk')->insert([
             [
                 'id' => 1,
-                'id_kategori' => 1,
+                'id_jenis_produk' => 1,
                 'nama' => 'Apple Crumble',
                 'harga' => 25000,
                 'stok' => '100',
@@ -26,7 +26,7 @@ class ProdukSeeder extends Seeder
             ],
             [
                 'id' => 2,
-                'id_kategori' => 3,
+                'id_jenis_produk' => 3,
                 'nama' => 'Cioko',
                 'harga' => 15000,
                 'stok' => '100',
@@ -36,7 +36,7 @@ class ProdukSeeder extends Seeder
             ],
             [
                 'id' => 3,
-                'id_kategori' => 3,
+                'id_jenis_produk' => 3,
                 'nama' => 'Garam Karung',
                 'harga' => 10000,
                 'stok' => '100',
@@ -46,7 +46,7 @@ class ProdukSeeder extends Seeder
             ],
             [
                 'id' => 4,
-                'id_kategori' => 3,
+                'id_jenis_produk' => 3,
                 'nama' => 'Garam',
                 'harga' => 8000,
                 'stok' => '100',
@@ -56,7 +56,7 @@ class ProdukSeeder extends Seeder
             ],
             [
                 'id' => 5,
-                'id_kategori' => 1,
+                'id_jenis_produk' => 1,
                 'nama' => 'Kedelai',
                 'harga' => 12000,
                 'stok' => '100',
@@ -66,7 +66,7 @@ class ProdukSeeder extends Seeder
             ],
             [
                 'id' => 6,
-                'id_kategori' => 3,
+                'id_jenis_produk' => 3,
                 'nama' => 'Kunyit',
                 'harga' => 9000,
                 'stok' => '100',

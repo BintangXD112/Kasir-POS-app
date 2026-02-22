@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Produk as ProdukType, Kategori as KategoriType } from "@/types/type";
+import { Produk as ProdukType, JenisProduk as JenisProdukType } from "@/types/type";
 import Swal from "sweetalert2";
 import { router } from "@inertiajs/react";
 
 interface ProdukProps {
   produks: ProdukType[];
-  kategori: KategoriType[];
+  jenis_produk: JenisProdukType[];
   currentTheme: "auto" | "Light" | "Dark";
 }
 
-export default function Produk({ produks, kategori, currentTheme }: ProdukProps) {
+export default function Produk({ produks, jenis_produk, currentTheme }: ProdukProps) {
   const formatIDR = (n: number) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`;
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -21,7 +21,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
     harga: "",
     stok: "",
     gambar: null as File | null,
-    id_kategori: kategori[0]?.id || 0,
+    id_jenis_produk: jenis_produk[0]?.id || 0,
   });
 
   // ====== ⬇️ STATE & LOGIC PAGINATION  ⬇️ ======
@@ -65,8 +65,8 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
       harga: Number(produk.harga) ?? 0,
       stok: Number(produk.stok) ?? 0,
       gambar: produk.gambar ?? "",
-      id_kategori: produk.id_kategori,
-      kategori: produk.kategori,
+      id_jenis_produk: produk.id_jenis_produk,
+      jenis_produk: produk.jenis_produk,
     });
     setShowEditModal(true);
   };
@@ -110,7 +110,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
         }
         if(statusFilter !== ""){
             out = out.filter(item=>
-                item.kategori?.nama_kategori.toLowerCase() === statusFilter.toLowerCase()
+                item.jenis_produk?.nama_jenis_produk.toLowerCase() === statusFilter.toLowerCase()
                 )
         }
         return out;
@@ -156,10 +156,10 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
               onChange={(e) => setStatusFilter(e.target.value)}
               className={`px-4 py-2 ${inputTheme} border shadow rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
             >
-              <option value="">Semua kategori produk</option>
-              {kategori.map((item, i)=>
+              <option value="">Semua jenis produk</option>
+              {jenis_produk.map((item, i)=>
                 (
-                  <option value={`${item.nama_kategori}`}>{item.nama_kategori}</option>
+                  <option value={`${item.nama_jenis_produk}`}>{item.nama_jenis_produk}</option>
                   ))}
           </select>
         </div>
@@ -177,7 +177,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
               <th className="py-3 px-6">Nama</th>
               <th className="py-3 px-6">Harga</th>
               <th className="py-3 px-6">Stok</th>
-              <th className="py-3 px-6">Kategori</th>
+              <th className="py-3 px-6">Jenis Produk</th>
               <th className="py-3 px-6">Gambar</th>
               <th className="py-3 px-6 text-center">Aksi</th>
             </tr>
@@ -191,7 +191,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                 <td className="py-3 px-6">{item.nama}</td>
                 <td className="py-3 px-6">{formatIDR(item.harga)}</td>
                 <td className="py-3 px-6">{item.stok}</td>
-                <td className="py-3 px-6">{item.kategori?.nama_kategori || "-"}</td>
+                <td className="py-3 px-6">{item.jenis_produk?.nama_jenis_produk || "-"}</td>
                 <td className="py-3 px-6">
                   <img
                     src={`/logo/${item.gambar || 'default.png'}`}
@@ -308,7 +308,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   formData.append("nama", editData.nama);
                   formData.append("harga", editData.harga.toString());
                   formData.append("stok", editData.stok.toString());
-                  formData.append("id_kategori", editData.id_kategori.toString());
+                  formData.append("id_jenis_produk", editData.id_jenis_produk.toString());
 
                   if (editData.gambar && editData.gambar instanceof File) {
                     formData.append("gambar", editData.gambar);
@@ -359,18 +359,18 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   placeholder="Stok"
                   required
                 />
-                <h1>Kategori</h1>
+                <h1>Jenis Produk</h1>
                 <select
-                  value={editData.id_kategori}
+                  value={editData.id_jenis_produk}
                   onChange={(e) =>
-                    setEditData({ ...editData!, id_kategori: Number(e.target.value) })
+                    setEditData({ ...editData!, id_jenis_produk: Number(e.target.value) })
                   }
                   className={`w-full p-2 mb-2 ${inputTheme} border rounded`}
                   required
                 >
-                  {kategori.map((kat) => (
-                    <option key={kat.id} value={kat.id}>
-                      {kat.nama_kategori}
+                  {jenis_produk.map((jenis) => (
+                    <option key={jenis.id} value={jenis.id}>
+                      {jenis.nama_jenis_produk}
                     </option>
                   ))}
                 </select>
@@ -422,7 +422,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   formData.append("nama", addData.nama);
                   formData.append("harga", addData.harga);
                   formData.append("stok", addData.stok);
-                  formData.append("id_kategori", addData.id_kategori.toString());
+                  formData.append("id_jenis_produk", addData.id_jenis_produk.toString());
                   if (addData.gambar) formData.append("gambar", addData.gambar);
 
                   router.post("/produk", formData, {
@@ -434,7 +434,7 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                         harga: "",
                         stok: "",
                         gambar: null,
-                        id_kategori: kategori[0]?.id || 0,
+                        id_jenis_produk: jenis_produk[0]?.id || 0,
                       });
                       Swal.fire("Berhasil", "Produk berhasil ditambahkan", "success");
                     },
@@ -471,18 +471,18 @@ export default function Produk({ produks, kategori, currentTheme }: ProdukProps)
                   placeholder="Stok"
                   required
                 />
-                <h1>Kategori</h1>
+                <h1>Jenis Produk</h1>
                 <select
-                  value={addData.id_kategori}
+                  value={addData.id_jenis_produk}
                   onChange={(e) =>
-                    setAddData({ ...addData, id_kategori: Number(e.target.value) })
+                    setAddData({ ...addData, id_jenis_produk: Number(e.target.value) })
                   }
                   className={`w-full p-2 mb-2 ${inputTheme} border rounded`}
                   required
                 >
-                  {kategori.map((kat) => (
-                    <option key={kat.id} value={kat.id}>
-                      {kat.nama_kategori}
+                  {jenis_produk.map((jenis) => (
+                    <option key={jenis.id} value={jenis.id}>
+                      {jenis.nama_jenis_produk}
                     </option>
                   ))}
                 </select>

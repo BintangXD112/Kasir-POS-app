@@ -22,22 +22,22 @@ class AdminController extends Controller
     {
         $users = User::orderBy('created_at', 'desc')->get();
         $members = Member::all();
-        $produks = Produk::with('kategori:id,nama_kategori')->get()->map(function ($produk) {
+        $produks = Produk::with('jenis_produk:id,nama_jenis_produk')->get()->map(function ($produk) {
             return [
                 'id' => $produk->id,
-                'id_kategori' => $produk->id_kategori,
+                'id_jenis_produk' => $produk->id_jenis_produk,
                 'nama' => $produk->nama,
                 'harga' => $produk->harga,
                 'stok' => $produk->stok,
                 'gambar' => $produk->gambar,
-                'kategori' => [
-                    'id' => $produk->kategori->id,
-                    'nama_kategori' => $produk->kategori->nama_kategori,
+                'jenis_produk' => [
+                    'id' => $produk->jenis_produk->id,
+                    'nama_jenis_produk' => $produk->jenis_produk->nama_jenis_produk,
                 ],
             ];
         });
         $tabungan = Tabungan::with('member', 'detail')->get();
-        $kategori = \App\Models\Kategori::all();
+        $jenis_produk = \App\Models\JenisProduk::all();
 
         // Hitung pemasukan 1 bulan terakhir (reset otomatis tiap bulan)
         $startOfMonth = now()->startOfMonth();
@@ -91,7 +91,7 @@ class AdminController extends Controller
             'pemasukan_bulan_ini' => $pemasukanBulanIni,
             'transaksi' => $transaksi,
             'tabungan' => $tabungan,
-            'kategori' => $kategori,
+            'jenis_produk' => $jenis_produk,
             'rekap_hutang' => $rekapHutang,
             'pembelian_stok' => $pembelianStok,
             'produk_list' => $produkList,

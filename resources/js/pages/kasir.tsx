@@ -8,20 +8,16 @@ import QRCodePembayaran from '../components/qrcodepaymentmodal';
 import MenuBar from '@/components/menu-bar.tsx'
 import qz from 'qz-tray'
 import Swal from 'sweetalert2';
+import { JenisProduk } from "@/types/type";
 
 interface DashboardProps extends PageProps {
     produk: Produk[];
-    kategori: Kategori[];
-}
-
-export interface Kategori {
-    id: number;
-    nama_kategori: string;
+    jenis_produk: JenisProduk[];
 }
 
 export interface Produk {
     id: number;
-    id_kategori: number;
+    id_jenis_produk: number;
     nama: string;
     harga: number;
     stok: number;
@@ -38,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 
-export default function Dashboard({ produk, kategori }: DashboardProps) {
+export default function Dashboard({ produk, jenis_produk }: DashboardProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const cleanup = useMobileNavigation();
     const handleLogout = () => {
@@ -229,11 +225,11 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
     const [uangTunaiDisplay, setUangTunaiDisplay] = useState('');
     const [showNonTunaiModal, setShowNonTunaiModal] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState('');
-    const [selectedKategori, setSelectedKategori] = useState<number | 'semua'>('semua');
+    const [selectedJenisProduk, setSelectedJenisProduk] = useState<number | 'semua'>('semua');
     const filterNamaProduk = produk.filter((item) => {
         const matchNama = item.nama.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchKategori = selectedKategori === 'semua' ? true : item.id_kategori === selectedKategori;
-        return matchNama && matchKategori;
+        const matchJenisProduk = selectedJenisProduk === 'semua' ? true : item.id_jenis_produk === selectedJenisProduk;
+        return matchNama && matchJenisProduk;
     });
 
 
@@ -710,20 +706,20 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                         >
                             <div className="flex gap-2 mb-4">
                                 <button
-                                    className={`px-3 py-1 rounded ${selectedKategori === 'semua' ? 'bg-red-500 text-white' : 'bg-gray-300 text-black'
+                                    className={`px-3 py-1 rounded ${selectedJenisProduk === 'semua' ? 'bg-red-500 text-white' : 'bg-gray-300 text-black'
                                         }`}
-                                    onClick={() => setSelectedKategori('semua')}
+                                    onClick={() => setSelectedJenisProduk('semua')}
                                 >
                                     Semua
                                 </button>
-                                {kategori.map((kat) => (
+                                {jenis_produk.map((jenis) => (
                                     <button
-                                        key={kat.id}
-                                        className={`px-3 py-1 rounded w-fit ${selectedKategori === kat.id ? 'bg-red-500 text-white' : 'bg-gray-300 text-black'
+                                        key={jenis.id}
+                                        className={`px-3 py-1 rounded w-fit ${selectedJenisProduk === jenis.id ? 'bg-red-500 text-white' : 'bg-gray-300 text-black'
                                             }`}
-                                        onClick={() => setSelectedKategori(kat.id)}
+                                        onClick={() => setSelectedJenisProduk(jenis.id)}
                                     >
-                                        {kat.nama_kategori}
+                                        {jenis.nama_jenis_produk}
                                     </button>
                                 ))}
                             </div>

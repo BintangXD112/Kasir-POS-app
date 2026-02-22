@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Offline',
         ]);
         $this->call([
-            KategoriSeeder::class,
+            JenisProdukSeeder::class,
             ProdukSeeder::class,
             DiskonSeeder::class,
             MemberSeeder::class,

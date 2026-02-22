@@ -35,7 +35,6 @@ return array(
     'App\\Models\\DetailTabungan' => $baseDir . '/app/Models/DetailTabungan.php',
     'App\\Models\\DetailTransaksi' => $baseDir . '/app/Models/DetailTransaksi.php',
     'App\\Models\\Diskon' => $baseDir . '/app/Models/Diskon.php',
-    'App\\Models\\Kategori' => $baseDir . '/app/Models/Kategori.php',
     'App\\Models\\Member' => $baseDir . '/app/Models/Member.php',
     'App\\Models\\PembelianStok' => $baseDir . '/app/Models/PembelianStok.php',
     'App\\Models\\Produk' => $baseDir . '/app/Models/Produk.php',

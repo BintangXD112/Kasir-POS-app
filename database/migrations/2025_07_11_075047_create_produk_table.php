@@ -10,16 +10,16 @@ return new class extends Migration
     {
         Schema::create('produk', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('id_kategori'); // foreign key
+            $table->unsignedBigInteger('id_jenis_produk'); // foreign key
             $table->string('nama');
             $table->integer('harga');
             $table->integer('stok')->default(0);
             $table->string('gambar')->nullable();
             $table->timestamps();
 
-            $table->foreign('id_kategori')
+            $table->foreign('id_jenis_produk')
                   ->references('id')
-                  ->on('kategori')
+                  ->on('jenis_produk')
                   ->onDelete('cascade');
         });
     }

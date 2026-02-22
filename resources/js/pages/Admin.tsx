@@ -11,14 +11,15 @@ import VoucherUsage from './view/voucher-usage';
 import Users from './view/user';
 import TransaksiAdminPage from './view/transaksi-admin.js';
 import TabunganMember from './view/tabungan-member.js';
-import Kategori from './view/kategori.js';
+// import Kategori from './view/kategori.js';
+import JenisProduk from './view/jenis_produk.js';
 import HutangMemberComponent from './view/hutang-member';
 import PembelianStokComponent from './view/pembelian-stok';
 import { House, HandCoins, PiggyBank, User, Package, Ticket, AlertCircle, ShoppingCart } from 'lucide-react';
 
 export default function Admin() {
   const props = usePage().props as any;
-  const { users, members, produks, pemasukan_bulan_ini, transaksi, tabungan, kategori, rekap_hutang, pembelian_stok, produk_list, total_bulan_ini_stok } = props;
+  const { users, members, produks, pemasukan_bulan_ini, transaksi, tabungan, jenis_produk, rekap_hutang, pembelian_stok, produk_list, total_bulan_ini_stok } = props;
 
   // ====== THEME STATE (sama seperti Login) ======
   const [currentTheme, setCurrentTheme] = useState<'auto' | 'Light' | 'Dark'>(
@@ -122,7 +123,7 @@ export default function Admin() {
     { key: "transaksi", label: "Riwayat Transaksi", icon: HandCoins, url: null },
     { key: "member", label: "Kelola Member", icon: User, url: null },
     { key: "tabungan-member", label: "Tabungan Member", icon: PiggyBank, url: null },
-    { key: "kategori", label: "Kategori Produk", icon: Package, url: null },
+    { key: "jenis_produk", label: "Jenis Produk", icon: Package, url: null },
     { key: "produk", label: "Kelola Produk", icon: Package, url: null },
     { key: "voucher-diskon", label: "Voucher Diskon", icon: Ticket, url: null },
     { key: "voucher-usage", label: "Penggunaan Voucher", icon: Ticket, url: null },
@@ -311,8 +312,8 @@ export default function Admin() {
                   />
                 )}
                 {page === 'transaksi' && <TransaksiAdminPage transaksi={transaksi} currentTheme={currentTheme} />}
-                {page === 'kategori' && <Kategori kategori={kategori} />}
-                {page === 'produk' && <Produk produks={produks} kategori={kategori} currentTheme={currentTheme} />}
+                {page === 'jenis_produk' && <JenisProduk jenis_produk={jenis_produk} />}
+                {page === 'produk' && <Produk produks={produks} jenis_produk={jenis_produk} currentTheme={currentTheme} />}
                 {page === 'voucher-diskon' && <VoucherDiskon currentTheme={currentTheme} />}
                 {page === 'member' && <Member currentTheme={currentTheme} />}
                 {page === 'tabungan-member' && <TabunganMember tabungan={tabungan} currentTheme={currentTheme} />}

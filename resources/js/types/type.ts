@@ -29,17 +29,23 @@ export interface Voucher {
   jumlah_diskon: number;
 }
 
-export interface Kategori {
+// export interface Kategori {
+//   id: number;
+//   nama_kategori: string;
+//   created_at: string;
+//   updated_at: string;
+// }
+export interface JenisProduk {
   id: number;
-  nama_kategori: string;
+  nama_jenis_produk: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface ProdukKategori {
-  id: number;
-  nama_kategori: string;
-}
+// export interface ProdukKategori {
+//   id: number;
+//   nama_kategori: string;
+// }
 
 export interface Produk {
   id: number;
@@ -47,8 +53,8 @@ export interface Produk {
   harga: number;
   stok: number;
   gambar: string | null;
-  id_kategori: number;
-  kategori: ProdukKategori;
+  id_jenis_produk: number;
+  jenis_produk: JenisProduk;
 }
 
 // Props untuk halaman yang memuat beberapa data
@@ -56,5 +62,5 @@ export interface PageProps {
   users: User[];
   members: Member[];
   produks: Produk[];
-  kategori: Kategori[];  // tambahkan kategori jika perlu dipakai
+  jenis_produk: JenisProduk[];  // tambahkan jenis produk jika perlu dipakai
 }

@@ -7,7 +7,8 @@ use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UsageDiskonController;
-use App\Http\Controllers\KategoriController;
+// use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\JenisProdukController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\HutangController;
 use App\Http\Controllers\PembelianStokController;
@@ -57,10 +58,10 @@ Route::get('/stock', function () {
     return Inertia::render('view/pembelian-stok');
 });
 
-    // Kategori
-    Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');
-    Route::delete('/kategori/{id}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
-    Route::put('/kategori/{id}', [KategoriController::class, 'update'])->name('kategori.update');
+    // Jenis Produk
+    Route::post('/jenis_produk', [JenisProdukController::class, 'store'])->name('jenis_produk.store');
+    Route::delete('/jenis_produk/{id}', [JenisProdukController::class, 'destroy'])->name('jenis_produk.destroy');
+    Route::put('/jenis_produk/{id}', [JenisProdukController::class, 'update'])->name('jenis_produk.update');
 
     // Produk
     Route::post('/produk', [ProdukController::class, 'store'])->name('produk.store');

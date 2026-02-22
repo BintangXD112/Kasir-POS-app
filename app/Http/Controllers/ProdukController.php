@@ -15,11 +15,11 @@ class ProdukController extends Controller
             'nama' => 'required|string',
             'harga' => 'required|numeric',
             'stok' => 'required|numeric',
-            'id_kategori' => 'required|exists:kategori,id', // validasi kategori
+            'id_jenis_produk' => 'required|exists:jenis_produk,id', // validasi jenis produk
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $data = $request->only(['nama', 'harga', 'stok', 'id_kategori']);
+        $data = $request->only(['nama', 'harga', 'stok', 'id_jenis_produk']);
 
         if ($request->hasFile('gambar')) {
             $gambar = $request->file('gambar');
@@ -48,7 +48,7 @@ class ProdukController extends Controller
                 'nama' => 'required|string',
                 'harga' => 'required|numeric',
                 'stok' => 'required|numeric',
-                'id_kategori' => 'required|exists:kategori,id', // validasi kategori
+                'id_jenis_produk' => 'required|exists:jenis_produk,id', // validasi jenis produk
             ];
 
             if ($request->hasFile('gambar')) {
@@ -69,7 +69,7 @@ class ProdukController extends Controller
             $produk->nama = $request->input('nama');
             $produk->harga = $request->input('harga');
             $produk->stok = $request->input('stok');
-            $produk->id_kategori = $request->input('id_kategori');
+            $produk->id_jenis_produk = $request->input('id_jenis_produk');
             $produk->save();
 
             return redirect()->back()->with('message', 'Produk berhasil diperbarui.');
