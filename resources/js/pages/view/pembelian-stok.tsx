@@ -1,6 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { router } from "@inertiajs/react";
 import Swal from "sweetalert2";
+import MenuBar from '@/components/menu-bar';
+import { Link } from '@inertiajs/react';
+import { LogOut } from 'lucide-react';
+import { useMobileNavigation } from '../../hooks/use-mobile-navigation';
 
 declare const route: (name: string, params?: any) => string;
 
@@ -32,9 +36,9 @@ const formatDate = (d: string | null) =>
 
 export default function PembelianStokComponent({ pembelian, produk, total_bulan_ini, currentTheme }: Props) {
     pembelian = [],
-  produk = [],
-  total_bulan_ini = 0,
-  currentTheme = 'auto';
+        produk = [],
+        total_bulan_ini = 0,
+        currentTheme = 'auto';
     const [search, setSearch] = useState("");
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({ produk_id: "", jumlah: "", harga_beli: "", keterangan: "" });
@@ -146,32 +150,70 @@ export default function PembelianStokComponent({ pembelian, produk, total_bulan_
         });
     };
 
+
+    const headerBg =
+        currentTheme === 'auto'
+            ? 'bg-gray-800 dark:bg-zinc-900/80'
+            : currentTheme === 'Light'
+                ? 'bg-gray-800' // header tetap gelap biar kontras
+                : 'bg-zinc-900/80';
+
+    const cleanup = useMobileNavigation();
+    const handleLogout = () => {
+        cleanup();
+        router.flushAll();
+        localStorage.removeItem("username");
+    };
+    const [showLogout, setShowLogout] = useState(false);
+    const toggleLogout = () => {
+        setShowLogout(!showLogout);
+    };
+
     return (
+
         <div>
             {/* Header */}
-<div className="pl-6 pt-6 flex items-center justify-between pr-6">
-    <div className="flex items-center gap-4">
-        <button
-            onClick={() => router.visit('/kasir')}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium transition-colors"
-        >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Kembali ke Kasir
-        </button>
-        <h2 className={`text-xl font-semibold ${text}`}>Rekap Stok Pembelian</h2>
-    </div>
-    <button
-        onClick={() => setShowForm(true)}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
-    >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
-        Tambah Pembelian
-    </button>
-</div>
+            <div className={`flex flex-col ${headerBg} px-4 py-4`}>
+                <div className={`flex justify-between`}>
+                    <div className="w-1/6 items-center flex">
+                        <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
+                    </div>
+                    <div onClick={toggleLogout} className={`text-white flex items-center relative cursor-pointer`}>
+                        {localStorage.getItem("username")}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`size-4 ml-2 ${showLogout ? 'rotate-180' : ''} transition-transform duration-150 ease-in-out`}>
+                            <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
+                        </svg>
+                        {showLogout && (
+                            <div className={`transition-all duration-150 ease-in-out absolute top-8 right-0 bg-red-500 cursor-pointer hover:opacity-50 rounded-md shadow-lg p-0 w-36 z-20 animate-fade-in`}>
+                                <ul className="text-white m-0 p-0">
+                                    <li className="py-2 px-2 cursor-pointer transition-colors rounded-md">
+                                        <Link className="flex w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
+                                            <LogOut className='mr-2' />
+                                            Log out
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <MenuBar />
+            </div>
+            <div className="pl-6 pt-6 flex items-center justify-between pr-6">
+
+                <div className="flex items-center gap-4">
+                    <h2 className={`text-xl font-semibold ${text}`}>Rekap Stok Pembelian</h2>
+                </div>
+                <button
+                    onClick={() => setShowForm(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Tambah Pembelian
+                </button>
+            </div>
 
             <div className="p-6 space-y-4">
                 {/* Summary Cards */}

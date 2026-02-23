@@ -11,7 +11,9 @@ class Transaksi extends Model
 
     protected $table = 'transaksi';
     public $timestamps = false;
-    protected $guarded = [];
+    protected $guarded = [
+        'id'
+    ];
 
     public function detail()
     {
@@ -26,4 +28,5 @@ class Transaksi extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+
 }

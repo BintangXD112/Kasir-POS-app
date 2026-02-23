@@ -21,6 +21,8 @@ return new class extends Migration {
             $table->foreignId('member_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('supplier')->nullOnDelete();
 
+            $table->foreignId('diskon_id')->nullable()->constrained()->nullOnDelete();
+
             $table->string('kode_transaksi')->unique();
             $table->decimal('total', 15, 2)->default(0);
 

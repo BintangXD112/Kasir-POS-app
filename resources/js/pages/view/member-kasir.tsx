@@ -2,6 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 import type { Member as MemberType, Voucher } from '@/types/type';
+import MenuBar from '@/components/menu-bar';
+import { LogOut } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { useMobileNavigation } from '../../hooks/use-mobile-navigation';
 
 
 // ===== helpers
@@ -186,20 +190,55 @@ export default function Member({ currentTheme = 'Light' }: Props) {
     }
   };
 
+
+  const headerBg =
+    currentTheme === 'auto'
+      ? 'bg-gray-800 dark:bg-zinc-900/80'
+      : currentTheme === 'Light'
+        ? 'bg-gray-800' // header tetap gelap biar kontras
+        : 'bg-zinc-900/80';
+
+  const cleanup = useMobileNavigation();
+  const handleLogout = () => {
+    cleanup();
+    router.flushAll();
+    localStorage.removeItem("username");
+  };
+  const [showLogout, setShowLogout] = useState(false);
+  const toggleLogout = () => {
+    setShowLogout(!showLogout);
+  };
+
   // ===== render
   return (
-    <div className={`p-6 max-w-full min-h-[75vh] mx-auto rounded-xl shadow ${appBg} ${text}`}>
+    <div className={`max-w-full min-h-[75vh] mx-auto rounded-xl shadow ${appBg} ${text}`}>
+      <div className={`flex flex-col ${headerBg} px-4 py-4`}>
+        <div className={`flex justify-between`}>
+          <div className="w-1/6 items-center flex">
+            <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
+          </div>
+          <div onClick={toggleLogout} className={`text-white flex items-center relative cursor-pointer`}>
+            {localStorage.getItem("username")}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`size-4 ml-2 ${showLogout ? 'rotate-180' : ''} transition-transform duration-150 ease-in-out`}>
+              <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
+            </svg>
+            {showLogout && (
+              <div className={`transition-all duration-150 ease-in-out absolute top-8 right-0 bg-red-500 cursor-pointer hover:opacity-50 rounded-md shadow-lg p-0 w-36 z-20 animate-fade-in`}>
+                <ul className="text-white m-0 p-0">
+                  <li className="py-2 px-2 cursor-pointer transition-colors rounded-md">
+                    <Link className="flex w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
+                      <LogOut className='mr-2' />
+                      Log out
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+        <MenuBar />
+      </div>
       <div className="flex gap-4 mb-4 items-center">
-      <button
-        onClick={() => router.visit('/kasir')}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium transition-colors"
-          >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Kembali ke Kasir
-        </button>
-      
         <h2 className="text-xl font-semibold">Kelola Member</h2>
       </div>
 

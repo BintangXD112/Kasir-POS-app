@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { PageProps } from "../types/index";
+import { PageProps } from "@/types/index";
 import { router } from "@inertiajs/react";
 import Swal from "sweetalert2";
 

@@ -15,6 +15,7 @@ class TransaksiSeeder extends Seeder
                 'user_id' => 2,
                 'jenis' => 'keluar', // penjualan ke member
                 'member_id' => 1,
+                'diskon_id' => null,
                 'supplier_id' => null,
                 'kode_transaksi' => 'TRX001',
                 'total' => 41000.00,
@@ -29,6 +30,7 @@ class TransaksiSeeder extends Seeder
                 'user_id' => 2,
                 'jenis' => 'keluar', // penjualan ke member
                 'member_id' => 2,
+                'diskon_id' => null,
                 'supplier_id' => null,
                 'kode_transaksi' => 'TRX002',
                 'total' => 36000.00,
@@ -43,6 +45,7 @@ class TransaksiSeeder extends Seeder
                 'user_id' => 2,
                 'jenis' => 'masuk', 
                 'member_id' => null,
+                'diskon_id' => null,
                 'supplier_id' => 1,
                 'kode_transaksi' => 'TRX003',
                 'total' => 36000.00,

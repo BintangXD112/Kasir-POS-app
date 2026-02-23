@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import HutangMemberComponent from './view/hutang-member';
+import MenuBar from '@/components/menu-bar';
+import { LogOut } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { useMobileNavigation } from '../hooks/use-mobile-navigation';
 
 declare const route: (name: string, params?: any) => string;
 
@@ -23,6 +27,24 @@ export default function KasirHutang({ rekap, auth }: Props) {
         (localStorage.getItem('theme') as 'auto' | 'Light' | 'Dark') || 'auto'
     );
 
+    const headerBg =
+        currentTheme === 'auto'
+            ? 'bg-gray-800 dark:bg-zinc-900/80'
+            : currentTheme === 'Light'
+                ? 'bg-gray-800' // header tetap gelap biar kontras
+                : 'bg-zinc-900/80';
+
+    const cleanup = useMobileNavigation();
+    const handleLogout = () => {
+        cleanup();
+        router.flushAll();
+        localStorage.removeItem("username");
+    };
+    const [showLogout, setShowLogout] = useState(false);
+    const toggleLogout = () => {
+        setShowLogout(!showLogout);
+    };
+
     const navBg = 'bg-zinc-900';
     const navText = 'text-white';
 
@@ -32,26 +54,34 @@ export default function KasirHutang({ rekap, auth }: Props) {
                 : 'bg-gray-50 min-h-screen';
 
     return (
+
         <div className={pageBg}>
-            {/* Navbar — sama gaya dengan kasir */}
-            <header className={`${navBg} ${navText} px-6 py-3 flex items-center justify-between shadow-md sticky top-0 z-30`}>
-                <div className="flex items-center gap-4">
-                    {/* Tombol kembali ke kasir */}
-                    <button
-                        onClick={() => router.visit('/kasir')}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium transition-colors"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <div className={`flex flex-col ${headerBg} px-4 py-4`}>
+                <div className={`flex justify-between`}>
+                    <div className="w-1/6 items-center flex">
+                        <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
+                    </div>
+                    <div onClick={toggleLogout} className={`text-white flex items-center relative cursor-pointer`}>
+                        {localStorage.getItem("username")}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`size-4 ml-2 ${showLogout ? 'rotate-180' : ''} transition-transform duration-150 ease-in-out`}>
+                            <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
                         </svg>
-                        Kembali ke Kasir
-                    </button>
-                    <h1 className="text-lg font-bold">Rekap Hutang Member</h1>
+                        {showLogout && (
+                            <div className={`transition-all duration-150 ease-in-out absolute top-8 right-0 bg-red-500 cursor-pointer hover:opacity-50 rounded-md shadow-lg p-0 w-36 z-20 animate-fade-in`}>
+                                <ul className="text-white m-0 p-0">
+                                    <li className="py-2 px-2 cursor-pointer transition-colors rounded-md">
+                                        <Link className="flex w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
+                                            <LogOut className='mr-2' />
+                                            Log out
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-sm text-zinc-300">{auth?.user?.nama_user}</span>
-                </div>
-            </header>
+                <MenuBar />
+            </div>
 
             {/* Content */}
             <HutangMemberComponent rekap={rekap} currentTheme={currentTheme} />
