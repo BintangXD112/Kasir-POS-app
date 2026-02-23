@@ -68,7 +68,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
     const base = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border";
     const theme = currentTheme
     const map: Record<string, string> = {
-      paid: `${base} ${theme === 'auto' ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800' : theme === 'Light' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-emerald-900/30 text-emerald-300 border-emerald-800'}`,
+      lunas: `${base} ${theme === 'auto' ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800' : theme === 'Light' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-emerald-900/30 text-emerald-300 border-emerald-800'}`,
       pending: `${base} ${theme === 'auto' ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800' : theme === 'Light' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-amber-900/30 text-amber-300 border-amber-800'}`,
       cancelled: `${base} ${theme === 'auto' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800' : theme === 'Light' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-red-900/30 text-red-300 border-red-800'}`,
     };
@@ -185,7 +185,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
           th { background-color: #f2f2f2; font-weight: bold; }
           .total { font-weight: bold; }
           .summary { margin-top: 20px; padding: 15px; background-color: #f9f9f9; }
-          .status-paid { color: #059669; }
+          .status-lunas { color: #059669; }
           .status-pending { color: #d97706; }
           .status-cancelled { color: #dc2626; }
           @media print { body { margin: 0; } .no-print { display: none; } }
@@ -235,7 +235,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
           <h3>Ringkasan</h3>
           <p><strong>Total Transaksi:</strong> ${dataToPrint.length}</p>
           <p><strong>Total Pendapatan:</strong> Rp ${dataToPrint.reduce((sum, trx) => Number(sum) + Number(trx.total), 0).toLocaleString('id-ID')}</p>
-          <p><strong>Transaksi Paid:</strong> ${dataToPrint.filter(trx => trx.status === 'paid').length}</p>
+          <p><strong>Transaksi lunas:</strong> ${dataToPrint.filter(trx => trx.status === 'lunas').length}</p>
           <p><strong>Transaksi Pending:</strong> ${dataToPrint.filter(trx => trx.status === 'pending').length}</p>
           <p><strong>Transaksi Cancelled:</strong> ${dataToPrint.filter(trx => trx.status === 'cancelled').length}</p>
         </div>
@@ -425,7 +425,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                 className={`px-4 py-2 border ${inputTheme} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
               >
                 <option value="all">Semua Status</option>
-                <option value="paid">Paid</option>
+                <option value="lunas">lunas</option>
                 <option value="pending">Pending</option>
                 <option value="cancelled">Cancelled</option>
               </select>
@@ -574,7 +574,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi }) => {
                     </td>
 
                     <td className="px-6 py-4">
-                      <span className={getStatusBadge(trx.status)}>{trx.status === 'paid' ? 'Lunas' : 'Belum Lunas'}</span>
+                      <span className={getStatusBadge(trx.status)}>{trx.status === 'lunas' ? 'Lunas' : 'Belum Lunas'}</span>
                     </td>
 
                     <td className="px-6 py-4">

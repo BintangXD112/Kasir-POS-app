@@ -156,7 +156,7 @@ export default function Dashboard({ produk, jenis_produk }: DashboardProps) {
             status: isHutang === true
                 ? 'pending'
                 : (selectedPayment === 'tunai' || selectedPayment === 'non-tunai')
-                    ? 'paid'
+                    ? 'lunas'
                     : 'failed',
             total: totalSetelahDiskon,
             nama_member: selectedMember?.nama ?? '',

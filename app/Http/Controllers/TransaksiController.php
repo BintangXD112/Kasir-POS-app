@@ -20,10 +20,11 @@ class TransaksiController extends Controller
     {
         $transaksi = Transaksi::with([
             'detail.produk:id,nama,harga,gambar',
-            'member:id,nama'
-        ])->get();
+            'member:id,nama',
+            'supplier:id,nama_supplier'
+        ])->latest()->get();
 
-        return Inertia::render('transaksi', [
+        return Inertia::render('Transaksi', [
             'transaksi' => $transaksi,
         ]);
     }
@@ -33,7 +34,7 @@ class TransaksiController extends Controller
             'kode_transaksi' => 'required|string|unique:transaksi,kode_transaksi',
             'total' => 'required|numeric',
             'metode' => 'required|in:tunai,non-tunai,qris',
-            'status' => 'required|in:paid,pending',
+            'status' => 'required|in:lunas,pending',
             'member_id' => 'nullable|exists:members,id',
             'detail' => 'required|array|min:1',
             'detail.*.produk_id' => 'required|exists:produk,id',
@@ -77,8 +78,8 @@ class TransaksiController extends Controller
                 'diskon_id' => $member?->diskon_id ?? null,
                 'metode_pembayaran' => $request->metode,
                 'status' => $request->status,
-                'created_at' => in_array($request->status, ['paid', 'pending']) ? now() : null,
-                'waktu_bayar' => $request->status === 'paid' ? now() : null,
+                'created_at' => in_array($request->status, ['lunas', 'pending']) ? now() : null,
+                'waktu_bayar' => $request->status === 'lunas' ? now() : null,
             ]);
 
             $details = [];
@@ -99,10 +100,10 @@ class TransaksiController extends Controller
                     'qty' => $item['jumlah'],
                     'harga' => $item['harga'],
                     'created_at' => now(),
-                    'waktu_bayar' => $request->status === 'paid' ? now() : null,
+                    'waktu_bayar' => $request->status === 'lunas' ? now() : null,
                 ];
             }
-            
+
             DetailTransaksi::insert($details);
 
 
@@ -113,7 +114,7 @@ class TransaksiController extends Controller
                     $produk->delete();
                 }
             }
-            
+
             if ($member) {
                 // hitung total transaksi member dari tabel transaksi
                 $totalTransaksiMember = Transaksi::where('member_id', $member->id)->count('member_id');
@@ -123,7 +124,7 @@ class TransaksiController extends Controller
                 $member->save();
             }
 
-            if ($member?->diskon_id != 0){
+            if ($member?->diskon_id != 0) {
                 $usagediskon = UsageDiskon::create([
                     'member_id' => $member->id,
                     'transaksi_id' => $transaksi->id,
@@ -133,9 +134,9 @@ class TransaksiController extends Controller
             }
 
             DB::commit();
-            
+
             return redirect()->route('kasir')->with('message', 'Transaksi berhasil!');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
@@ -145,7 +146,7 @@ class TransaksiController extends Controller
     public function lunas($id)
     {
         $trx = Transaksi::findOrFail($id);
-        $trx->status = 'paid';
+        $trx->status = 'lunas';
         $trx->waktu_bayar = now();
         $trx->save();
 

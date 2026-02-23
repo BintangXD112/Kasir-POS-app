@@ -401,7 +401,7 @@ export default function Dashboard({ produk, kategori }: DashboardProps) {
                             className={`px-4 py-2 border ${inputTheme} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
                           >
                             <option value="all">Semua Tipe</option>
-                            <option value="paid">Masuk</option>
+                            <option value="lunas">Masuk</option>
                             <option value="pending">Keluar</option>
                             {/*<option value="cancelled">Cancelled</option>*/}
                           </select>

@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             ProdukSeeder::class,
             DiskonSeeder::class,
             MemberSeeder::class,
+            SupplierSeeder::class,
             TransaksiSeeder::class,
             DetailTransaksiSeeder::class,
             TabunganSeeder::class,

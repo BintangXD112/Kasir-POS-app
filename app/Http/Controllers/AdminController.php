@@ -42,19 +42,20 @@ class AdminController extends Controller
         // Hitung pemasukan 1 bulan terakhir (reset otomatis tiap bulan)
         $startOfMonth = now()->startOfMonth();
         $endOfMonth = now()->endOfMonth();
-        $pemasukanBulanIni = \App\Models\Transaksi::where('status', 'paid')
+        $pemasukanBulanIni = \App\Models\Transaksi::where('status', 'lunas')
             ->whereBetween('waktu_bayar', [$startOfMonth, $endOfMonth])
             ->sum('total');
 
         // Ambil riwayat transaksi (dengan relasi detail, produk, member)
         $transaksi = \App\Models\Transaksi::with([
             'detail.produk:id,nama,harga,gambar',
-            'member:id,nama'
+            'member:id,nama',
+            'supplier:id,nama_supplier'
         ])->orderByDesc('created_at')->get();
 
-        // Rekap hutang member (transaksi pending & paid dengan member)
+        // Rekap hutang member (transaksi pending & lunas dengan member)
         $transaksiHutang = Transaksi::with(['detail.produk:id,nama,harga', 'member:id,nama,telepon'])
-            ->whereIn('status', ['pending', 'paid'])
+            ->whereIn('status', ['pending', 'lunas'])
             ->whereNotNull('member_id')
             ->orderByDesc('created_at')
             ->get();
@@ -68,7 +69,7 @@ class AdminController extends Controller
                 'telepon'          => $member?->telepon ?? '-',
                 'jumlah_transaksi' => $itemsPending->count(),
                 'total_hutang'     => $itemsPending->sum('total'),
-                'transaksi'        => $items->values(), // Kirim semua (pending & paid)
+                'transaksi'        => $items->values(), // Kirim semua (pending & lunas)
             ];
         })->values();
 

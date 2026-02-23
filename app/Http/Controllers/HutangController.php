@@ -45,7 +45,7 @@ class HutangController extends Controller
     }
 
     /**
-     * Lunasi satu transaksi hutang (ubah status pending → paid)
+     * Lunasi satu transaksi hutang (ubah status pending → lunas)
      * Menerima nominal_bayar opsional (untuk dicatat di waktu_bayar)
      */
     public function lunas(Request $request, $id)
@@ -65,7 +65,7 @@ class HutangController extends Controller
     } else {
         // 🔥 kalau bayar cukup / lebih
         $trx->total = 0;
-        $trx->status = 'paid';
+        $trx->status = 'lunas';
     }
 
     $trx->save();
@@ -97,7 +97,7 @@ class HutangController extends Controller
             // 🔥 lunasi transaksi ini
             $bayar -= $trx->total;
             $trx->total = 0;
-            $trx->status = 'paid';
+            $trx->status = 'lunas';
         } else {
             // 🔥 bayar sebagian
             $trx->total -= $bayar;

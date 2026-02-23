@@ -10,7 +10,7 @@ interface Transaksi {
     kode_transaksi: string;
     total: number;
     metode_pembayaran: string;
-    status: 'pending' | 'paid';
+    status: 'pending' | 'lunas';
     created_at: string | null;
 }
 
@@ -475,14 +475,14 @@ Simpan struk ini sebagai bukti pembayaran yang sah.
                                                                         <span className={`font-mono text-sm font-medium ${text}`}>{trx.kode_transaksi}</span>
                                                                     </td>
                                                                     <td className="px-5 py-3">
-                                                                        <span className={`font-bold ${trx.status === 'paid' ? 'text-emerald-500' : 'text-red-500'}`}>{formatCurrency(trx.total)}</span>
+                                                                        <span className={`font-bold ${trx.status === 'lunas' ? 'text-emerald-500' : 'text-red-500'}`}>{formatCurrency(trx.total)}</span>
                                                                     </td>
                                                                     <td className="px-5 py-3">
                                                                         <span className={`text-sm capitalize ${text}`}>{trx.metode_pembayaran}</span>
                                                                     </td>
                                                                     <td className="px-5 py-3">
-                                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${trx.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                                                                            {trx.status === 'paid' ? 'LUNAS' : 'PENDING'}
+                                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${trx.status === 'lunas' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                                                            {trx.status === 'lunas' ? 'LUNAS' : 'PENDING'}
                                                                         </span>
                                                                     </td>
                                                                     <td className="px-5 py-3">

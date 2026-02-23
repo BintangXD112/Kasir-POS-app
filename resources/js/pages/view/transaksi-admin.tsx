@@ -3,12 +3,16 @@ import { PageProps } from "../types/index";
 import { router } from "@inertiajs/react";
 import Swal from "sweetalert2";
 
+
+interface Supplier { id: number; nama_supplier: string; }
 interface Produk { id: number; nama: string; harga: number; gambar: string; }
 interface DetailTransaksi { id: number; produk: Produk; qty: number; harga: number; }
 interface Member { id: number; nama: string; }
 interface Transaksi {
   id: number;
+  jenis: string;
   kode_transaksi: string;
+  supplier: Supplier | null;
   member: Member | null;
   total: number;
   metode_pembayaran: string;
@@ -85,11 +89,24 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi, currentTheme }
   const getStatusBadge = (status: string) => {
     const base = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border";
     const map: Record<string, string> = {
-      paid: `${base} bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800`,
+      lunas: `${base} bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800`,
       pending: `${base} bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800`,
       cancelled: `${base} bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800`,
     };
     return map[status] || `${base} bg-gray-100 text-gray-800 border-gray-200 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700`;
+  };
+
+  const getJenisBadge = (jenis: string) => {
+    const base = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border";
+    if (!jenis) return `${base} bg-gray-100 text-gray-800 border-gray-200 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700`;
+    switch (jenis.toLowerCase()) {
+      case "masuk":
+        return `${base} bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800`;
+      case "keluar":
+        return `${base} bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800`;
+      default:
+        return `${base} bg-gray-100 text-gray-800 border-gray-200 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700`;
+    }
   };
 
   const getPaymentMethodIcon = (method: string) => {
@@ -182,7 +199,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi, currentTheme }
         th { background-color: #f2f2f2; font-weight: bold; }
         .total { font-weight: bold; }
         .summary { margin-top: 20px; padding: 15px; background-color: #f9f9f9; }
-        .status-paid { color: #059669; }
+        .status-lunas { color: #059669; }
         .status-pending { color: #d97706; }
         .status-cancelled { color: #dc2626; }
         @media print { body { margin: 0; } .no-print { display: none; } }
@@ -202,7 +219,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi, currentTheme }
         <table>
           <thead>
             <tr>
-              <th>No</th><th>Kode Transaksi</th><th>Member</th><th>Total</th>
+              <th>No</th><th>Kode Transaksi</th><th>Member</th><th>Supplier</th><th>Total</th>
               <th>Metode Pembayaran</th><th>Status</th><th>Tanggal</th><th>Items</th>
             </tr>
           </thead>
@@ -212,6 +229,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi, currentTheme }
                 <td>${index + 1}</td>
                 <td>${trx.kode_transaksi}</td>
                 <td>${trx.member?.nama || 'Guest'}</td>
+                <td>${trx.supplier?.nama_supplier || '-'}</td>
                 <td class="total">${formatCurrency(trx.total)}</td>
                 <td>${trx.metode_pembayaran}</td>
                 <td class="status-${trx.status}">${trx.status}</td>
@@ -226,7 +244,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi, currentTheme }
           <h3>Ringkasan</h3>
           <p><strong>Total Transaksi:</strong> ${dataToPrint.length}</p>
           <p><strong>Total Pendapatan:</strong> Rp ${dataToPrint.reduce((sum, trx) => Number(sum) + Number(trx.total), 0).toLocaleString('id-ID')}</p>
-          <p><strong>Transaksi Paid:</strong> ${dataToPrint.filter(trx => trx.status === 'paid').length}</p>
+          <p><strong>Transaksi lunas:</strong> ${dataToPrint.filter(trx => trx.status === 'lunas').length}</p>
           <p><strong>Transaksi Pending:</strong> ${dataToPrint.filter(trx => trx.status === 'pending').length}</p>
           <p><strong>Transaksi Cancelled:</strong> ${dataToPrint.filter(trx => trx.status === 'cancelled').length}</p>
         </div>
@@ -299,7 +317,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi, currentTheme }
                     : "border-zinc-700 bg-zinc-800 text-zinc-100"}`}
               >
                 <option value="all">Semua Status</option>
-                <option value="paid">Paid</option>
+                <option value="lunas">lunas</option>
                 <option value="pending">Pending</option>
                 <option value="cancelled">Cancelled</option>
               </select>
@@ -410,7 +428,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi, currentTheme }
             <table className="min-w-full">
               <thead className={`${softBg}`}>
                 <tr className={`border-b ${borderSoft}`}>
-                  {["Transaksi", "Member", "Total", "Pembayaran", "Status", "Produk", "Waktu"].map((h) => (
+                  {["Transaksi", "Nama Mitra", "Jenis Transaksi", "Total", "Pembayaran", "Status", "Produk", "Waktu"].map((h) => (
                     <th key={h} className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${subText}`}>{h}</th>
                   ))}
                 </tr>
@@ -420,7 +438,7 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi, currentTheme }
                   <tr
                     key={trx.id}
                     className={`${rowHover} transition-colors duration-150 ${trx.status === "pending" ? "cursor-pointer" : ""} border-b ${currentTheme === "Dark" ? "border-zinc-800" : "border-slate-100"}`}
-                    onClick={() => { if (trx.status === "pending") handleLunas(trx.id); }}
+                    onClick={() => { console.log(trx); if (trx.status === "pending") handleLunas(trx.id); }}
                   >
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
@@ -432,11 +450,21 @@ const TransaksiPage: React.FC<TransaksiPageProps> = ({ transaksi, currentTheme }
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-semibold mr-3">
-                          {trx.member?.nama?.charAt(0) || "G"}
+                          {(trx.member?.nama || trx.supplier?.nama_supplier || "G").charAt(0)}
                         </div>
                         <div>
-                          <div className={`font-medium ${bodyText}`}>{trx.member?.nama || "Guest"}</div>
-                          <div className={`text-xs ${subText}`}>{trx.member ? "Member" : "Non Member"}</div>
+                          <div className={`font-medium ${bodyText}`}>{trx.member?.nama || trx.supplier?.nama_supplier || "Guest"}</div>
+                          <div className={`text-xs ${subText}`}>
+                            {trx.member ? "Member" : trx.supplier ? "Supplier" : "Guest"}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <span className={getJenisBadge(trx.jenis)}>{trx.jenis}</span>
                         </div>
                       </div>
                     </td>
