@@ -15,7 +15,7 @@ import TabunganMember from './view/tabungan-member.js';
 import JenisProduk from './view/jenis_produk.js';
 import HutangMemberComponent from './view/hutang-member';
 import PembelianStokComponent from './view/pembelian-stok';
-import { House, HandCoins, PiggyBank, User, Package, Ticket, AlertCircle, ShoppingCart } from 'lucide-react';
+import { House, HandCoins, PiggyBank, User, Package, Ticket, AlertCircle, ShoppingCart, BarChart2, FileText, Truck, Users as UsersIcon } from 'lucide-react';
 
 export default function Admin() {
   const props = usePage().props as any;
@@ -130,6 +130,10 @@ export default function Admin() {
     { key: "user", label: "Kelola User", icon: User, url: null },
     { key: "hutang", label: "Rekap Hutang", icon: AlertCircle, url: null },
     { key: "pembelian-stok", label: "Pembelian Stok", icon: ShoppingCart, url: null },
+    { key: "supplier", label: "Supplier", icon: Truck, url: '/admin/supplier' },
+    { key: "rekap", label: "Rekap", icon: BarChart2, url: '/admin/rekap' },
+    { key: "laporan-member", label: "Lap. Transaksi Member", icon: UsersIcon, url: '/admin/laporan-transaksi-member' },
+    { key: "laporan-supplier", label: "Lap. Keuangan Supplier", icon: FileText, url: '/admin/laporan-keuangan-supplier' },
   ];
   return (
     <div className={`w-full h-screen ${bgApp} transition-colors`}>
@@ -311,7 +315,7 @@ export default function Admin() {
                     currentTheme={currentTheme}
                   />
                 )}
-                {page === 'transaksi' && <TransaksiAdminPage transaksi={transaksi} currentTheme={currentTheme} />}
+                {page === 'transaksi' && <TransaksiAdminPage transaksi={transaksi} currentTheme={currentTheme} auth={props.auth} />}
                 {page === 'jenis_produk' && <JenisProduk jenis_produk={jenis_produk} />}
                 {page === 'produk' && <Produk produks={produks} jenis_produk={jenis_produk} currentTheme={currentTheme} />}
                 {page === 'voucher-diskon' && <VoucherDiskon currentTheme={currentTheme} />}
@@ -320,7 +324,7 @@ export default function Admin() {
                 {page === 'voucher-usage' && <VoucherUsage currentTheme={currentTheme} />}
                 {page === 'user' && <Users users={users} currentTheme={currentTheme} />}
                 {page === 'hutang' && <HutangMemberComponent rekap={rekap_hutang ?? []} currentTheme={currentTheme} />}
-                {page === 'pembelian-stok' && <PembelianStokComponent pembelian={pembelian_stok ?? []} produk={produk_list ?? []} total_bulan_ini={total_bulan_ini_stok ?? 0} currentTheme={currentTheme} />}
+                {page === 'pembelian-stok' && <PembelianStokComponent pembelian={pembelian_stok ?? []} produk={produk_list ?? []} suppliers={props.suppliers ?? []} total_bulan_ini={total_bulan_ini_stok ?? 0} currentTheme={currentTheme} />}
               </div>
             </div>
           </main>

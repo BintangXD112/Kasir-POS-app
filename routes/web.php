@@ -12,6 +12,8 @@ use App\Http\Controllers\JenisProdukController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\HutangController;
 use App\Http\Controllers\PembelianStokController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\RekapController;
 use Inertia\Inertia;
 
 
@@ -100,7 +102,22 @@ Route::get('/stock', function () {
         // Pembelian Stok (admin only)
         Route::get('/pembelian-stok', [PembelianStokController::class, 'index'])->name('pembelian-stok.index');
         Route::post('/pembelian-stok', [PembelianStokController::class, 'store'])->name('pembelian-stok.store');
+        Route::post('/pembelian-stok/{id}/lunas', [PembelianStokController::class, 'markLunas'])->name('pembelian-stok.lunas');
 
+        // Supplier CRUD
+        Route::prefix('supplier')->name('supplier.')->group(function () {
+            Route::get('/', [SupplierController::class, 'index'])->name('index');
+            Route::post('/', [SupplierController::class, 'store'])->name('store');
+            Route::put('/{id}', [SupplierController::class, 'update'])->name('update');
+            Route::delete('/{id}', [SupplierController::class, 'destroy'])->name('destroy');
+        });
+
+        // Rekap Dashboard
+        Route::get('/rekap', [RekapController::class, 'index'])->name('rekap');
+
+        // Laporan
+        Route::get('/laporan-transaksi-member', [AdminController::class, 'laporanTransaksiMember'])->name('laporan.member');
+        Route::get('/laporan-keuangan-supplier', [AdminController::class, 'laporanKeuanganSupplier'])->name('laporan.supplier');
 
     });
 });

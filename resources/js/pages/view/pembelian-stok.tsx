@@ -10,10 +10,12 @@ declare const route: (name: string, params?: any) => string;
 
 interface Produk { id: number; nama: string; stok: number; harga: number; }
 interface User { id: number; nama_user: string; }
+interface Supplier { id: number; nama_supplier: string; }
 interface Pembelian {
     id: number;
     produk: Produk;
     user: User;
+    supplier?: Supplier | null;
     jumlah: number;
     harga_beli: number;
     total_harga: number;
@@ -24,6 +26,7 @@ interface Pembelian {
 interface Props {
     pembelian: Pembelian[];
     produk: Produk[];
+    suppliers: Supplier[];
     total_bulan_ini: number;
     currentTheme: 'auto' | 'Light' | 'Dark';
 }
@@ -34,14 +37,16 @@ const formatCurrency = (n: number) =>
 const formatDate = (d: string | null) =>
     d ? new Date(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
 
-export default function PembelianStokComponent({ pembelian, produk, total_bulan_ini, currentTheme }: Props) {
+export default function PembelianStokComponent({
     pembelian = [],
-        produk = [],
-        total_bulan_ini = 0,
-        currentTheme = 'auto';
+    produk = [],
+    suppliers = [],
+    total_bulan_ini = 0,
+    currentTheme = 'Light',
+}: Props) {
     const [search, setSearch] = useState("");
     const [showForm, setShowForm] = useState(false);
-    const [form, setForm] = useState({ produk_id: "", jumlah: "", harga_beli: "", keterangan: "" });
+    const [form, setForm] = useState({ produk_id: "", jumlah: "", harga_beli: "", keterangan: "", supplier_id: "" });
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState<number>(10);
@@ -134,11 +139,12 @@ export default function PembelianStokComponent({ pembelian, produk, total_bulan_
                     jumlah: Number(form.jumlah),
                     harga_beli: Number(form.harga_beli),
                     keterangan: form.keterangan,
+                    supplier_id: form.supplier_id ? Number(form.supplier_id) : null,
                 }, {
                     preserveScroll: true,
                     onSuccess: () => {
                         Swal.fire({ icon: "success", title: "Berhasil!", text: "Pembelian stok dicatat.", timer: 1500, showConfirmButton: false });
-                        setForm({ produk_id: "", jumlah: "", harga_beli: "", keterangan: "" });
+                        setForm({ produk_id: "", jumlah: "", harga_beli: "", keterangan: "", supplier_id: "" });
                         setFormErrors({});
                         setShowForm(false);
                     },
@@ -204,15 +210,23 @@ export default function PembelianStokComponent({ pembelian, produk, total_bulan_
                 <div className="flex items-center gap-4">
                     <h2 className={`text-xl font-semibold ${text}`}>Rekap Stok Pembelian</h2>
                 </div>
-                <button
-                    onClick={() => setShowForm(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Tambah Pembelian
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => router.visit('/admin/supplier')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm border transition-colors ${currentTheme === 'Dark' ? 'border-zinc-700 text-zinc-300 hover:bg-zinc-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}
+                    >
+                        Kelola Supplier
+                    </button>
+                    <button
+                        onClick={() => setShowForm(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Tambah Pembelian
+                    </button>
+                </div>
             </div>
 
             <div className="p-6 space-y-4">
@@ -257,7 +271,7 @@ export default function PembelianStokComponent({ pembelian, produk, total_bulan_
                         <table className="min-w-full">
                             <thead className={softBg}>
                                 <tr className={`border-b ${borderSoft}`}>
-                                    {["Produk", "Jumlah", "Harga Beli/Unit", "Total Harga", "Keterangan", "Admin", "Tanggal"].map(h => (
+                                    {["Produk", "Supplier", "Jumlah", "Harga Beli/Unit", "Total Harga", "Keterangan", "Admin", "Tanggal"].map(h => (
                                         <th key={h} className={`px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider ${subText}`}>{h}</th>
                                     ))}
                                 </tr>
@@ -265,7 +279,7 @@ export default function PembelianStokComponent({ pembelian, produk, total_bulan_
                             <tbody>
                                 {paged.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="text-center py-12">
+                                        <td colSpan={8} className="text-center py-12">
                                             <svg className={`mx-auto h-12 w-12 ${subText} mb-3`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                             </svg>
@@ -285,6 +299,9 @@ export default function PembelianStokComponent({ pembelian, produk, total_bulan_
                                                     <p className={`text-xs ${subText}`}>Stok sekarang: {p.produk.stok}</p>
                                                 </div>
                                             </div>
+                                        </td>
+                                        <td className="px-5 py-4">
+                                            <span className={`text-sm ${subText}`}>{p.supplier?.nama_supplier ?? '-'}</span>
                                         </td>
                                         <td className="px-5 py-4">
                                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
@@ -422,12 +439,26 @@ export default function PembelianStokComponent({ pembelian, produk, total_bulan_
                             )}
 
                             <div>
-                                <label className={`block text-sm font-medium mb-1 ${text}`}>Keterangan / Supplier</label>
+                                <label className={`block text-sm font-medium mb-1 ${text}`}>Supplier (Opsional)</label>
+                                <select
+                                    value={form.supplier_id}
+                                    onChange={(e) => setForm(f => ({ ...f, supplier_id: e.target.value }))}
+                                    className={`w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${inputCls}`}
+                                >
+                                    <option value="">-- Pilih Supplier (opsional) --</option>
+                                    {suppliers.map(s => (
+                                        <option key={s.id} value={s.id}>{s.nama_supplier}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className={`block text-sm font-medium mb-1 ${text}`}>Keterangan</label>
                                 <input
                                     type="text"
                                     value={form.keterangan}
                                     onChange={(e) => setForm(f => ({ ...f, keterangan: e.target.value }))}
-                                    placeholder="Nama supplier, catatan, dll."
+                                    placeholder="Catatan tambahan..."
                                     className={`w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${inputCls}`}
                                 />
                             </div>

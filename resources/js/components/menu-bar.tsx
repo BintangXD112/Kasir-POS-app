@@ -1,43 +1,55 @@
 import { usePage, Link, router } from '@inertiajs/react'
-import { Home, Wallet, HandCoins, Truck, Layers, UsersRound, Settings } from 'lucide-react'
+import { Home, Wallet, HandCoins, Truck, Layers, UsersRound, Settings, BarChart2, Users, FileText } from 'lucide-react'
 
-export default function MenuBar(){
-	const {url} = usePage()
-	const activeMenuBar = 'font-bold underline flex justify-center gap-1 text-white items-center px-4 cursor-pointer'
+export default function MenuBar() {
+    const { url } = usePage()
+    const activeMenuBar = 'font-bold underline flex justify-center gap-1 text-white items-center px-4 cursor-pointer'
     const menuBar = 'flex justify-center gap-1 text-white items-center px-4 cursor-pointer hover:underline'
-return(
-	<div className={`flex gap-4 w-full justify-center`}>
-        <button onClick={() => router.visit('/kasir')} className={url === '/kasir' ? activeMenuBar : menuBar}>
-            <Home/>
-            Home
-        </button>
-        <button onClick={() => router.visit('/beli')} className={url === '/beli' ? activeMenuBar : menuBar}>
-            <HandCoins/>
-            Beli
-        </button>
-        <button onClick={() => router.visit('/bayar')} className={url === '/bayar' ? activeMenuBar : menuBar}>
-            <Wallet/>
-            Bayar
-        </button>
-        <button onClick={() => router.visit('/stock')} className={url === '/stock' ? activeMenuBar : menuBar}>
-            <Layers/>
-            Stock
-        </button>
-        <button onClick={() => router.visit('/supplier')} className={url === '/supplier' ? activeMenuBar : menuBar}>
-            <Truck/>
-            Supplier
-        </button>
-        <button onClick={() => router.visit('/member')} className={url === '/member' ? activeMenuBar : menuBar}>
-            <UsersRound/>
-            Member
-        </button>
-        <button onClick={() => router.visit('/setting')} className={url === '/setting' ? activeMenuBar : menuBar}>
-            <Settings/>
-            Setting
-        </button>
-        
-        
-        {/*<button onClick={() => router.visit('/tabungan')} className="flex justify-center bg-transparent gap-2 text-white border border-white rounded-sm items-center px-4 cursor-pointer hover:bg-white hover:scale-105 hover:text-black transition-all duration-300">
+    return (
+        <div className={`flex gap-4 w-full justify-center`}>
+            <button onClick={() => router.visit('/kasir')} className={url === '/kasir' ? activeMenuBar : menuBar}>
+                <Home />
+                Home
+            </button>
+            <button onClick={() => router.visit('/beli')} className={url === '/beli' ? activeMenuBar : menuBar}>
+                <HandCoins />
+                Beli
+            </button>
+            <button onClick={() => router.visit('/bayar')} className={url === '/bayar' ? activeMenuBar : menuBar}>
+                <Wallet />
+                Bayar
+            </button>
+            <button onClick={() => router.visit('/stock')} className={url === '/stock' ? activeMenuBar : menuBar}>
+                <Layers />
+                Stock
+            </button>
+            <button onClick={() => router.visit('/admin/supplier')} className={url.startsWith('/admin/supplier') ? activeMenuBar : menuBar}>
+                <Truck />
+                Supplier
+            </button>
+            <button onClick={() => router.visit('/member')} className={url === '/member' ? activeMenuBar : menuBar}>
+                <UsersRound />
+                Member
+            </button>
+            <button onClick={() => router.visit('/setting')} className={url === '/setting' ? activeMenuBar : menuBar}>
+                <Settings />
+                Setting
+            </button>
+            <button onClick={() => router.visit('/admin/rekap')} className={url.startsWith('/admin/rekap') ? activeMenuBar : menuBar}>
+                <BarChart2 />
+                Rekap
+            </button>
+            <button onClick={() => router.visit('/admin/laporan-transaksi-member')} className={url.startsWith('/admin/laporan-transaksi-member') ? activeMenuBar : menuBar}>
+                <Users />
+                Lap. Member
+            </button>
+            <button onClick={() => router.visit('/admin/laporan-keuangan-supplier')} className={url.startsWith('/admin/laporan-keuangan-supplier') ? activeMenuBar : menuBar}>
+                <FileText />
+                Lap. Supplier
+            </button>
+
+
+            {/*<button onClick={() => router.visit('/tabungan')} className="flex justify-center bg-transparent gap-2 text-white border border-white rounded-sm items-center px-4 cursor-pointer hover:bg-white hover:scale-105 hover:text-black transition-all duration-300">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
                 <path d="M12 7.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
                 <path fillRule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 0 1 1.5 14.625v-9.75ZM8.25 9.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM18.75 9a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V9.75a.75.75 0 0 0-.75-.75h-.008ZM4.5 9.75A.75.75 0 0 1 5.25 9h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75V9.75Z" clipRule="evenodd" />
@@ -58,5 +70,6 @@ return(
             </svg>
             Batalkan&nbsp;Transaksi
         </button>*/}
-    </div>
-)}
+        </div>
+    )
+}

@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Models\UserLog;
 use App\Models\Transaksi;
+use App\Models\PembelianStok;
+use App\Models\Supplier;
 
 
 class AdminController extends Controller
@@ -201,6 +203,78 @@ class AdminController extends Controller
             'auth' => [
                 'user' => Auth::user(),
             ],
+        ]);
+    }
+
+    public function laporanTransaksiMember(Request $request)
+    {
+        $query = Transaksi::with(['detail.produk:id,nama,harga', 'member:id,nama,telepon'])
+            ->whereNotNull('member_id');
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        if ($request->filled('member_id')) {
+            $query->where('member_id', $request->member_id);
+        }
+
+        $transaksi = $query->orderByDesc('created_at')->get();
+        $members   = Member::select('id', 'nama')->orderBy('nama')->get();
+
+        $totalPemasukan = $transaksi->where('status', 'lunas')->sum('total');
+        $totalTransaksi = $transaksi->count();
+
+        return Inertia::render('view/laporan-transaksi-member', [
+            'transaksi'       => $transaksi,
+            'members'         => $members,
+            'total_pemasukan' => $totalPemasukan,
+            'total_transaksi' => $totalTransaksi,
+            'filters'         => $request->only(['date_from', 'date_to', 'member_id']),
+            'auth'            => ['user' => Auth::user()],
+        ]);
+    }
+
+    public function laporanKeuanganSupplier(Request $request)
+    {
+        $query = PembelianStok::with(['supplier:id,nama_supplier', 'produk:id,nama', 'user:id,nama_user'])
+            ->whereNotNull('supplier_id');
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->supplier_id);
+        }
+
+        $pembelian  = $query->orderByDesc('created_at')->get();
+        $suppliers  = Supplier::select('id', 'nama_supplier')->orderBy('nama_supplier')->get();
+
+        $totalPengeluaran = $pembelian->sum('total_harga');
+
+        // Rekap per supplier
+        $rekapPerSupplier = $pembelian->groupBy('supplier_id')->map(function ($items) {
+            $supplier = $items->first()->supplier;
+            return [
+                'supplier_id'   => $supplier?->id,
+                'nama_supplier' => $supplier?->nama_supplier ?? '-',
+                'jumlah_order'  => $items->count(),
+                'total_harga'   => $items->sum('total_harga'),
+            ];
+        })->values();
+
+        return Inertia::render('view/laporan-keuangan-supplier', [
+            'pembelian'         => $pembelian,
+            'suppliers'         => $suppliers,
+            'total_pengeluaran' => $totalPengeluaran,
+            'rekap_per_supplier'=> $rekapPerSupplier,
+            'filters'           => $request->only(['date_from', 'date_to', 'supplier_id']),
+            'auth'              => ['user' => Auth::user()],
         ]);
     }
 }

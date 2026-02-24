@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PembelianStok;
 use App\Models\Produk;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -16,11 +17,13 @@ class PembelianStokController extends Controller
         $pembelian = PembelianStok::with([
             'produk:id,nama,stok,harga',
             'user:id,nama_user',
+            'supplier:id,nama_supplier',
         ])
             ->orderByDesc('created_at')
             ->get();
 
-        $produk = Produk::select('id', 'nama', 'stok', 'harga')->orderBy('nama')->get();
+        $produk    = Produk::select('id', 'nama', 'stok', 'harga')->orderBy('nama')->get();
+        $suppliers = Supplier::select('id', 'nama_supplier')->orderBy('nama_supplier')->get();
 
         // Summary: total pengeluaran bulan ini
         $startOfMonth = now()->startOfMonth();
@@ -29,21 +32,23 @@ class PembelianStokController extends Controller
             ->sum('total_harga');
 
         return Inertia::render('view/pembelian-stok', [
-            'pembelian'      => $pembelian,
-            'produk'         => $produk,
+            'pembelian'       => $pembelian,
+            'produk'          => $produk,
+            'suppliers'       => $suppliers,
             'total_bulan_ini' => $totalBulanIni,
-            'currentTheme'   => 'Light', // atau ambil dari user/session jika ada
-            'auth'           => ['user' => Auth::user()],
+            'currentTheme'    => 'Light',
+            'auth'            => ['user' => Auth::user()],
         ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'produk_id'  => 'required|exists:produk,id',
-            'jumlah'     => 'required|integer|min:1',
-            'harga_beli' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string|max:255',
+            'produk_id'   => 'required|exists:produk,id',
+            'jumlah'      => 'required|integer|min:1',
+            'harga_beli'  => 'required|numeric|min:0',
+            'keterangan'  => 'nullable|string|max:255',
+            'supplier_id' => 'nullable|exists:supplier,id',
         ]);
 
         DB::beginTransaction();
@@ -52,13 +57,14 @@ class PembelianStokController extends Controller
             $total  = $request->jumlah * $request->harga_beli;
 
             PembelianStok::create([
-                'produk_id'  => $request->produk_id,
-                'user_id'    => Auth::id(),
-                'jumlah'     => $request->jumlah,
-                'harga_beli' => $request->harga_beli,
+                'produk_id'   => $request->produk_id,
+                'user_id'     => Auth::id(),
+                'supplier_id' => $request->supplier_id,
+                'jumlah'      => $request->jumlah,
+                'harga_beli'  => $request->harga_beli,
                 'total_harga' => $total,
-                'keterangan' => $request->keterangan,
-                'created_at' => now(),
+                'keterangan'  => $request->keterangan,
+                'created_at'  => now(),
             ]);
 
             // Tambah stok produk
