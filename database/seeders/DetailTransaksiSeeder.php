@@ -17,7 +17,7 @@ class DetailTransaksiSeeder extends Seeder
             [
                 'id' => 1,
                 'transaksi_id' => 1,
-                'produk_id' => 1,
+                'produk_id' => 4,
                 'qty' => 1,
                 'harga' => 25000.00,
                 'created_at' => '2025-07-11 07:41:40',
@@ -35,7 +35,7 @@ class DetailTransaksiSeeder extends Seeder
             [
                 'id' => 3,
                 'transaksi_id' => 2,
-                'produk_id' => 2,
+                'produk_id' => 5,
                 'qty' => 1,
                 'harga' => 15000.00,
                 'created_at' => '2025-07-11 07:41:40',
@@ -56,15 +56,6 @@ class DetailTransaksiSeeder extends Seeder
                 'produk_id' => 5,
                 'qty' => 1,
                 'harga' => 12000.00,
-                'created_at' => '2025-07-11 07:41:40',
-                'waktu_bayar' => '2025-07-11 07:41:40',
-            ],
-            [
-                'id' => 6,
-                'transaksi_id' => 3,
-                'produk_id' => 1,
-                'qty' => 1,
-                'harga' => 25000.00,
                 'created_at' => '2025-07-11 07:41:40',
                 'waktu_bayar' => '2025-07-11 07:41:40',
             ],

@@ -41,6 +41,7 @@ class TransaksiController extends Controller
             'detail.*.jumlah' => 'required|integer|min:1',
             'detail.*.harga' => 'required|numeric|min:0',
             'nama_member' => 'nullable|string',
+            'ongkir' => 'nullable|integer',
         ]);
 
         DB::beginTransaction();
@@ -69,10 +70,12 @@ class TransaksiController extends Controller
                 }
             }
 
+            $total = $request->total + $request->ongkir;
+
             // Buat transaksi
             $transaksi = Transaksi::create([
                 'kode_transaksi' => $request->kode_transaksi,
-                'total' => $request->total,
+                'total' => $total,
                 'user_id' => Auth::id(),
                 'member_id' => $member?->id,
                 'diskon_id' => $member?->diskon_id ?? null,

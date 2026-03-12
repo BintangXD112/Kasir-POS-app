@@ -14,7 +14,7 @@ export interface User {
 export interface Member {
   id: number;
   nama: string;
-  diskon_id: number | null;
+  level: string;
   alamat: string;
   telepon: string | number;
   total_transaksi: number;
@@ -22,12 +22,6 @@ export interface Member {
 }
 
 // Voucher Interface
-export interface Voucher {
-  id: number;
-  kode_voucher: string;
-  deskripsi: string;
-  jumlah_diskon: number;
-}
 
 // export interface Kategori {
 //   id: number;

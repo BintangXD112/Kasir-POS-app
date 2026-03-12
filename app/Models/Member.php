@@ -14,7 +14,7 @@ class Member extends Model
         'nama',
         'alamat',
         'telepon',
-        'diskon_id',
+        'level',
         'total_transaksi',
         'tanggal_daftar',
     ];
@@ -22,12 +22,6 @@ class Member extends Model
     protected $dates = [
         'tanggal_daftar',
     ];
-
-    // Relasi ke tabel diskon
-    public function diskon()
-    {
-        return $this->belongsTo(Diskon::class, 'diskon_id');
-    }
 
     // Relasi ke tabungan
     public function tabungan()

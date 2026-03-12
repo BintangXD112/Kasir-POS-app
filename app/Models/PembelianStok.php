@@ -20,6 +20,8 @@ class PembelianStok extends Model
         'harga_beli',
         'total_harga',
         'keterangan',
+        'ongkir',
+        'nominal_bayar',
         'status',
         'created_at',
     ];

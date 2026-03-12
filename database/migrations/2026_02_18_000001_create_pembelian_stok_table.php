@@ -14,8 +14,11 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->integer('jumlah');
             $table->decimal('harga_beli', 15, 2);
+            $table->bigInteger('ongkir')->default(0);
             $table->decimal('total_harga', 15, 2);
+            $table->bigInteger('nominal_bayar')->default(0);
             $table->string('keterangan')->nullable();
+            $table->enum('status', ['draft', 'pending', 'lunas', 'failed', 'expired'])->default('draft');
             $table->timestamp('created_at')->nullable();
         });
     }

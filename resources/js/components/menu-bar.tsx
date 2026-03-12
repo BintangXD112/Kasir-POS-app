@@ -23,7 +23,7 @@ export default function MenuBar() {
                 <Layers />
                 Stock
             </button>
-            <button onClick={() => router.visit('/admin/supplier')} className={url.startsWith('/admin/supplier') ? activeMenuBar : menuBar}>
+            <button onClick={() => router.visit('/supplier')} className={url.startsWith('/supplier') ? activeMenuBar : menuBar}>
                 <Truck />
                 Supplier
             </button>
@@ -31,19 +31,15 @@ export default function MenuBar() {
                 <UsersRound />
                 Member
             </button>
-            <button onClick={() => router.visit('/setting')} className={url === '/setting' ? activeMenuBar : menuBar}>
-                <Settings />
-                Setting
-            </button>
-            <button onClick={() => router.visit('/admin/rekap')} className={url.startsWith('/admin/rekap') ? activeMenuBar : menuBar}>
+            <button onClick={() => router.visit('/rekap')} className={url.startsWith('/rekap') ? activeMenuBar : menuBar}>
                 <BarChart2 />
                 Rekap
             </button>
-            <button onClick={() => router.visit('/admin/laporan-transaksi-member')} className={url.startsWith('/admin/laporan-transaksi-member') ? activeMenuBar : menuBar}>
+            <button onClick={() => router.visit('/laporan-transaksi-member')} className={url.startsWith('/laporan-transaksi-member') ? activeMenuBar : menuBar}>
                 <Users />
-                Lap. Member
+                Lap. Transaksi
             </button>
-            <button onClick={() => router.visit('/admin/laporan-keuangan-supplier')} className={url.startsWith('/admin/laporan-keuangan-supplier') ? activeMenuBar : menuBar}>
+            <button onClick={() => router.visit('/laporan-keuangan-supplier')} className={url.startsWith('/laporan-keuangan-supplier') ? activeMenuBar : menuBar}>
                 <FileText />
                 Lap. Supplier
             </button>

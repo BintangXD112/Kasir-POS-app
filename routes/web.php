@@ -7,7 +7,6 @@ use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UsageDiskonController;
-// use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\JenisProdukController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\HutangController;
@@ -44,6 +43,9 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     Route::post('/transaksi', [TransaksiController::class, 'store'])->name('transaksi.store');
     Route::post('/transaksi/lunas/{id}', [TransaksiController::class, 'lunas'])->name('transaksi.lunas');
 
+    // Rekap Dashboard
+    Route::get('/rekap', [RekapController::class, 'index'])->name('rekap');
+    
     // Member - FIXED ROUTES
     Route::get('/members/search', [MemberController::class, 'search'])->name('member.search');
     Route::delete('/member/{id}', [MemberController::class, 'destroy'])->name('member.destroy');
@@ -52,13 +54,12 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     Route::get('/members/{id}', [MemberController::class, 'show'])->name('member.show');
     Route::get('/member/list', [MemberController::class, 'list']);
     Route::get('/member', function () {
-    return Inertia::render('view/member-kasir');
+    return Inertia::render('member-kasir');
     });
-// ...existing code...
-Route::get('/stock', [PembelianStokController::class, 'index']);
-Route::get('/stock', function () {
-    return Inertia::render('view/pembelian-stok');
-});
+
+    // ...stock...
+    Route::get('/stock', [PembelianStokController::class, 'index']);
+    Route::post('/stock', [PembelianStokController::class, 'store'])->name('stock.store');
 
     // Jenis Produk
     Route::post('/jenis_produk', [JenisProdukController::class, 'store'])->name('jenis_produk.store');
@@ -74,50 +75,36 @@ Route::get('/stock', function () {
     Route::get('/tabungan', [TabunganController::class, 'index'])->name('tabungan');
     Route::post('/tabungan', [TabunganController::class, 'store'])->name('tabungan.store');
 
+    //supplier
+    Route::prefix('supplier')->name('supplier.')->group(function () {
+        Route::get('/', [SupplierController::class, 'index'])->name('index');
+        Route::post('/', [SupplierController::class, 'store'])->name('store');
+        Route::put('/{id}', [SupplierController::class, 'update'])->name('update');
+        Route::delete('/{id}', [SupplierController::class, 'destroy'])->name('destroy');
+    });
+
     // Rekap Hutang Member (kasir & admin)
     Route::get('/bayar', [HutangController::class, 'index'])->name('hutang.index');
     Route::post('/hutang/{id}/lunas', [HutangController::class, 'lunas'])->name('hutang.lunas');
+    Route::post('/hutang/{id}/lunas', [HutangController::class, 'supplier'])->name('hutang.supplier');
     Route::post('/hutang/{memberId}/lunas-semua', [HutangController::class, 'lunasSemuaMember'])->name('hutang.lunas-semua');
-
+    Route::get('/laporan-keuangan-supplier', [KasirController::class, 'laporanKeuanganSupplier'])->name('laporan.supplier');
+    Route::get('/laporan/member/export', [RekapController::class, 'exportMember'])->name('laporan.member.export');
+    Route::post('/pengeluaran', [RekapController::class, 'catatPengeluaran'])->name('pengeluaran.store');
+    Route::get('/pengeluaran/export', [RekapController::class, 'exportPengeluaran'])->name('pengeluaran.export');
+    Route::get('/laporan/supplier/export', [RekapController::class, 'exportSupplier'])->name('laporan.supplier.export');
+    Route::get('/laporan-transaksi-member', [KasirController::class, 'laporanTransaksiMember'])->name('laporan.member');
     // Admin group
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('dashboard');
-        Route::get('/voucher-usage', [UsageDiskonController::class, 'index'])->name('usage-diskon.index');
         Route::get('/transaksi', [AdminController::class, 'transaksiAdmin'])->name('transaksi');
-
-        // Voucher Diskon
-        Route::prefix('voucher-diskon')->group(function () {
-            Route::get('/', [AdminController::class, 'voucherDiskonIndex'])->name('voucher.index');
-            Route::post('/', [AdminController::class, 'voucherDiskonStore'])->name('voucher.store');
-            Route::put('/{id}', [AdminController::class, 'voucherDiskonUpdate'])->name('voucher.update');
-            Route::delete('/{id}', [AdminController::class, 'voucherDiskonDestroy'])->name('voucher.destroy');
-        });
 
         // Member Management
         Route::prefix('member')->group(function () {
             Route::get('/', [MemberController::class, 'indexJson'])->name('member.index');
-            Route::put('{id}/voucher', [MemberController::class, 'updateVoucher'])->name('member.voucher.update');
+            Route::put('{id}/level', [MemberController::class, 'updateLevel'])->name('member.voucher.update');
         });
-
-        // Pembelian Stok (admin only)
-        Route::get('/pembelian-stok', [PembelianStokController::class, 'index'])->name('pembelian-stok.index');
-        Route::post('/pembelian-stok', [PembelianStokController::class, 'store'])->name('pembelian-stok.store');
-        Route::post('/pembelian-stok/{id}/lunas', [PembelianStokController::class, 'markLunas'])->name('pembelian-stok.lunas');
-
-        // Supplier CRUD
-        Route::prefix('supplier')->name('supplier.')->group(function () {
-            Route::get('/', [SupplierController::class, 'index'])->name('index');
-            Route::post('/', [SupplierController::class, 'store'])->name('store');
-            Route::put('/{id}', [SupplierController::class, 'update'])->name('update');
-            Route::delete('/{id}', [SupplierController::class, 'destroy'])->name('destroy');
-        });
-
-        // Rekap Dashboard
-        Route::get('/rekap', [RekapController::class, 'index'])->name('rekap');
-
-        // Laporan
-        Route::get('/laporan-transaksi-member', [AdminController::class, 'laporanTransaksiMember'])->name('laporan.member');
-        Route::get('/laporan-keuangan-supplier', [AdminController::class, 'laporanKeuanganSupplier'])->name('laporan.supplier');
+        
 
     });
 });

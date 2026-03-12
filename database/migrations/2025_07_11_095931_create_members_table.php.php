@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->string('nama');
             $table->text('alamat');
             $table->string('telepon');
-            $table->foreignId('diskon_id')->nullable()->constrained('diskons')->onDelete('set null');
+            $table->enum('level', ['merah', 'kuning', 'hijau'])->default('merah');
             $table->integer('total_transaksi')->default(0);
             $table->timestamp('tanggal_daftar')->nullable();
             $table->timestamps();

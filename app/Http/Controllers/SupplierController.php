@@ -31,7 +31,7 @@ class SupplierController extends Controller
         $totalPembelian = PembelianStok::whereNotNull('supplier_id')->sum('total_harga');
         $sisaHutang     = PembelianStok::whereNotNull('supplier_id')->where('status', 'pending')->sum('total_harga');
 
-        return Inertia::render('view/supplier', [
+        return Inertia::render('supplier', [
             'suppliers'       => $suppliers,
             'total_pembelian' => $totalPembelian,
             'sisa_hutang'     => $sisaHutang,

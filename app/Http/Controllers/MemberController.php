@@ -23,7 +23,7 @@ class MemberController extends Controller
         }
 
         // Ambil nama member yang mirip (max 10)
-        $members = Member::with('diskon', 'tabungan')
+        $members = Member::with('tabungan')
             ->withCount('transaksi')
             ->where('nama', 'like', '%' . $query . '%')
             ->get()
@@ -31,8 +31,7 @@ class MemberController extends Controller
                 return [
                     'id' => $member->id,
                     'nama' => $member->nama,
-                    'diskon' => $member->diskon->jumlah_diskon ?? 0,
-                    'kode_voucher' => $member->diskon->kode_voucher ?? null,
+                    'level' => $member->level,
                     'saldo' => $member->tabungan->saldo ?? null,
                     'total_transaksi' => $member->transaksi_count ?? 0,
                 ];
@@ -41,15 +40,14 @@ class MemberController extends Controller
         return response()->json($members);
     }
 
-    public function updateVoucher(Request $request, $id)
+    public function updateLevel(Request $request, $id)
     {
         try{
             $member = Member::findOrFail($id);
             $request->validate([
-                'diskon_id' => 'nullable|exists:diskons,id',
+                'level' => 'nullable|string',
             ]);
-            $member->diskon_id = $request->diskon_id;
-            $member->save();
+            $member->update(['level' => $request->level]);
             return response()->json(['success' => true]);
         }catch (err){
             return response()->json(['status' => 'error', 'message' => err]);
@@ -58,7 +56,7 @@ class MemberController extends Controller
 
     public function indexJson()
     {
-        return response()->json(\App\Models\Member::with('diskon')->get());
+        return response()->json(\App\Models\Member::get());
     }
 
     public function store(Request $request)
@@ -123,7 +121,7 @@ class MemberController extends Controller
     }
     public function list()
     {
-        return response()->json(Member::with(['diskon', 'tabungan', 'transaksi'])->get());
+        return response()->json(Member::with(['tabungan', 'transaksi'])->get());
     }
     public function show($id)
     {

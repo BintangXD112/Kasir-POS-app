@@ -102,60 +102,6 @@ class AdminController extends Controller
         ]);
     }
 
-    // Voucher Diskon API
-    public function voucherDiskonIndex()
-    {
-        return response()->json(Diskon::all());
-    }
-
-    public function voucherDiskonStore(Request $request)
-    {
-        $data = $request->validate([
-            'kode_voucher' => 'required|string|unique:diskons,kode_voucher',
-            'deskripsi' => 'nullable|string',
-            'jumlah_diskon' => 'required|numeric|min:0',
-        ]);
-        $diskon = Diskon::create($data);
-        return response()->json($diskon, 201);
-    }
-
-    public function voucherDiskonUpdate(Request $request, $id)
-    {
-        $diskon = Diskon::findOrFail($id);
-        $data = $request->validate([
-            'kode_voucher' => 'required|string|unique:diskons,kode_voucher,' . $id,
-            'deskripsi' => 'nullable|string',
-            'jumlah_diskon' => 'required|numeric|min:0',
-        ]);
-        $diskon->update($data);
-        return response()->json($diskon);
-    }
-
-    public function voucherDiskonDestroy($id)
-    {
-        $diskon = Diskon::findOrFail($id);
-        $diskon->delete();
-        return response()->json(['success' => true]);
-    }
-
-    public function voucherUsage()
-    {
-        $usages = \App\Models\Transaksi::with(['member', 'diskon'])
-            ->whereNotNull('diskon_id')
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(function ($trx) {
-                return [
-                    'member' => $trx->member?->nama,
-                    'kode_voucher' => $trx->diskon?->kode_voucher,
-                    'jumlah_diskon' => $trx->diskon?->jumlah_diskon,
-                    'tanggal' => $trx->created_at,
-                    'total_setelah_diskon' => $trx->total,
-                ];
-            });
-        return response()->json($usages);
-    }
-
     public function userLogs(Request $request)
     {
         $query = UserLog::with(['user', 'targetUser']);
@@ -203,78 +149,6 @@ class AdminController extends Controller
             'auth' => [
                 'user' => Auth::user(),
             ],
-        ]);
-    }
-
-    public function laporanTransaksiMember(Request $request)
-    {
-        $query = Transaksi::with(['detail.produk:id,nama,harga', 'member:id,nama,telepon'])
-            ->whereNotNull('member_id');
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-        if ($request->filled('member_id')) {
-            $query->where('member_id', $request->member_id);
-        }
-
-        $transaksi = $query->orderByDesc('created_at')->get();
-        $members   = Member::select('id', 'nama')->orderBy('nama')->get();
-
-        $totalPemasukan = $transaksi->where('status', 'lunas')->sum('total');
-        $totalTransaksi = $transaksi->count();
-
-        return Inertia::render('view/laporan-transaksi-member', [
-            'transaksi'       => $transaksi,
-            'members'         => $members,
-            'total_pemasukan' => $totalPemasukan,
-            'total_transaksi' => $totalTransaksi,
-            'filters'         => $request->only(['date_from', 'date_to', 'member_id']),
-            'auth'            => ['user' => Auth::user()],
-        ]);
-    }
-
-    public function laporanKeuanganSupplier(Request $request)
-    {
-        $query = PembelianStok::with(['supplier:id,nama_supplier', 'produk:id,nama', 'user:id,nama_user'])
-            ->whereNotNull('supplier_id');
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-        if ($request->filled('supplier_id')) {
-            $query->where('supplier_id', $request->supplier_id);
-        }
-
-        $pembelian  = $query->orderByDesc('created_at')->get();
-        $suppliers  = Supplier::select('id', 'nama_supplier')->orderBy('nama_supplier')->get();
-
-        $totalPengeluaran = $pembelian->sum('total_harga');
-
-        // Rekap per supplier
-        $rekapPerSupplier = $pembelian->groupBy('supplier_id')->map(function ($items) {
-            $supplier = $items->first()->supplier;
-            return [
-                'supplier_id'   => $supplier?->id,
-                'nama_supplier' => $supplier?->nama_supplier ?? '-',
-                'jumlah_order'  => $items->count(),
-                'total_harga'   => $items->sum('total_harga'),
-            ];
-        })->values();
-
-        return Inertia::render('view/laporan-keuangan-supplier', [
-            'pembelian'         => $pembelian,
-            'suppliers'         => $suppliers,
-            'total_pengeluaran' => $totalPengeluaran,
-            'rekap_per_supplier'=> $rekapPerSupplier,
-            'filters'           => $request->only(['date_from', 'date_to', 'supplier_id']),
-            'auth'              => ['user' => Auth::user()],
         ]);
     }
 }

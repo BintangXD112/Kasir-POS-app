@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaksi;
+use App\Models\PembelianStok;
 use App\Models\Member;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,7 +34,9 @@ class HutangController extends Controller
                 'nama'              => $member?->nama ?? '-',
                 'telepon'           => $member?->telepon ?? '-',
                 'jumlah_transaksi'  => $items->count(),
-                'total_hutang'      => $items->sum('total'),
+                'total_hutang' => $items->sum(function ($item) {
+                    return $item->total - $item->nominal_bayar;
+                }),
                 'transaksi'         => $items->values(),
             ];
         })->values();
@@ -58,20 +61,40 @@ class HutangController extends Controller
         return back()->withErrors(['msg' => 'Nominal tidak valid']);
     }
 
-    // 🔥 kalau bayar kurang
-    if ($bayar < $trx->total) {
-        $trx->total = $trx->total - $bayar; // kurangi hutang
-        $trx->status = 'pending'; // tetap pending
-    } else {
-        // 🔥 kalau bayar cukup / lebih
-        $trx->total = 0;
+    if ($bayar + $trx->nominal_bayar >= $trx->total) {
+        $trx->nominal_bayar =  $trx->nominal_bayar + $bayar;
         $trx->status = 'lunas';
+    } elseIf ($bayar + $trx->nominal_bayar < $trx->total){
+        $trx->nominal_bayar = $bayar + $trx->nominal_bayar;
+        $trx->status = 'pending';
     }
 
     $trx->save();
 
     return back()->with('success', 'Pembayaran berhasil');
 }
+    public function supplier(Request $request, $id)
+    {
+        $trx = PembelianStok::findOrFail($id);
+
+        $bayar = (int) $request->nominal_bayar;
+
+        if ($bayar <= 0) {
+            return back()->withErrors(['msg' => 'Nominal tidak valid']);
+        }
+
+        if ($bayar + $trx->nominal_bayar >= $trx->total_harga) {
+            $trx->nominal_bayar =  $trx->nominal_bayar + $bayar;
+            $trx->status = 'lunas';
+        } elseIf ($bayar + $trx->nominal_bayar < $trx->total_harga){
+            $trx->nominal_bayar = $bayar + $trx->nominal_bayar;
+            $trx->status = 'pending';
+        }
+
+        $trx->save();
+
+        return back()->with('success', 'Pembayaran berhasil');
+    }
 
     /**
      * Lunasi SEMUA hutang satu member sekaligus
@@ -84,29 +107,33 @@ class HutangController extends Controller
         return back()->withErrors(['msg' => 'Nominal tidak valid']);
     }
 
-    // Ambil semua transaksi pending milik member
     $transaksi = Transaksi::where('member_id', $memberId)
         ->where('status', 'pending')
-        ->orderBy('created_at', 'asc') // penting biar urut
+        ->orderBy('created_at', 'asc')
         ->get();
 
-    foreach ($transaksi as $trx) {
-        if ($bayar <= 0) break;
+    DB::transaction(function () use ($transaksi, &$bayar) {
 
-        if ($bayar >= $trx->total) {
-            // 🔥 lunasi transaksi ini
-            $bayar -= $trx->total;
-            $trx->total = 0;
-            $trx->status = 'lunas';
-        } else {
-            // 🔥 bayar sebagian
-            $trx->total -= $bayar;
-            $bayar = 0;
-            $trx->status = 'pending';
+        foreach ($transaksi as $trx) {
+            if ($bayar <= 0) break;
+
+            $sisaHutang = $trx->total - ($trx->nominal_bayar ?? 0);
+
+            if ($bayar >= $sisaHutang) {
+                // lunasi transaksi ini
+                $trx->nominal_bayar = $trx->total;
+                $trx->status = 'lunas';
+                $bayar -= $sisaHutang;
+            } else {
+                // bayar sebagian
+                $trx->nominal_bayar += $bayar;
+                $trx->status = 'pending';
+                $bayar = 0;
+            }
+
+            $trx->save();
         }
-
-        $trx->save();
-    }
+    });
 
     return back()->with('success', 'Pembayaran berhasil');
 }

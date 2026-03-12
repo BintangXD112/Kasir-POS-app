@@ -21,9 +21,7 @@ return new class extends Migration {
             $table->foreignId('member_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('supplier')->nullOnDelete();
 
-            $table->foreignId('diskon_id')->nullable()->constrained()->nullOnDelete();
-
-            $table->string('kode_transaksi')->unique();
+            $table->string('kode_transaksi')->unique()->nullable();
             $table->decimal('total', 15, 2)->default(0);
 
             $table->enum('metode_pembayaran', ['tunai', 'non-tunai', 'qris', 'lainnya'])->nullable();

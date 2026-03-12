@@ -1,5 +1,9 @@
-import React from 'react';
-import AdminLayout from '@/components/admin-sidebar';
+import MenuBar from '@/components/menu-bar';
+import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { Link, router } from '@inertiajs/react';
+import { LogOut } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
 
 declare const route: (name: string, params?: any) => string;
 
@@ -12,33 +16,64 @@ interface StokProduk {
     jenis_produk: string;
 }
 
-interface HutangSupplier {
-    supplier_id: number;
-    nama_supplier: string;
-    jumlah_order: number;
-    total_hutang: number;
-}
+type Pengeluaran = {
+    id: number;
+    keterangan: string;
+    total: number;
+    created_at: string;
+};
 
 interface Props {
     pemasukan_hari_ini: number;
     pengeluaran_hari_ini: number;
     rekap_stok: StokProduk[];
-    sisa_hutang_supplier: HutangSupplier[];
-    total_sisa_hutang: number;
     pemasukan_bulan_ini: number;
     pengeluaran_bulan_ini: number;
     tanggal_hari_ini: string;
-    currentTheme?: 'auto' | 'Light' | 'Dark';
+    filters: {
+        date_from?: string;
+        date_to?: string;
+        keyword?: string;
+    };
+    pengeluaran: Pengeluaran[];
+    total_pengeluaran: number;
 }
 
-const fmt = (n: number) =>
-    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
 export default function RekapPage({
-    pemasukan_hari_ini = 0, pengeluaran_hari_ini = 0, rekap_stok = [],
-    sisa_hutang_supplier = [], total_sisa_hutang = 0, pemasukan_bulan_ini = 0,
-    pengeluaran_bulan_ini = 0, tanggal_hari_ini = '', currentTheme = 'Light'
+    pemasukan_hari_ini = 0,
+    pengeluaran_hari_ini = 0,
+    rekap_stok = [],
+    pemasukan_bulan_ini = 0,
+    pengeluaran_bulan_ini = 0,
+    tanggal_hari_ini = '',
+    filters = {},
+    pengeluaran = [],
+    total_pengeluaran = 0,
 }: Props) {
+    const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'auto');
+    const [theme, setTheme] = useState(false);
+    const bgApp = currentTheme === 'auto' ? 'bg-gray-50 dark:bg-zinc-950' : currentTheme === 'Light' ? 'bg-gray-50' : 'bg-zinc-950';
+    const headerBg =
+        currentTheme === 'auto'
+            ? 'bg-gray-800 dark:bg-zinc-900/80'
+            : currentTheme === 'Light'
+              ? 'bg-gray-800' // header tetap gelap biar kontras
+              : 'bg-zinc-900/80';
+    const cardBg =
+        currentTheme === 'auto'
+            ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
+            : currentTheme === 'Light'
+              ? 'bg-white border border-zinc-200'
+              : 'bg-zinc-900 border border-zinc-800';
+    const inputCls =
+        currentTheme === 'auto'
+            ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
+            : currentTheme === 'Dark'
+              ? 'border-zinc-700 bg-zinc-800 text-zinc-100'
+              : 'border-zinc-300 bg-white text-zinc-900';
+    const contentText = currentTheme === 'auto' ? 'text-zinc-900 dark:text-zinc-100' : currentTheme === 'Light' ? 'text-zinc-900' : 'text-zinc-100';
     const card = currentTheme === 'Dark' ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-zinc-200';
     const text = currentTheme === 'Dark' ? 'text-zinc-100' : 'text-zinc-900';
     const subText = currentTheme === 'Dark' ? 'text-zinc-400' : 'text-zinc-500';
@@ -47,33 +82,322 @@ export default function RekapPage({
     const borderSoft = currentTheme === 'Dark' ? 'border-zinc-800' : 'border-slate-200';
 
     const totalNilaiStok = rekap_stok.reduce((s, p) => s + p.nilai_stok, 0);
-    const handlePrint = () => window.print();
+
+    useEffect(() => {
+        const root = document.documentElement;
+
+        if (currentTheme === 'Dark') {
+            root.classList.add('dark');
+            localStorage.setItem('theme', 'Dark');
+        } else if (currentTheme === 'Light') {
+            root.classList.remove('dark');
+            localStorage.setItem('theme', 'Light');
+        } else if (currentTheme === 'auto') {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            localStorage.setItem('theme', 'auto');
+
+            if (prefersDark) {
+                root.classList.add('dark');
+            } else {
+                root.classList.remove('dark');
+            }
+        }
+    }, [currentTheme]);
+
+    const fmtDate = (date: string) => {
+        return new Date(date).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        });
+    };
+
+    const [dateFrom, setDateFrom] = useState(filters?.date_from || '');
+    const [dateTo, setDateTo] = useState(filters?.date_to || '');
+    const [keyword, setKeyword] = useState(filters?.keyword || '');
+
+    const applyFilter = () => {
+        router.get(
+            route('rekap'),
+            {
+                date_from: dateFrom,
+                date_to: dateTo,
+                keyword: keyword,
+            },
+            { preserveState: true },
+        );
+    };
+
+    const resetFilter = () => {
+        setDateFrom('');
+        setDateTo('');
+        setKeyword('');
+
+        router.get(route('rekap'));
+    };
+
+    const [showForm, setShowForm] = useState(false);
+
+    const [form, setForm] = useState({
+        keterangan: '',
+        total_bayar: '',
+    });
+
+    const [bayarDisplay, setBayarDisplay] = useState('');
+    const [formErrors, setFormErrors] = useState<any>({});
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        router.post(route('pengeluaran.store'), form, {
+            onError: (errors) => {
+                setFormErrors(errors);
+            },
+            onSuccess: () => {
+                setShowForm(false);
+                setForm({
+                    keterangan: '',
+                    total_bayar: '',
+                });
+                setBayarDisplay('');
+                setFormErrors({});
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Pengeluaran Berhasil Dicatat',
+                });
+            },
+        });
+    };
+
+    // ====== ⬇️ STATE & LOGIC PAGINATION  ⬇️ ======
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState<number>(10);
+    // Reset ke halaman 1 kalau filter/sort/pageSize berubah
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [pageSize]);
+    // ====== ⬆️ STATE & LOGIC PAGINATION  ⬆️ ======
+    // ====== ⬇️ DERIVED PAGINATION  ⬇️ ======
+    const totalItems = pengeluaran.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    const currentSafe = Math.min(Math.max(currentPage, 1), totalPages);
+    const startIndex = (currentSafe - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalItems);
+    const pagedPengeluaran = pengeluaran.slice(startIndex, endIndex);
+
+    // Buat list nomor halaman (dengan "..." bila banyak)
+    const getPageNumbers = (current: number, total: number): (number | '...')[] => {
+        if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+        if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+        if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+
+        return [1, '...', current - 1, current, current + 1, '...', total];
+    };
+    const pageNumbers = getPageNumbers(currentSafe, totalPages);
+    // ====== ⬆️ DERIVED PAGINATION  ⬆️ ======
+
+    const cleanup = useMobileNavigation();
+    const handleLogout = () => {
+        cleanup();
+        router.flushAll();
+        localStorage.removeItem('username');
+    };
+    const [showLogout, setShowLogout] = useState(false);
+    const toggleLogout = () => {
+        setShowLogout(!showLogout);
+    };
 
     return (
-        <AdminLayout currentTheme={currentTheme} activeKey="rekap">
-            <style>{`@media print { .no-print { display: none !important; } body { background: white !important; color: black !important; } }`}</style>
-
+        <div className={`flex h-screen w-full ${bgApp} flex-col gap-4 pt-30`}>
+            {/*Tema*/}
+            <div
+                className={`${currentTheme === 'auto' ? 'bg-zinc-50 shadow-gray-800 dark:bg-zinc-900 dark:text-white dark:shadow-gray-500' : currentTheme === 'Light' ? 'bg-zinc-50 text-zinc-900 shadow-gray-800' : currentTheme === 'Dark' && 'bg-zinc-900 text-white shadow-gray-500'} gap-2 rounded-xl py-2 transition-all ${theme ? 'h-30 justify-end' : 'h-12 justify-center'} fixed right-4 bottom-4 z-10 flex w-12 flex-col items-center border-slate-100 shadow`}
+            >
+                {theme && (
+                    <>
+                        <svg
+                            onClick={() => setTheme(false)}
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="size-6"
+                        >
+                            <path
+                                fillRule="evenodd"
+                                d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z"
+                                clipRule="evenodd"
+                            />
+                        </svg>
+                        {currentTheme === 'auto' ? (
+                            <>
+                                <svg
+                                    onClick={() => setCurrentTheme('Dark')}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    className="size-6 rounded transition-all hover:bg-gray-500"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                                <svg
+                                    onClick={() => setCurrentTheme('Light')}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    className="size-6 rounded transition-all hover:bg-gray-500"
+                                >
+                                    <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+                                </svg>
+                            </>
+                        ) : currentTheme === 'Light' ? (
+                            <>
+                                <svg
+                                    onClick={() => setCurrentTheme('Dark')}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    className="size-6 rounded transition-all hover:bg-gray-500"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                                <svg
+                                    onClick={() => setCurrentTheme('auto')}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    className="size-6 rounded transition-all hover:bg-gray-500"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            </>
+                        ) : (
+                            currentTheme === 'Dark' && (
+                                <>
+                                    <svg
+                                        onClick={() => setCurrentTheme('auto')}
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        className="size-6 rounded transition-all hover:bg-gray-500"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    <svg
+                                        onClick={() => setCurrentTheme('Light')}
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        className="size-6 rounded transition-all hover:bg-gray-500"
+                                    >
+                                        <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+                                    </svg>
+                                </>
+                            )
+                        )}
+                    </>
+                )}
+                {currentTheme === 'auto' ? (
+                    <svg onClick={() => setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                        <path
+                            fillRule="evenodd"
+                            d="M11.828 2.25c-.916 0-1.699.663-1.85 1.567l-.091.549a.798.798 0 0 1-.517.608 7.45 7.45 0 0 0-.478.198.798.798 0 0 1-.796-.064l-.453-.324a1.875 1.875 0 0 0-2.416.2l-.243.243a1.875 1.875 0 0 0-.2 2.416l.324.453a.798.798 0 0 1 .064.796 7.448 7.448 0 0 0-.198.478.798.798 0 0 1-.608.517l-.55.092a1.875 1.875 0 0 0-1.566 1.849v.344c0 .916.663 1.699 1.567 1.85l.549.091c.281.047.508.25.608.517.06.162.127.321.198.478a.798.798 0 0 1-.064.796l-.324.453a1.875 1.875 0 0 0 .2 2.416l.243.243c.648.648 1.67.733 2.416.2l.453-.324a.798.798 0 0 1 .796-.064c.157.071.316.137.478.198.267.1.47.327.517.608l.092.55c.15.903.932 1.566 1.849 1.566h.344c.916 0 1.699-.663 1.85-1.567l.091-.549a.798.798 0 0 1 .517-.608 7.52 7.52 0 0 0 .478-.198.798.798 0 0 1 .796.064l.453.324a1.875 1.875 0 0 0 2.416-.2l.243-.243c.648-.648.733-1.67.2-2.416l-.324-.453a.798.798 0 0 1-.064-.796c.071-.157.137-.316.198-.478.1-.267.327-.47.608-.517l.55-.091a1.875 1.875 0 0 0 1.566-1.85v-.344c0-.916-.663-1.699-1.567-1.85l-.549-.091a.798.798 0 0 1-.608-.517 7.507 7.507 0 0 0-.198-.478.798.798 0 0 1 .064-.796l.324-.453a1.875 1.875 0 0 0-.2-2.416l-.243-.243a1.875 1.875 0 0 0-2.416-.2l-.453.324a.798.798 0 0 1-.796.064 7.462 7.462 0 0 0-.478-.198.798.798 0 0 1-.517-.608l-.091-.55a1.875 1.875 0 0 0-1.85-1.566h-.344ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z"
+                            clipRule="evenodd"
+                        />
+                    </svg>
+                ) : currentTheme === 'Light' ? (
+                    <svg onClick={() => setTheme(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                        <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+                    </svg>
+                ) : (
+                    currentTheme === 'Dark' && (
+                        <svg
+                            onClick={() => setTheme(true)}
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="size-6"
+                        >
+                            <path
+                                fillRule="evenodd"
+                                d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z"
+                                clipRule="evenodd"
+                            />
+                        </svg>
+                    )
+                )}
+            </div>
+            <div className={`fixed top-0 right-0 left-0 z-10 flex flex-col ${headerBg} gap-4 px-4 py-4`}>
+                <div className={`flex justify-between`}>
+                    <div className="flex w-1/6 items-center">
+                        <h1 className="text-2xl font-bold text-white">Point Of Sale</h1>
+                    </div>
+                    <div onClick={toggleLogout} className={`relative flex cursor-pointer items-center text-white`}>
+                        {localStorage.getItem('username')}
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className={`ml-2 size-4 ${showLogout ? 'rotate-180' : ''} transition-transform duration-150 ease-in-out`}
+                        >
+                            <path
+                                fillRule="evenodd"
+                                d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z"
+                                clipRule="evenodd"
+                            />
+                        </svg>
+                        {showLogout && (
+                            <div
+                                className={`animate-fade-in absolute top-8 right-0 z-20 w-36 cursor-pointer rounded-md bg-red-500 p-0 shadow-lg transition-all duration-150 ease-in-out hover:opacity-50`}
+                            >
+                                <ul className="m-0 p-0 text-white">
+                                    <li className="cursor-pointer rounded-md px-2 py-2 transition-colors">
+                                        <Link className="flex w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
+                                            <LogOut className="mr-2" />
+                                            Log out
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <MenuBar />
+            </div>
             {/* Page title + actions */}
-            <div className="pl-6 pt-6 flex items-center justify-between pr-6 no-print">
+            <div className="no-print flex items-center justify-between pt-6 pr-6 pl-6">
                 <div>
-                    <h2 className={`text-xl font-semibold ${text}`}>Rekap Harian</h2>
+                    <h2 className={`text-xl font-semibold ${text}`}>Rekap</h2>
                     <p className={`text-sm ${subText} mt-0.5`}>{tanggal_hari_ini}</p>
                 </div>
-                <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-                    Export PDF
-                </button>
             </div>
 
             {/* Print title */}
-            <div className="hidden print:block p-6 pb-0">
+            <div className="hidden p-6 pb-0 print:block">
                 <h1 className="text-2xl font-bold">Rekap Harian</h1>
                 <p className="text-sm text-gray-500">{tanggal_hari_ini}</p>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                     <div className={`${card} rounded-xl p-5`}>
                         <p className={`text-xs ${subText} mb-1`}>Pemasukan Hari Ini</p>
                         <p className="text-xl font-bold text-emerald-500">{fmt(pemasukan_hari_ini)}</p>
@@ -89,48 +413,55 @@ export default function RekapPage({
                         <p className="text-xl font-bold text-blue-500">{fmt(totalNilaiStok)}</p>
                         <p className={`text-xs ${subText} mt-2`}>{rekap_stok.length} jenis produk</p>
                     </div>
-                    <div className={`${card} rounded-xl p-5`}>
-                        <p className={`text-xs ${subText} mb-1`}>Sisa Hutang Supplier</p>
-                        <p className="text-xl font-bold text-amber-500">{fmt(total_sisa_hutang)}</p>
-                        <p className={`text-xs ${subText} mt-2`}>{sisa_hutang_supplier.length} supplier</p>
-                    </div>
                 </div>
 
                 {/* Rekap Stok Produk */}
-                <div className={`${card} rounded-xl overflow-hidden shadow-sm`}>
-                    <div className={`px-5 py-4 border-b ${borderSoft}`}>
+                <div className={`${card} overflow-hidden rounded-xl shadow-sm`}>
+                    <div className={`border-b px-5 py-4 ${borderSoft}`}>
                         <h3 className={`font-semibold ${text}`}>Rekap Stok Produk</h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="min-w-full">
                             <thead className={softBg}>
                                 <tr className={`border-b ${borderSoft}`}>
-                                    {['Produk', 'Jenis', 'Stok', 'Harga Jual', 'Nilai Stok'].map(h => (
-                                        <th key={h} className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${subText}`}>{h}</th>
+                                    {['Produk', 'Jenis', 'Stok', 'Harga Jual', 'Nilai Stok'].map((h) => (
+                                        <th key={h} className={`px-5 py-3 text-left text-xs font-semibold tracking-wider uppercase ${subText}`}>
+                                            {h}
+                                        </th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {rekap_stok.length === 0 ? (
-                                    <tr><td colSpan={5} className={`text-center py-8 ${subText}`}>Tidak ada data produk.</td></tr>
-                                ) : rekap_stok.map(p => (
-                                    <tr key={p.id} className={`border-b ${borderSoft} ${rowHover} transition-colors`}>
-                                        <td className={`px-5 py-3 font-medium ${text}`}>{p.nama}</td>
-                                        <td className={`px-5 py-3 text-sm ${subText}`}>{p.jenis_produk}</td>
-                                        <td className="px-5 py-3">
-                                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${p.stok <= 5 ? 'bg-red-100 text-red-700' : p.stok <= 20 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                                                {p.stok} unit
-                                            </span>
+                                    <tr>
+                                        <td colSpan={5} className={`py-8 text-center ${subText}`}>
+                                            Tidak ada data produk.
                                         </td>
-                                        <td className={`px-5 py-3 text-sm ${text}`}>{fmt(p.harga)}</td>
-                                        <td className="px-5 py-3 text-sm font-bold text-blue-500">{fmt(p.nilai_stok)}</td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    rekap_stok.map((p) => (
+                                        <tr key={p.id} className={`border-b ${borderSoft} ${rowHover} transition-colors`}>
+                                            <td className={`px-5 py-3 font-medium ${text}`}>{p.nama}</td>
+                                            <td className={`px-5 py-3 text-sm ${subText}`}>{p.jenis_produk}</td>
+                                            <td className="px-5 py-3">
+                                                <span
+                                                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${p.stok <= 5 ? 'bg-red-100 text-red-700' : p.stok <= 20 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}
+                                                >
+                                                    {p.stok} unit
+                                                </span>
+                                            </td>
+                                            <td className={`px-5 py-3 text-sm ${text}`}>{fmt(p.harga)}</td>
+                                            <td className="px-5 py-3 text-sm font-bold text-blue-500">{fmt(p.nilai_stok)}</td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                             {rekap_stok.length > 0 && (
                                 <tfoot className={softBg}>
                                     <tr className={`border-t ${borderSoft}`}>
-                                        <td colSpan={4} className={`px-5 py-3 text-sm font-semibold ${text}`}>Total Nilai Stok</td>
+                                        <td colSpan={4} className={`px-5 py-3 text-sm font-semibold ${text}`}>
+                                            Total Nilai Stok
+                                        </td>
                                         <td className="px-5 py-3 text-sm font-bold text-blue-500">{fmt(totalNilaiStok)}</td>
                                     </tr>
                                 </tfoot>
@@ -138,36 +469,294 @@ export default function RekapPage({
                         </table>
                     </div>
                 </div>
+                <div className={`${card} no-print rounded-xl p-4`}>
+                    <p className={`mb-3 text-sm font-semibold ${text}`}>Filter Pengeluaran</p>
 
-                {/* Hutang Supplier */}
-                {sisa_hutang_supplier.length > 0 && (
-                    <div className={`${card} rounded-xl overflow-hidden shadow-sm`}>
-                        <div className={`px-5 py-4 border-b ${borderSoft}`}>
-                            <h3 className={`font-semibold ${text}`}>Sisa Hutang ke Supplier</h3>
+                    <div className="flex flex-wrap items-end gap-3">
+                        <div>
+                            <label className={`mb-1 block text-xs font-medium ${subText}`}>Dari Tanggal</label>
+                            <input
+                                type="date"
+                                value={dateFrom}
+                                onChange={(e) => setDateFrom(e.target.value)}
+                                className={`rounded-lg border px-3 py-2 text-sm ${inputCls}`}
+                            />
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full">
-                                <thead className={softBg}>
-                                    <tr className={`border-b ${borderSoft}`}>
-                                        {['Supplier', 'Jumlah Order Pending', 'Total Hutang'].map(h => (
-                                            <th key={h} className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${subText}`}>{h}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {sisa_hutang_supplier.map(s => (
-                                        <tr key={s.supplier_id} className={`border-b ${borderSoft} ${rowHover} transition-colors`}>
-                                            <td className={`px-5 py-3 font-medium ${text}`}>{s.nama_supplier}</td>
-                                            <td className="px-5 py-3"><span className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">{s.jumlah_order}x order</span></td>
-                                            <td className="px-5 py-3 text-sm font-bold text-red-500">{fmt(s.total_hutang)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+
+                        <div>
+                            <label className={`mb-1 block text-xs font-medium ${subText}`}>Sampai Tanggal</label>
+                            <input
+                                type="date"
+                                value={dateTo}
+                                onChange={(e) => setDateTo(e.target.value)}
+                                className={`rounded-lg border px-3 py-2 text-sm ${inputCls}`}
+                            />
                         </div>
+
+                        <div>
+                            <label className={`mb-1 block text-xs font-medium ${subText}`}>Cari Keterangan</label>
+                            <input
+                                type="text"
+                                value={keyword}
+                                onChange={(e) => setKeyword(e.target.value)}
+                                placeholder="Cari..."
+                                className={`rounded-lg border px-3 py-2 text-sm ${inputCls}`}
+                            />
+                        </div>
+
+                        <button onClick={applyFilter} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                            Filter
+                        </button>
+
+                        <button
+                            onClick={resetFilter}
+                            className={`rounded-lg px-4 py-2 text-sm font-semibold ${
+                                currentTheme === 'Dark' ? 'bg-zinc-700 text-zinc-100' : 'bg-slate-200 text-slate-700'
+                            }`}
+                        >
+                            Reset
+                        </button>
+                        <button
+                            onClick={() =>
+                                window.open(
+                                    route('pengeluaran.export', {
+                                        date_from: dateFrom,
+                                        date_to: dateTo,
+                                        keyword: keyword,
+                                    }),
+                                )
+                            }
+                            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
+                        >
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                                />
+                            </svg>
+                            Export PDF
+                        </button>
                     </div>
-                )}
+                </div>
+                <div className={`${card} relative overflow-hidden rounded-xl pb-20 shadow-sm`}>
+                    <div className={`flex justify-between border-b px-5 py-4 ${borderSoft}`}>
+                        <h3 className={`font-semibold ${text}`}>Rekap Pengeluaran</h3>
+                        <button
+                            onClick={() => setShowForm(true)}
+                            className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                className="size-5"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                                />
+                            </svg>
+                            Catat Pengeluaran
+                        </button>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                            <thead className={softBg}>
+                                <tr className={`border-b ${borderSoft}`}>
+                                    {['Tanggal', 'Keterangan', 'Total Bayar'].map((h) => (
+                                        <th key={h} className={`px-5 py-3 text-left text-xs font-semibold uppercase ${subText}`}>
+                                            {h}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {pengeluaran.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={3} className={`py-10 text-center ${subText}`}>
+                                            Tidak ada data pengeluaran
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    pagedPengeluaran.map((p) => (
+                                        <tr key={p.id} className={`border-b ${borderSoft} ${rowHover}`}>
+                                            <td className={`px-5 py-3 text-sm ${subText}`}>{fmtDate(p.created_at)}</td>
+
+                                            <td className={`px-5 py-3 ${text}`}>{p.keterangan}</td>
+
+                                            <td className="px-5 py-3 font-bold text-red-500">{fmt(p.total)}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    {/* ====== ⬇️ KONTROL PAGINATION  ⬇️ ====== */}
+                    {pengeluaran.length > 0 && (
+                        <div
+                            className={`absolute right-0 bottom-0 left-0 flex flex-col items-center justify-between border-t px-6 py-4 sm:flex-row ${borderSoft} gap-3`}
+                        >
+                            <div className={`text-sm ${subText}`}>
+                                Menampilkan <span className="font-semibold">{startIndex + 1}</span>–<span className="font-semibold">{endIndex}</span>{' '}
+                                dari
+                                <span className="font-semibold"> {totalItems}</span> transaksi
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    className={`cursor-pointer rounded-lg border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
+                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                    disabled={currentSafe === 1}
+                                    aria-label="Halaman sebelumnya"
+                                >
+                                    Prev
+                                </button>
+                                {pageNumbers.map((p, idx) =>
+                                    p === '...' ? (
+                                        <span key={`dots-${idx}`} className={`px-2 select-none ${subText}`}>
+                                            …
+                                        </span>
+                                    ) : (
+                                        <button
+                                            key={p}
+                                            onClick={() => setCurrentPage(p as number)}
+                                            aria-current={currentSafe === p ? 'page' : undefined}
+                                            className={`cursor-pointer rounded-lg border px-3 py-2 text-sm transition-all ${
+                                                currentSafe === p
+                                                    ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-600/90'
+                                                    : currentTheme === 'Dark'
+                                                      ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
+                                                      : 'border-slate-300 hover:bg-blue-600 hover:text-white'
+                                            }`}
+                                        >
+                                            {p}
+                                        </button>
+                                    ),
+                                )}
+                                <button
+                                    className={`cursor-pointer rounded-lg border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
+                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                    disabled={currentSafe === totalPages}
+                                    aria-label="Halaman berikutnya"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className={`text-sm ${subText}`}>Per halaman:</span>
+                                <select
+                                    value={pageSize}
+                                    onChange={(e) => setPageSize(Number(e.target.value))}
+                                    className={`rounded-lg border px-2 py-2 text-sm ${
+                                        currentTheme === 'auto'
+                                            ? 'border-zinc-300 bg-zinc-50 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100'
+                                            : currentTheme === 'Light'
+                                              ? 'border-zinc-300 bg-zinc-50 text-zinc-900'
+                                              : 'border-zinc-700 bg-zinc-800 text-zinc-100'
+                                    }`}
+                                >
+                                    {[10, 25, 50, 100].map((sz) => (
+                                        <option key={sz} value={sz}>
+                                            {sz}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    )}
+                    {/* ====== ⬆️ KONTROL PAGINATION ⬆️ ====== */}
+                </div>
             </div>
-        </AdminLayout>
+            {showForm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+                    <div className={`${card} ${text} w-full max-w-md rounded-2xl shadow-2xl`}>
+                        <div className={`flex items-center justify-between border-b px-6 py-4 ${borderSoft}`}>
+                            <h2 className="text-lg font-bold">Catat Pengeluaran</h2>
+                            <button
+                                onClick={() => {
+                                    setShowForm(false);
+                                    setFormErrors({});
+                                }}
+                                className={`rounded-lg p-2 ${currentTheme === 'Dark' ? 'hover:bg-zinc-800' : 'hover:bg-slate-100'}`}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4 p-6">
+                            <div>
+                                <label className={`mb-1 block text-sm font-medium ${text}`}>
+                                    Keterangan <span className="text-red-500">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value={form.keterangan}
+                                    onChange={(e) => setForm((f) => ({ ...f, keterangan: e.target.value }))}
+                                    placeholder="Contoh: Beli ATK"
+                                    className={`w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-blue-500 ${inputCls} ${formErrors.keterangan ? 'border-red-500' : ''}`}
+                                />
+
+                                {formErrors.keterangan && <p className="mt-1 text-xs text-red-500">{formErrors.keterangan}</p>}
+                            </div>
+
+                            <div>
+                                <label className={`mb-1 block text-sm font-medium ${text}`}>
+                                    Total Bayar <span className="text-red-500">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value={bayarDisplay}
+                                    onChange={(e) => {
+                                        const raw = e.target.value.replace(/\D/g, '');
+
+                                        if (raw === '') {
+                                            setForm((f) => ({ ...f, total_bayar: '' }));
+                                            setBayarDisplay('');
+                                        } else {
+                                            const numeric = parseInt(raw, 10);
+                                            setForm((f) => ({ ...f, total_bayar: numeric.toString() }));
+                                            setBayarDisplay(numeric.toLocaleString('id-ID'));
+                                        }
+                                    }}
+                                    placeholder="0"
+                                    className={`w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-blue-500 ${inputCls} ${formErrors.total_bayar ? 'border-red-500' : ''}`}
+                                />
+
+                                {formErrors.total_bayar && <p className="mt-1 text-xs text-red-500">{formErrors.total_bayar}</p>}
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button type="submit" className="flex-1 rounded-lg bg-blue-600 py-2.5 font-semibold text-white hover:bg-blue-700">
+                                    Simpan
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowForm(false);
+                                        setFormErrors({});
+                                    }}
+                                    className={`flex-1 rounded-lg py-2.5 font-semibold ${
+                                        currentTheme === 'Dark'
+                                            ? 'bg-zinc-700 text-zinc-100 hover:bg-zinc-600'
+                                            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                    }`}
+                                >
+                                    Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

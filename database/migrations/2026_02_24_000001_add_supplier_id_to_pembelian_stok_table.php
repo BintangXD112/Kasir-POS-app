@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::table('pembelian_stok', function (Blueprint $table) {
             $table->foreignId('supplier_id')->nullable()->after('user_id')->constrained('supplier')->nullOnDelete();
-            $table->string('status')->default('pending')->after('keterangan'); // pending = belum lunas ke supplier
         });
     }
 
@@ -18,7 +17,6 @@ return new class extends Migration
     {
         Schema::table('pembelian_stok', function (Blueprint $table) {
             $table->dropForeign(['supplier_id']);
-            $table->dropColumn(['supplier_id', 'status']);
         });
     }
 };

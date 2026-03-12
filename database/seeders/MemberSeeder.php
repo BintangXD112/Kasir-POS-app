@@ -14,7 +14,7 @@ class MemberSeeder extends Seeder
                 'nama' => 'Ali Mustofa',
                 'alamat' => 'Kampung beh ditu',
                 'telepon' => '08512345678',
-                'diskon_id' => 1, // pastikan ID ini ada di tabel diskons
+                'level' => 'merah',
                 'total_transaksi' => 0,
                 'tanggal_daftar' => now(),
             ],
@@ -22,7 +22,7 @@ class MemberSeeder extends Seeder
                 'nama' => 'Siti Rahma',
                 'alamat' => 'Kampung beh ditu',
                 'telepon' => '08512345678',
-                'diskon_id' => 2,
+                'level' => 'kuning',
                 'total_transaksi' => 0,
                 'tanggal_daftar' => now()->subDays(10),
             ],
@@ -30,7 +30,7 @@ class MemberSeeder extends Seeder
                 'nama' => 'Budi Santoso',
                 'alamat' => 'Kampung beh ditu',
                 'telepon' => '08512345678',
-                'diskon_id' => null, // tidak dapat diskon
+                'level' => 'hijau',
                 'total_transaksi' => 0,
                 'tanggal_daftar' => now()->subMonths(1),
             ],

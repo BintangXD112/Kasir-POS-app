@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { ThemedSwal } from '@/lib/swal';
 import { router } from '@inertiajs/react';
-import Swal from 'sweetalert2';
-import qz from 'qz-tray'
+import qz from 'qz-tray';
+import React, { useEffect, useMemo, useState } from 'react';
 
 declare const route: (name: string, params?: any) => string;
 
@@ -28,11 +28,9 @@ interface Props {
     currentTheme: 'auto' | 'Light' | 'Dark';
 }
 
-const formatCurrency = (n: number) =>
-    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
-const formatDate = (d: string | null) =>
-    d ? new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+const formatDate = (d: string | null) => (d ? new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-');
 
 const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -42,58 +40,58 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
 
     const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
 
-    useEffect(() => { setCurrentPage(1); }, [searchTerm, pageSize, selectedMemberId]);
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, pageSize, selectedMemberId]);
     // kalau memilih member, kosongkan kotak pencarian
-    useEffect(() => { setSearchTerm(''); }, [selectedMemberId]);
+    useEffect(() => {
+        setSearchTerm('');
+    }, [selectedMemberId]);
 
     // ===== THEME HELPERS =====
     const card =
-        currentTheme === 'auto' ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
-            : currentTheme === 'Dark' ? 'bg-zinc-900 border border-zinc-800'
-                : 'bg-white border border-zinc-200';
+        currentTheme === 'auto'
+            ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
+            : currentTheme === 'Dark'
+              ? 'bg-zinc-900 border border-zinc-800'
+              : 'bg-white border border-zinc-200';
 
-    const text =
-        currentTheme === 'auto' ? 'text-zinc-900 dark:text-zinc-100'
-            : currentTheme === 'Dark' ? 'text-zinc-100'
-                : 'text-zinc-900';
+    const text = currentTheme === 'auto' ? 'text-zinc-900 dark:text-zinc-100' : currentTheme === 'Dark' ? 'text-zinc-100' : 'text-zinc-900';
 
-    const subText =
-        currentTheme === 'auto' ? 'text-zinc-500 dark:text-zinc-400'
-            : currentTheme === 'Dark' ? 'text-zinc-400'
-                : 'text-zinc-500';
+    const subText = currentTheme === 'auto' ? 'text-zinc-500 dark:text-zinc-400' : currentTheme === 'Dark' ? 'text-zinc-400' : 'text-zinc-500';
 
     const rowHover =
-        currentTheme === 'auto' ? 'hover:bg-slate-50 dark:hover:bg-zinc-800/60'
-            : currentTheme === 'Dark' ? 'hover:bg-zinc-800/60'
-                : 'hover:bg-slate-50';
+        currentTheme === 'auto'
+            ? 'hover:bg-slate-50 dark:hover:bg-zinc-800/60'
+            : currentTheme === 'Dark'
+              ? 'hover:bg-zinc-800/60'
+              : 'hover:bg-slate-50';
 
     const borderSoft = currentTheme === 'Dark' ? 'border-zinc-800' : 'border-slate-200';
 
-    const softBg =
-        currentTheme === 'auto' ? 'bg-slate-50 dark:bg-zinc-800/60'
-            : currentTheme === 'Dark' ? 'bg-zinc-800/60'
-                : 'bg-slate-50';
+    const softBg = currentTheme === 'auto' ? 'bg-slate-50 dark:bg-zinc-800/60' : currentTheme === 'Dark' ? 'bg-zinc-800/60' : 'bg-slate-50';
 
     const inputCls =
-        currentTheme === 'auto' ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
-            : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100'
-                : 'border-slate-300 bg-white text-zinc-900';
+        currentTheme === 'auto'
+            ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
+            : currentTheme === 'Dark'
+              ? 'border-zinc-700 bg-zinc-800 text-zinc-100'
+              : 'border-slate-300 bg-white text-zinc-900';
 
     // ===== FILTER & PAGINATION =====
     const filtered = useMemo(() => {
-    if (selectedMemberId) {
-        return rekap.filter(m => m.member_id === selectedMemberId);
-    }
+        if (selectedMemberId) {
+            return rekap.filter((m) => m.member_id === selectedMemberId);
+        }
 
-    if (searchTerm) {
-        return rekap.filter(m =>
-            m.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            m.telepon.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }
+        if (searchTerm) {
+            return rekap.filter(
+                (m) => m.nama.toLowerCase().includes(searchTerm.toLowerCase()) || m.telepon.toLowerCase().includes(searchTerm.toLowerCase()),
+            );
+        }
 
-    return [];
-}, [rekap, searchTerm, selectedMemberId]);
+        return [];
+    }, [rekap, searchTerm, selectedMemberId]);
 
     const totalItems = filtered.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -103,41 +101,42 @@ const HutangMemberComponent: React.FC<Props> = ({ rekap, currentTheme }) => {
     const paged = filtered.slice(startIndex, endIndex);
 
     const handlePrintHutang = async (member: RekapMember, nominalBayar: number = 0) => {
-    try {
-        await qz.websocket.connect();
+        try {
+            await qz.websocket.connect();
 
-        const printer = await qz.printers.find("POS58 Printer");
+            const printer = await qz.printers.find('POS58 Printer');
 
-        const config = qz.configs.create(printer, {
-            size: { width: 58, height: 200 },
-            units: "mm",
-        });
+            const config = qz.configs.create(printer, {
+                size: { width: 76, height: 200 },
+                units: 'mm',
+            });
 
-        const line = "-".repeat(32);
+            const line = '-'.repeat(32);
 
-        const totalHutang = member.total_hutang;
-        const sisa = totalHutang - nominalBayar;
+            const totalHutang = member.total_hutang;
+            const sisa = totalHutang - nominalBayar;
 
-        let statusText = "";
-        if (sisa <= 0) {
-            statusText = "HUTANG LUNAS";
-        } else {
-            statusText = `SISA HUTANG: ${formatCurrency(sisa)}`;
-        }
+            let statusText = '';
+            if (sisa <= 0) {
+                statusText = 'HUTANG LUNAS';
+            } else {
+                statusText = `SISA HUTANG: ${formatCurrency(sisa)}`;
+            }
 
-        const transaksiText = member.transaksi
-            .filter(trx => trx.status === 'pending')
-            .map((trx, i) => {
-                return `${i + 1}. ${trx.kode_transaksi}
+            const transaksiText = member.transaksi
+                .filter((trx) => trx.status === 'pending')
+                .map((trx, i) => {
+                    return `${i + 1}. ${trx.kode_transaksi}
 ${formatCurrency(trx.total)}
 ${formatDate(trx.created_at)}`;
-            })
-            .join("\n\n");
+                })
+                .join('\n\n');
 
-        const data = [{
-            type: 'raw',
-            format: 'plain',
-            data: `
+            const data = [
+                {
+                    type: 'raw',
+                    format: 'plain',
+                    data: `
 CBT 18
 Toko Kedelai, Garam, dan Kunyit
 Jl.Cibuntu Sayuran No.18 Bandung
@@ -162,16 +161,16 @@ Terima Kasih
 Simpan struk ini sebagai bukti pembayaran yang sah.
 
 
-`
-        }];
+`,
+                },
+            ];
 
-        await qz.print(config, data);
-        await qz.websocket.disconnect();
-
-    } catch (err) {
-        console.error("Print gagal:", err);
-    }
-};
+            await qz.print(config, data);
+            await qz.websocket.disconnect();
+        } catch (err) {
+            console.error('Print gagal:', err);
+        }
+    };
 
     const getPageNumbers = (current: number, total: number): (number | '...')[] => {
         if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -182,9 +181,10 @@ Simpan struk ini sebagai bukti pembayaran yang sah.
     const pageNumbers = getPageNumbers(currentSafe, totalPages);
 
     const toggleExpand = (id: number) => {
-        setExpandedIds(prev => {
+        setExpandedIds((prev) => {
             const s = new Set(prev);
-            if (s.has(id)) s.delete(id); else s.add(id);
+            if (s.has(id)) s.delete(id);
+            else s.add(id);
             return s;
         });
     };
@@ -194,7 +194,7 @@ Simpan struk ini sebagai bukti pembayaran yang sah.
 
     // Lunasi satu transaksi — tampilkan input nominal
     const handleLunas = (transaksiId: number, namaMember: string, totalTrx: number) => {
-        Swal.fire({
+        ThemedSwal.fire({
             title: 'Bayar Hutang',
             html: `
         <p class="text-sm mb-3">Hutang <b>${namaMember}</b></p>
@@ -230,23 +230,30 @@ Simpan struk ini sebagai bukti pembayaran yang sah.
             preConfirm: () => {
                 const val = Number((document.getElementById('swal-nominal') as HTMLInputElement)?.value);
                 if (!val || val < 0) {
-                    Swal.showValidationMessage('Masukkan nominal yang valid');
+                    ThemedSwal.showValidationMessage('Masukkan nominal yang valid');
                     return false;
                 }
                 return val;
             },
-        }).then(result => {
+        }).then((result) => {
             if (result.isConfirmed) {
-                router.post(route('hutang.lunas', transaksiId), { nominal_bayar: result.value }, {
-                    preserveScroll: true,
-                    onSuccess: () => Swal.fire({
-                        icon: 'success', title: 'Berhasil!',
-                        html: `Hutang dibayar.<br/>Nominal: <b>${formatCurrency(result.value)}</b>`,
-                        timer: 2000, showConfirmButton: false,
-                    }),
-                    onError: () => Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan.' }),
-                });
-                const member = rekap.find(m => m.nama === namaMember);
+                router.post(
+                    route('hutang.lunas', transaksiId),
+                    { nominal_bayar: result.value },
+                    {
+                        preserveScroll: true,
+                        onSuccess: () =>
+                            ThemedSwal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                html: `Hutang dibayar.<br/>Nominal: <b>${formatCurrency(result.value)}</b>`,
+                                timer: 2000,
+                                showConfirmButton: false,
+                            }),
+                        onError: () => ThemedSwal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan.' }),
+                    },
+                );
+                const member = rekap.find((m) => m.nama === namaMember);
                 if (member) {
                     handlePrintHutang(member, result.value);
                 }
@@ -256,7 +263,7 @@ Simpan struk ini sebagai bukti pembayaran yang sah.
 
     // Lunasi SEMUA hutang satu member — satu request ke backend
     const handleLunasSemuaMember = (member: RekapMember) => {
-        Swal.fire({
+        ThemedSwal.fire({
             title: 'Bayar Semua Hutang',
             html: `
         <p class="text-sm mb-2">Member: <b>${member.nama}</b></p>
@@ -292,22 +299,29 @@ Simpan struk ini sebagai bukti pembayaran yang sah.
             preConfirm: () => {
                 const val = Number((document.getElementById('swal-nominal-semua') as HTMLInputElement)?.value);
                 if (!val || val < 0) {
-                    Swal.showValidationMessage('Masukkan nominal yang valid');
+                    ThemedSwal.showValidationMessage('Masukkan nominal yang valid');
                     return false;
                 }
                 return val;
             },
-        }).then(result => {
+        }).then((result) => {
             if (result.isConfirmed) {
-                router.post(route('hutang.lunas-semua', member.member_id), { nominal_bayar: result.value }, {
-                    preserveScroll: true,
-                    onSuccess: () => Swal.fire({
-                        icon: 'success', title: 'hutang dibayar!',
-                        html: `Nominal dibayar: <b>${formatCurrency(result.value)}</b>`,
-                        timer: 2000, showConfirmButton: false,
-                    }),
-                    onError: () => Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan.' }),
-                });
+                router.post(
+                    route('hutang.lunas-semua', member.member_id),
+                    { nominal_bayar: result.value },
+                    {
+                        preserveScroll: true,
+                        onSuccess: () =>
+                            ThemedSwal.fire({
+                                icon: 'success',
+                                title: 'hutang dibayar!',
+                                html: `Nominal dibayar: <b>${formatCurrency(result.value)}</b>`,
+                                timer: 2000,
+                                showConfirmButton: false,
+                            }),
+                        onError: () => ThemedSwal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan.' }),
+                    },
+                );
                 handlePrintHutang(member, result.value);
             }
         });
@@ -316,16 +330,16 @@ Simpan struk ini sebagai bukti pembayaran yang sah.
     return (
         <div>
             {/* Header */}
-            <div className="pl-6 pt-6 flex items-center">
+            <div className="flex items-center pt-6 pl-6">
                 <h2 className={`text-xl font-semibold ${text}`}>Rekap Hutang Member</h2>
             </div>
 
-            <div className="flex-1 pb-6 pt-4 px-6">
+            <div className="flex-1 px-6 pt-4 pb-6">
                 {/* Filter & Summary */}
-                <div className={`${card} ${text} rounded-xl shadow-sm p-6 mb-6`}>
-                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className={`${card} ${text} mb-6 rounded-xl p-6 shadow-sm`}>
+                    <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                         {/* Summary mini */}
-                        <div className="flex gap-4 flex-wrap">
+                        <div className="flex flex-wrap gap-4">
                             <div className={`${softBg} rounded-lg px-4 py-3 text-center`}>
                                 <p className={`text-xs ${subText} mb-1`}>Total Hutang</p>
                                 <p className="font-bold text-red-500">{formatCurrency(totalHutang)}</p>
@@ -340,148 +354,186 @@ Simpan struk ini sebagai bukti pembayaran yang sah.
                             </div>
                         </div>
 
-
                         {/* Search */}
-                        <div className="relative flex-1 max-w-md">
-                        <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${subText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+                        <div className="relative max-w-md flex-1">
+                            <svg
+                                className={`absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 ${subText}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
 
-                        <input
-                            type="text"
-                            placeholder="Cari nama atau telepon member..."
-                            value={searchTerm}
-                            onChange={e => {
-                                setSearchTerm(e.target.value);
-                                setSelectedMemberId(null);
-                            }}
-                            className={`w-full pl-10 pr-10 py-2 rounded-lg border focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all ${inputCls}`}
-                        />
-
-                        {/* CLEAR */}
-                        {searchTerm && (
-                            <button
-                                onClick={() => {
-                                    setSearchTerm('');
+                            <input
+                                type="text"
+                                placeholder="Cari nama atau telepon member..."
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value);
                                     setSelectedMemberId(null);
                                 }}
-                                className={`absolute right-3 top-1/2 -translate-y-1/2 ${subText}`}
-                            >
-                                ×
-                            </button>
-                        )}
+                                className={`w-full rounded-lg border py-2 pr-10 pl-10 transition-all focus:border-transparent focus:ring-2 focus:ring-amber-500 ${inputCls}`}
+                            />
 
-                        {/* AUTOCOMPLETE */}
-                        {searchTerm && !selectedMemberId && (
-                            <div className="absolute z-10 mt-1 w-full rounded-lg border bg-white dark:bg-zinc-800 shadow max-h-60 overflow-auto">
-                                {filtered.length > 0 ? (
-                                    filtered.slice(0, 5).map(m => (
-                                        <div
-                                            key={m.member_id}
-                                            onClick={() => {
-                                                setSelectedMemberId(m.member_id);
-                                                setSearchTerm(m.nama);
-                                            }}
-                                            className="px-4 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-zinc-700 text-sm"
-                                        >
-                                            <p className="font-medium">{m.nama}</p>
-                                            <p className="text-xs text-gray-500">{m.telepon}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="px-4 py-2 text-sm text-gray-500">
-                                        Tidak ada hutang
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                            {/* CLEAR */}
+                            {searchTerm && (
+                                <button
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setSelectedMemberId(null);
+                                    }}
+                                    className={`absolute top-1/2 right-3 -translate-y-1/2 ${subText}`}
+                                >
+                                    ×
+                                </button>
+                            )}
+
+                            {/* AUTOCOMPLETE */}
+                            {searchTerm && !selectedMemberId && (
+                                <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow dark:bg-zinc-800">
+                                    {filtered.length > 0 ? (
+                                        filtered.slice(0, 5).map((m) => (
+                                            <div
+                                                key={m.member_id}
+                                                onClick={() => {
+                                                    setSelectedMemberId(m.member_id);
+                                                    setSearchTerm(m.nama);
+                                                }}
+                                                className="cursor-pointer px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-zinc-700"
+                                            >
+                                                <p className="font-medium">{m.nama}</p>
+                                                <p className="text-xs text-gray-500">{m.telepon}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="px-4 py-2 text-sm text-gray-500">Tidak ada hutang</div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* Member List */}
-                <div className={`${card} relative pb-20 rounded-xl shadow-sm overflow-hidden`}>
-                    <div className="p-6 space-y-4">
+                <div className={`${card} relative overflow-hidden rounded-xl shadow-sm`}>
+                    <div className="space-y-4 p-6">
                         {!selectedMemberId ? (
-                            <div className="text-center py-12">
+                            <div className="py-12 text-center">
                                 <svg className={`mx-auto h-12 w-12 ${subText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.5}
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
                                 </svg>
                                 <h3 className={`mt-2 text-sm font-medium ${text}`}>Silakan pilih member terlebih dahulu.</h3>
                                 <p className={`mt-1 text-sm ${subText}`}>Daftar hutang akan muncul setelah memilih member.</p>
                             </div>
+                        ) : filtered.length === 0 ? (
+                            <div className="py-12 text-center">
+                                <svg className={`mx-auto h-12 w-12 ${subText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.5}
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                <h3 className={`mt-2 text-sm font-medium ${text}`}>Tidak ada hutang!</h3>
+                                <p className={`mt-1 text-sm ${subText}`}>Member ini tidak punya hutang.</p>
+                            </div>
                         ) : (
-                            filtered.length === 0 ? (
-                                <div className="text-center py-12">
-                                    <svg className={`mx-auto h-12 w-12 ${subText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <h3 className={`mt-2 text-sm font-medium ${text}`}>Tidak ada hutang!</h3>
-                                    <p className={`mt-1 text-sm ${subText}`}>Member ini tidak punya hutang.</p>
-                                </div>
-                            ) : (
-                                filtered.slice(startIndex, endIndex).map(member => {
-                                    const isExpanded = expandedIds.has(member.member_id);
-                                    return (
-                                        <div key={member.member_id} className={`${card} rounded-xl overflow-hidden shadow-sm`}>
-                                            {/* Member Row */}
-                                            <div
-                                                className={`flex items-center cursor-pointer select-none p-4 ${rowHover} transition-colors`}
-                                                onClick={() => toggleExpand(member.member_id)}
-                                                role="button"
-                                                tabIndex={0}
-                                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') toggleExpand(member.member_id); }}
-                                            >
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-400 to-orange-500 flex items-center justify-center text-white font-bold text-base shadow mr-4 shrink-0">
-                                                    {member.nama.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className={`font-semibold ${text}`}>{member.nama}</p>
-                                                    <p className={`text-sm ${subText}`}>{member.telepon} · {member.jumlah_transaksi} transaksi pending</p>
-                                                </div>
-                                                <div className="text-right mr-4">
-                                                    <p className={`text-xs ${subText}`}>Total Hutang</p>
-                                                    <p className="font-bold text-red-500">{formatCurrency(member.total_hutang)}</p>
-                                                </div>
-                                                <button
-                                                    onClick={e => { e.stopPropagation(); handleLunasSemuaMember(member); }}
-                                                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors mr-3 shrink-0"
-                                                >
-                                                    Bayar Semua
-                                                </button>
-                                                <svg className={`w-5 h-5 ${subText} transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                </svg>
+                            filtered.slice(startIndex, endIndex).map((member) => {
+                                const isExpanded = expandedIds.has(member.member_id);
+                                return (
+                                    <div key={member.member_id} className={`${card} overflow-hidden rounded-xl shadow-sm`}>
+                                        {/* Member Row */}
+                                        <div
+                                            className={`flex cursor-pointer items-center p-4 select-none ${rowHover} transition-colors`}
+                                            onClick={() => toggleExpand(member.member_id)}
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') toggleExpand(member.member_id);
+                                            }}
+                                        >
+                                            <div className="mr-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-red-400 to-orange-500 text-base font-bold text-white shadow">
+                                                {member.nama.charAt(0).toUpperCase()}
                                             </div>
-                                            {/* Expanded Detail */}
-                                            {isExpanded && (
-                                                <div className={`border-t ${borderSoft}`}>
-                                                    <div className={`${softBg} px-5 py-2`}>
-                                                        <p className={`text-xs font-semibold uppercase tracking-wider ${subText}`}>Detail Transaksi Hutang</p>
-                                                    </div>
-                                                    <div className="overflow-x-auto">
-                                                        <table className="min-w-full">
-                                                            <thead className={softBg}>
-                                                                <tr className={`border-b ${borderSoft}`}>
-                                                                    {['Kode Transaksi', 'Total', 'Metode', 'Status', 'Tanggal', 'Aksi'].map(h => (
-                                                                        <th key={h} className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${subText}`}>{h}</th>
-                                                                    ))}
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {member.transaksi.map(trx => (
-                                                                    <tr key={trx.id} className={`border-b ${borderSoft} ${rowHover} transition-colors`}>
+                                            <div className="min-w-0 flex-1">
+                                                <p className={`font-semibold ${text}`}>{member.nama}</p>
+                                                <p className={`text-sm ${subText}`}>
+                                                    {member.telepon} · {member.jumlah_transaksi} transaksi pending
+                                                </p>
+                                            </div>
+                                            <div className="mr-4 text-right">
+                                                <p className={`text-xs ${subText}`}>Total Hutang</p>
+                                                <p className="font-bold text-red-500">{formatCurrency(member.total_hutang)}</p>
+                                            </div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleLunasSemuaMember(member);
+                                                }}
+                                                className="mr-3 shrink-0 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-700"
+                                            >
+                                                Bayar Semua
+                                            </button>
+                                            <svg
+                                                className={`h-5 w-5 ${subText} shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+                                        {/* Expanded Detail */}
+                                        {isExpanded && (
+                                            <div className={`border-t ${borderSoft}`}>
+                                                <div className={`${softBg} px-5 py-2`}>
+                                                    <p className={`text-xs font-semibold tracking-wider uppercase ${subText}`}>
+                                                        Detail Transaksi Hutang
+                                                    </p>
+                                                </div>
+                                                <div className="overflow-x-auto">
+                                                    <table className="min-w-full">
+                                                        <thead className={softBg}>
+                                                            <tr className={`border-b ${borderSoft}`}>
+                                                                {['Kode Transaksi', 'Total', 'Metode', 'Status', 'Tanggal', 'Aksi'].map((h) => (
+                                                                    <th
+                                                                        key={h}
+                                                                        className={`px-5 py-3 text-left text-xs font-semibold tracking-wider uppercase ${subText}`}
+                                                                    >
+                                                                        {h}
+                                                                    </th>
+                                                                ))}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {member.transaksi.map((trx) => (
+                                                                <tr key={trx.id} className={`border-b ${borderSoft} ${rowHover} transition-colors`}>
                                                                     <td className="px-5 py-3">
-                                                                        <span className={`font-mono text-sm font-medium ${text}`}>{trx.kode_transaksi}</span>
+                                                                        <span className={`font-mono text-sm font-medium ${text}`}>
+                                                                            {trx.kode_transaksi}
+                                                                        </span>
                                                                     </td>
                                                                     <td className="px-5 py-3">
-                                                                        <span className={`font-bold ${trx.status === 'lunas' ? 'text-emerald-500' : 'text-red-500'}`}>{formatCurrency(trx.total)}</span>
+                                                                        <span
+                                                                            className={`font-bold ${trx.status === 'lunas' ? 'text-emerald-500' : 'text-red-500'}`}
+                                                                        >
+                                                                            {formatCurrency(trx.total - trx.nominal_bayar)}
+                                                                        </span>
                                                                     </td>
                                                                     <td className="px-5 py-3">
                                                                         <span className={`text-sm capitalize ${text}`}>{trx.metode_pembayaran}</span>
                                                                     </td>
                                                                     <td className="px-5 py-3">
-                                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${trx.status === 'lunas' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                                                        <span
+                                                                            className={`rounded px-2 py-1 text-xs font-bold ${trx.status === 'lunas' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}
+                                                                        >
                                                                             {trx.status === 'lunas' ? 'LUNAS' : 'PENDING'}
                                                                         </span>
                                                                     </td>
@@ -491,28 +543,34 @@ Simpan struk ini sebagai bukti pembayaran yang sah.
                                                                     <td className="px-5 py-3">
                                                                         {trx.status === 'pending' && (
                                                                             <button
-                                                                                onClick={() => handleLunas(trx.id, member.nama, trx.total)}
-                                                                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors"
+                                                                                onClick={() =>
+                                                                                    handleLunas(
+                                                                                        trx.id,
+                                                                                        member.nama,
+                                                                                        Number(trx.total - trx.nominal_bayar),
+                                                                                    )
+                                                                                }
+                                                                                className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-700"
                                                                             >
                                                                                 Bayar
                                                                             </button>
                                                                         )}
                                                                     </td>
                                                                 </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
                                                 </div>
-                                            )}
-                                        </div>
-                                    );
-                                })
-                            ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })
+                        )}
                     </div>
 
                     {/* Pagination */}
-                    {filtered.length > 0 && (
+                    {/*{filtered.length > 0 && (
                         <div className={`flex flex-col sm:flex-row absolute bottom-0 left-0 right-0 items-center justify-between px-6 py-4 border-t ${borderSoft} gap-3`}>
                             <div className={`text-sm ${subText}`}>
                                 Menampilkan <span className="font-semibold">{startIndex + 1}</span>–
@@ -553,7 +611,7 @@ Simpan struk ini sebagai bukti pembayaran yang sah.
                                 </select>
                             </div>
                         </div>
-                    )}
+                    )}*/}
                 </div>
             </div>
         </div>

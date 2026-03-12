@@ -15,7 +15,7 @@ class Tabungan extends Model
         return $this->belongsTo(Member::class, 'member_id');
     }
 
-    public function detail()
+    public function detail_tabungan()
     {
         return $this->hasMany(DetailTabungan::class);
     }
