@@ -421,6 +421,7 @@ export default function Dashboard({ produk, jenis_produk }: DashboardProps) {
                         setDeposit('');
                         setDepositDisplay('');
                         setTarik('');
+                        setNamaInput('')
                         setTarikDisplay('');
                         setStatusNabung('Deposit');
                         setShowModalNabung(false);

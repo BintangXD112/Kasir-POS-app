@@ -84,7 +84,7 @@ class TabunganController extends Controller
 
             $tabungan->save();
 
-            return redirect()->back()->with('success', 'Tabungan berhasil diperbarui.');
+            return redirect('/beli')->with('success', 'Tabungan berhasil diperbarui.');
         }catch (err){
             return redirect()->back()->with('error', err);
         }

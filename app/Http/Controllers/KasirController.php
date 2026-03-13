@@ -196,8 +196,8 @@ class KasirController extends Controller
         })->values();
 
         return Inertia::render('view/laporan-keuangan-supplier', [
-            'pembelian'         => $pembelian,
             'suppliers'         => $suppliers,
+            'pembelian'         => $pembelian,
             'total_pengeluaran' => $totalPengeluaran,
             'rekap_per_supplier'=> $rekapPerSupplier,
             'filters'           => [
@@ -256,14 +256,14 @@ class KasirController extends Controller
 
         $transaksi = Transaksi::query();
         
-        $totalPemasukan = $transaksi->whereBetween('created_at', [$startOfMonth, $endOfMonth])->where('jenis', 'masuk')->where('status', 'lunas')->sum('total');
         $totalTransaksi = $transaksi->whereBetween('created_at', [$startOfMonth, $endOfMonth])->where('jenis', 'masuk')->count();
+        $totalPemasukan = $transaksi->whereBetween('created_at', [$startOfMonth, $endOfMonth])->where('jenis', 'masuk')->where('status', 'lunas')->sum('total');
         
 
         return Inertia::render('view/laporan-transaksi-member', [
             'data'       => $data,
-            'members'    => $members,
             'total_pemasukan' => $totalPemasukan,
+            'members'    => $members,
             'total_transaksi' => $totalTransaksi,
             'filters' => [
                 'date_from' => $startOfMonth,
