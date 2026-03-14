@@ -159,6 +159,7 @@ export default function Dashboard({ produk, jenis_produk }: DashboardProps) {
             nama_member: selectedMember?.nama ?? '',
             menggunakan_saldo: isSaldoCheck,
             ongkir: ongkir,
+            nominal_bayar: uangTunai
         };
         router.post(route('transaksi'), dataToSend, {
             preserveScroll: true,

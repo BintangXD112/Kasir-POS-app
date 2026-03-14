@@ -25,6 +25,7 @@ class AdminController extends Controller
 {
     public function index(Request $request)
     {
+        $users = User::get();
         $produk = Produk::with('jenis_produk')
         ->orderByDesc('created_at')
         ->get();
@@ -59,6 +60,7 @@ class AdminController extends Controller
         }
 
         $persentasePemasukan = round($persentasePemasukan);
+        $totalPembelian = PembelianStok::whereNotNull('supplier_id')->sum('total_harga');
 
         $statusPemasukan = $persentasePemasukan > 0 ? 'naik' : ($persentasePemasukan < 0 ? 'turun' : 'tetap');
 
@@ -172,16 +174,26 @@ class AdminController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        $rekapHutang = $transaksiHutang->groupBy('member_id')->map(function ($items) {
+        $transaksiHutang = Transaksi::with([
+            'detail.produk:id,nama,harga',
+            'member:id,nama,telepon',
+        ])
+            ->where('status', 'pending')
+            ->whereNotNull('member_id')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $rekapPerMember = $transaksiHutang->groupBy('member_id')->map(function ($items) {
             $member = $items->first()->member;
-            $itemsPending = $items->where('status', 'pending');
             return [
-                'member_id'        => $member?->id,
-                'nama'             => $member?->nama ?? '-',
-                'telepon'          => $member?->telepon ?? '-',
-                'jumlah_transaksi' => $itemsPending->count(),
-                'total_hutang'     => $itemsPending->sum('total'),
-                'transaksi'        => $items->values(), // Kirim semua (pending & lunas)
+                'member_id'         => $member?->id,
+                'nama'              => $member?->nama ?? '-',
+                'telepon'           => $member?->telepon ?? '-',
+                'jumlah_transaksi'  => $items->count(),
+                'total_hutang' => $items->sum(function ($item) {
+                    return $item->total - $item->nominal_bayar;
+                }),
+                'transaksi'         => $items->values(),
             ];
         })->values();
 
@@ -193,7 +205,7 @@ class AdminController extends Controller
 
         $produkList = \App\Models\Produk::select('id', 'nama', 'stok', 'harga')->orderBy('nama')->get();
 
-        $suppliers = Supplier::select('id', 'nama_supplier')->orderBy('nama_supplier')->get();
+        $suppliersGlobal = Supplier::select('id', 'nama_supplier')->orderBy('nama_supplier')->get();
 
         $totalBulanIniStok = \App\Models\PembelianStok::whereBetween('created_at', [
             now()->startOfMonth(), now()->endOfMonth()
@@ -315,7 +327,27 @@ class AdminController extends Controller
         
         $totalTransaksi = $transaksi->whereBetween('created_at', [$startOfMonth, $endOfMonth])->where('jenis', 'masuk')->count();
 
+        $suppliers = Supplier::withCount('pembelianStok')
+            ->withSum('pembelianStok', 'total_harga')
+            ->orderBy('nama_supplier')
+            ->get()
+            ->map(function ($s) {
+                return [
+                    'id'               => $s->id,
+                    'nama_supplier'    => $s->nama_supplier,
+                    'no_hp'            => $s->no_hp,
+                    'alamat'           => $s->alamat,
+                    'jumlah_pembelian' => $s->pembelian_stok_count,
+                    'total_pembelian'  => $s->pembelian_stok_sum_total_harga ?? 0,
+                    'created_at'       => $s->created_at,
+                ];
+            });
+
+        $sisaHutang     = PembelianStok::whereNotNull('supplier_id')->where('status', 'pending')->sum('total_harga');
+        $totalHariIni = PembelianStok::whereDate('created_at', $today)->sum('total_harga');
+
         return Inertia::render('Admin', [
+            'users' => $users,
             'total_pemasukan_bulan_ini' => $totalPemasukanBulanIni,
             'persentasePemasukan' => $persentasePemasukan,
             'statusPemasukan' => $statusPemasukan,
@@ -335,14 +367,17 @@ class AdminController extends Controller
             'members' => $members,
             'produks' => $produks,
             'pemasukan_bulan_ini' => $pemasukanBulanIni,
-            'suppliers' => $suppliers,
+            'suppliers' => $suppliersGlobal,
+            'suppliersOnly' => $suppliers,
+            'sisa_hutang'     => $sisaHutang,
             'transaksi' => $transaksi,
             'tabungan' => $tabungan,
             'jenis_produk' => $jenis_produk,
-            'rekap_hutang' => $rekapHutang,
+            'rekap_hutang' => $rekapPerMember,
             'pembelian_stok' => $pembelianStok,
             'produk_list' => $produkList,
             'total_bulan_ini_stok' => $totalBulanIniStok,
+            'total_hari_ini' => $totalHariIni,
             'pemasukan_hari_ini'    => $pemasukanHariIni,
             'pengeluaran_hari_ini'  => $pengeluaranHariIni,
             'rekap_stok'            => $rekapStok,
@@ -372,6 +407,7 @@ class AdminController extends Controller
                 'member_id' => $request->member_id,
                 'type'      => $request->type,
             ],
+            'total_pembelian' => $totalPembelian,
         ]);
     }
 

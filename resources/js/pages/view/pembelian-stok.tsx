@@ -36,11 +36,15 @@ interface Pembelian {
     created_at: string | null;
 }
 
+type ThemeMode = 'auto' | 'Light' | 'Dark';
+
 interface Props {
     pembelian: Pembelian[];
     produk: Produk[];
-    suppliers: Supplier[];
+    suppliers: Supplier[];    
+    total_hari_ini: number;
     total_bulan_ini: number;
+    currentTheme: ThemeMode;
 }
 
 const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
@@ -48,15 +52,13 @@ const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'c
 const formatDate = (d: string | null) =>
     d ? new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
 
-export default function PembelianStokComponent({ pembelian = [], produk = [], suppliers = [], total_bulan_ini = 0 }: Props) {
+export default function PembelianStokComponent({ pembelian = [], produk = [], suppliers = [], total_hari_ini = 0, total_bulan_ini = 0, currentTheme }: Props) {
     const [search, setSearch] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({ produk_id: '', jumlah: '', harga_beli: '', ongkir: '', nominal_bayar: '', keterangan: '', supplier_id: '' });
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState<number>(10);
-    const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'auto');
-    const [theme, setTheme] = useState(false);
 
     useEffect(() => {
         const root = document.documentElement;
@@ -159,7 +161,6 @@ export default function PembelianStokComponent({ pembelian = [], produk = [], su
     };
     const pageNumbers = getPageNumbers(currentSafe, totalPages);
 
-    const totalPengeluaran = pembelian.reduce((s, p) => s + Number(p.total_harga || 0), 0);
     const totalUnit = pembelian.reduce((s, p) => s + p.jumlah, 0);
 
     const selectedProduk = produk.find((p) => p.id === Number(form.produk_id));
@@ -253,7 +254,7 @@ export default function PembelianStokComponent({ pembelian = [], produk = [], su
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div className={`${card} rounded-xl p-5`}>
                         <p className={`text-sm ${subText} mb-1`}>Total Pengeluaran</p>
-                        <p className="text-2xl font-bold text-blue-500">{formatCurrency(totalPengeluaran)}</p>
+                        <p className="text-2xl font-bold text-blue-500">{formatCurrency(total_hari_ini)}</p>
                     </div>
                     <div className={`${card} rounded-xl p-5`}>
                         <p className={`text-sm ${subText} mb-1`}>Pengeluaran Bulan Ini</p>

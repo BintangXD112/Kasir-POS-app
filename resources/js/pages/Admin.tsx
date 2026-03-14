@@ -29,6 +29,7 @@ import HutangMemberComponent from './view/hutang-member';
 import JenisProduk from './view/jenis_produk.js';
 import PembelianStokComponent from './view/pembelian-stok';
 import RekapPage from './view/rekap-admin';
+import SupplierPage from './view/supplier-admin';
 import LaporanTransaksiMember from './view/laporan-transaksi-member-admin';
 import LaporanKeuanganSupplier from './view/laporan-keuangan-supplier-admin';
 
@@ -78,6 +79,10 @@ export default function Admin() {
         data,
         total_transaksi,
         filtersTransaksi,
+        suppliersOnly,
+        sisa_hutang,
+        total_pembelian,
+        total_hari_ini
     } = props;
 
     // ====== THEME STATE (sama seperti Login) ======
@@ -165,16 +170,36 @@ export default function Admin() {
     const navItems = [
         { key: 'home', label: 'Dashboard', icon: House, url: null },
         { key: 'member', label: 'Kelola Member', icon: User, url: null },
-        { key: 'jenis_produk', label: 'Jenis Produk', icon: Package, url: null },
+        // { key: 'jenis_produk', label: 'Jenis Produk', icon: Package, url: null },
         { key: 'produk', label: 'Kelola Produk', icon: Package, url: null },
-        { key: 'user', label: 'Kelola User', icon: User, url: null },
         { key: 'hutang', label: 'Rekap Hutang', icon: AlertCircle, url: null },
         { key: 'pembelian-stok', label: 'Pembelian Stok', icon: ShoppingCart, url: null },
         { key: 'supplier', label: 'Supplier', icon: Truck, url: null },
         { key: 'rekap', label: 'Rekap', icon: BarChart2, url: null },
         { key: 'laporan-member', label: 'Lap. Transaksi', icon: UsersIcon, url: null },
         { key: 'laporan-supplier', label: 'Lap. Keuangan Supplier', icon: FileText, url: null },
+        { key: 'user', label: 'Kelola User', icon: User, url: null },
     ];
+    useEffect(() => {
+            const root = document.documentElement;
+    
+            if (currentTheme === 'Dark') {
+                root.classList.add('dark');
+                localStorage.setItem('theme', 'Dark');
+            } else if (currentTheme === 'Light') {
+                root.classList.remove('dark');
+                localStorage.setItem('theme', 'Light');
+            } else if (currentTheme === 'auto') {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                localStorage.setItem('theme', 'auto');
+    
+                if (prefersDark) {
+                    root.classList.add('dark');
+                } else {
+                    root.classList.remove('dark');
+                }
+            }
+        }, [currentTheme]);
     return (
         <div className={`h-screen w-full ${bgApp} transition-colors`}>
             <div className="flex h-full w-full">
@@ -451,15 +476,14 @@ export default function Admin() {
                                         stockGaram={stockGaram}
                                         stockKunyit={stockKunyit}
                                         transaksi={transaksiHome}
+                                        currentTheme={currentTheme}
                                     />
                                 )}
                                 {page === 'transaksi' && <TransaksiAdminPage transaksi={transaksi} currentTheme={currentTheme} auth={props.auth} />}
-                                {page === 'jenis_produk' && <JenisProduk jenis_produk={jenis_produk} />}
+                                {page === 'jenis_produk' && <JenisProduk jenis_produk={jenis_produk} currentTheme={currentTheme}/>}
                                 {page === 'produk' && <Produk produks={produks} jenis_produk={jenis_produk} currentTheme={currentTheme} />}
                                 {page === 'voucher-diskon' && <VoucherDiskon currentTheme={currentTheme} />}
-                                {page === 'member' && <Member currentTheme={currentTheme} />}
-                                {page === 'tabungan-member' && <TabunganMember tabungan={tabungan} currentTheme={currentTheme} />}
-                                {page === 'voucher-usage' && <VoucherUsage currentTheme={currentTheme} />}
+                                {page === 'member' && <Member members = {members} currentTheme={currentTheme}/>}
                                 {page === 'user' && <Users users={users} currentTheme={currentTheme} />}
                                 {page === 'hutang' && <HutangMemberComponent rekap={rekap_hutang ?? []} currentTheme={currentTheme} />}
                                 {page === 'pembelian-stok' && (
@@ -467,7 +491,8 @@ export default function Admin() {
                                         pembelian={pembelian_stok ?? []}
                                         produk={produk_list ?? []}
                                         suppliers={props.suppliers ?? []}
-                                        total_bulan_ini={total_bulan_ini_stok ?? 0}
+                                        total_hari_ini={total_hari_ini ?? 0}                                        
+                                        total_bulan_ini={total_bulan_ini_stok ?? 0}                                        
                                         currentTheme={currentTheme}
                                     />
                                 )}
@@ -482,6 +507,7 @@ export default function Admin() {
                                         auth={auth}
                                         pengeluaran={pengeluaran}
                                         filters={filtersRekap}
+                                        currentTheme={currentTheme}
                                     />
                                 )}
                                 {page === 'laporan-member' && (
@@ -492,6 +518,7 @@ export default function Admin() {
                                         total_transaksi={total_transaksi}
                                         filters={filtersTransaksi}
                                         auth={auth}
+                                        currentTheme={currentTheme}
                                     />
                                 )}
                                 {page === 'laporan-supplier' && (
@@ -502,6 +529,15 @@ export default function Admin() {
                                         rekap_per_supplier={rekap_per_supplier}
                                         filters={filtersSupplier}
                                         auth={auth}
+                                        currentTheme={currentTheme}
+                                    />
+                                )}
+                                {page === 'supplier' && (
+                                    <SupplierPage
+                                        suppliers={suppliersOnly}
+                                        total_pembelian={total_pembelian}
+                                        sisa_hutang={sisa_hutang}
+                                        currentTheme={currentTheme}
                                     />
                                 )}
                             </div>

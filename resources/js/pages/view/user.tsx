@@ -1,8 +1,29 @@
 import { useState, useMemo, useEffect } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
-export default function User({ users, currentTheme }) {
+interface UserType {
+    id: number
+    nama_user: string
+    tipe_user: string
+    kode_user: string
+    account: string
+    status?: string
+}
+
+interface UserForm {
+    nama_user: string
+    tipe_user: string
+    kode_user: string
+    account: string
+}
+
+interface UserProps {
+    users: UserType[];
+    currentTheme: 'auto' | 'Dark' | 'Light';
+}
+
+export default function User({ users = [], currentTheme }: UserProps) {
     const [showModal, setShowModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('')
     const [statusFilter, setStatusFilter] = useState('')
@@ -12,8 +33,13 @@ export default function User({ users, currentTheme }) {
         kode_user: '',
         account: 'active',
     });
-    const [editId, setEditId] = useState(null);
-    const [editForm, setEditForm] = useState({});
+    const [editId, setEditId] = useState<number | null>(null);
+    const [editForm, setEditForm] = useState<UserForm>({
+        nama_user: '',
+        tipe_user: 'kasir',
+        kode_user: '',
+        account: 'active'
+    });
     const [showEditModal, setShowEditModal] = useState(false);
 
      // ====== ⬇️ STATE & LOGIC PAGINATION  ⬇️ ======
@@ -51,13 +77,13 @@ export default function User({ users, currentTheme }) {
       const inputTheme = currentTheme === 'auto' ? 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900';
 
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
-    const handleEditChange = (e) => {
+    const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setEditForm({ ...editForm, [e.target.name]: e.target.value });
     };
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         router.post('/admin/users', form, {
             onSuccess: () => {
@@ -70,7 +96,7 @@ export default function User({ users, currentTheme }) {
             }
         });
     };
-    const handleEdit = (user) => {
+    const handleEdit = (user: UserType) => {
         setEditId(user.id);
         setEditForm({
             nama_user: user.nama_user,
@@ -81,7 +107,7 @@ export default function User({ users, currentTheme }) {
         setShowEditModal(true);
     };
 
-    const filteredUser = useMemo(()=>{
+    const filteredUser = useMemo<UserType[]>(() => {
         let out = users;
         if(searchTerm !== ""){
             const q = searchTerm.toLowerCase()
@@ -97,9 +123,9 @@ export default function User({ users, currentTheme }) {
         return out;
     }, [users, searchTerm, statusFilter])
 
-    const handleEditSubmit = (e) => {
+    const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.put(`/admin/users/${editId}`, editForm, {
+        router.put(`/admin/users/${editId}`, {...editForm}, {
             onSuccess: () => {
                 setEditId(null);
                 setShowEditModal(false);
@@ -110,7 +136,7 @@ export default function User({ users, currentTheme }) {
             }
         });
     };
-    const handleDelete = (id) => {
+    const handleDelete = (id: number) => {
         Swal.fire({
             title: 'Yakin hapus user?',
             text: 'User akan dihapus permanen!',

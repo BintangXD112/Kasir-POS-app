@@ -1,22 +1,38 @@
-import type { Member as MemberType, Voucher } from '@/types/type';
-import { router } from '@inertiajs/react';
+import MenuBar from '@/components/menu-bar';
+import type { Member as MemberType } from '@/types/type';
+import { Link, router } from '@inertiajs/react';
+import { LogOut } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import Swal from 'sweetalert2';
+import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 
 // ===== helpers
 function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 }
 
+type Level = 'merah' | 'kuning' | 'hijau';
 type ThemeMode = 'auto' | 'Light' | 'Dark';
 
-interface Props {
-    currentTheme?: ThemeMode; // optional, kalau belum ada sistem tema
+interface Member {
+    id: number;
+    nama: string;
+    alamat: string;
+    telepon: number;
+    level: Level;
+    total_transaksi: number;
+    tanggal_daftar: string;
 }
 
-export default function Member({ currentTheme = 'Light' }: Props) {
+interface MemberProps {
+    members: Member[];
+    currentTheme: ThemeMode;
+}
+
+export default function Member({ members, currentTheme }: MemberProps) {
+
     // ===== theme classes
-    const appBg = currentTheme === 'auto' ? 'bg-gray-100 dark:bg-zinc-950' : currentTheme === 'Dark' ? 'bg-zinc-950' : 'bg-gray-100';
+    const bgApp = currentTheme === 'auto' ? 'bg-gray-50 dark:bg-zinc-950' : currentTheme === 'Light' ? 'bg-gray-50' : 'bg-zinc-950';
     const card =
         currentTheme === 'auto'
             ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'
@@ -35,12 +51,11 @@ export default function Member({ currentTheme = 'Light' }: Props) {
 
     // ===== state
     const [searchTerm, setSearchTerm] = useState('');
-    const [membersList, setMembersList] = useState<MemberType[]>([]); // <- fix: harus array, bukan string
+    // const [members, setmembers] = useState<MemberType[]>([]); // <- fix: harus array, bukan string
     const [member, setMember] = useState({ nama: '', alamat: '', telepon: '' });
 
     const [editData, setEditData] = useState<MemberType | null>(null);
-    const [vouchers, setVouchers] = useState<Voucher[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [showModalTambahMember, setShowModalTambahMember] = useState(false);
     const [showModalEditMember, setShowModalEditMember] = useState(false);
 
@@ -51,39 +66,13 @@ export default function Member({ currentTheme = 'Light' }: Props) {
         setCurrentPage(1);
     }, [searchTerm, pageSize]);
 
-    // ===== fetch
-    const fetchMembers = async () => {
-        try {
-            setLoading(true);
-            const res = await fetch('/member/list');
-            if (!res.ok) throw new Error('Gagal mengambil data member');
-            const data = await res.json();
-            setMembersList(Array.isArray(data) ? data : []);
-        } catch (e: any) {
-            Swal.fire('Gagal', e?.message || 'Gagal mengambil data', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchMembers();
-    }, []);
-
-    useEffect(() => {
-        fetch('/admin/voucher-diskon')
-            .then((res) => (res.ok ? res.json() : []))
-            .then(setVouchers)
-            .catch(() => setVouchers([]));
-    }, []);
-
     // ===== data view
     const filteredMember = useMemo(() => {
-        const list = membersList || [];
+        const list = members || [];
         if (!searchTerm) return list;
         const q = searchTerm.toLowerCase();
         return list.filter((item) => (item.nama || '').toLowerCase().includes(q));
-    }, [membersList, searchTerm]); // <- fix deps
+    }, [members, searchTerm]); // <- fix deps
 
     // ===== derived pagination
     const totalItems = filteredMember.length;
@@ -103,42 +92,106 @@ export default function Member({ currentTheme = 'Light' }: Props) {
 
     // ===== handlers
     const handleTambahMember = () => {
+        setLoading(true);
+
         router.post(route('member.store'), member, {
+            preserveScroll: true,
+
             onSuccess: () => {
-                Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Member berhasil ditambahkan.' });
-                setMember({ nama: '', alamat: '', telepon: '' });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Member berhasil ditambahkan',
+                });
+
+                setMember({
+                    nama: '',
+                    alamat: '',
+                    telepon: '',
+                });
+
                 setShowModalTambahMember(false);
-                fetchMembers();
             },
-            onError: (errors: Record<string, string>) => {
-                const allErrors = errors ? Object.values(errors).join('\n') : 'Terjadi kesalahan';
-                Swal.fire({ icon: 'error', title: 'Gagal!', text: allErrors });
+
+            onError: (errors) => {
+                const msg = Object.values(errors).join('\n');
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: msg || 'Terjadi kesalahan',
+                });
+            },
+
+            onFinish: () => {
+                setLoading(false);
             },
         });
+    };
+    const handleUpdateMember = () => {
+        if (!editData) return;
+
+        setLoading(true);
+
+        router.put(
+            route('member.update', editData.id),
+            {
+                nama: editData.nama,
+                alamat: editData.alamat,
+                telepon: String(editData.telepon),
+            },
+            {
+                preserveScroll: true,
+
+                onSuccess: () => {
+                    Swal.fire('Berhasil', 'Member berhasil diperbarui', 'success');
+
+                    setShowModalEditMember(false);
+                    setEditData(null);
+                },
+
+                onError: (errors) => {
+                    const msg = Object.values(errors).join('\n');
+
+                    Swal.fire('Gagal', msg || 'Terjadi kesalahan', 'error');
+                },
+
+                onFinish: () => {
+                    setLoading(false);
+                },
+            },
+        );
     };
 
     const handleDelete = (id: number) => {
         Swal.fire({
-            title: 'Yakin ingin menghapus?',
-            text: 'Data member akan dihapus secara permanen!',
+            title: 'Hapus member?',
+            text: 'Data tidak bisa dikembalikan',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal',
+            confirmButtonText: 'Ya, hapus',
         }).then((result) => {
-            if (result.isConfirmed) {
-                router.delete(route('member.destroy', id), {
-                    onSuccess: () => {
-                        Swal.fire('Terhapus!', 'Member berhasil dihapus.', 'success');
-                        fetchMembers();
-                    },
-                    onError: () => {
-                        Swal.fire('Gagal!', 'Gagal menghapus member.', 'error');
-                    },
-                });
-            }
+            if (!result.isConfirmed) return;
+
+            setLoading(true);
+
+            router.delete(route('member.destroy', id), {
+                preserveScroll: true,
+
+                onSuccess: () => {
+                    Swal.fire('Terhapus', 'Member berhasil dihapus', 'success');
+                },
+
+                onError: () => {
+                    Swal.fire('Gagal', 'Member gagal dihapus', 'error');
+                },
+
+                onFinish: () => {
+                    setLoading(false);
+                },
+            });
         });
     };
 
@@ -152,391 +205,426 @@ export default function Member({ currentTheme = 'Light' }: Props) {
         setShowModalEditMember(true);
     };
 
-    const handleLevelChange = async (memberId: number, level: string | null) => {
-            try {
-                setLoading(true);
-                const res = await fetch(`/admin/member/${memberId}/level`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': getCsrfToken(),
-                    },
-                    body: JSON.stringify({ level: level }),
-                });
-    
-                if (!res.ok) {
-                    const errJson = await res.json().catch(() => ({}));
-                    throw new Error(errJson?.message || 'Gagal update voucher');
-                }
-    
-                Swal.fire('Berhasil', 'Voucher diskon berhasil diupdate untuk member', 'success');
-                fetchMembers();
-            } catch (e: any) {
-                Swal.fire('Gagal', e?.message || 'Terjadi kesalahan.', 'error');
-            } finally {
-                setLoading(false);
+    const handleLevelChange = (id: number, level: string) => {
+        setLoading(true);
+
+        router.put(
+            route('member.updateLevel', id),
+            { level },
+            {
+                preserveScroll: true,
+
+                onSuccess: () => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Level member berhasil diperbarui',
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
+                },
+
+                onError: () => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Level member gagal diperbarui',
+                    });
+                },
+
+                onFinish: () => {
+                    setLoading(false);
+                },
+            },
+        );
+    };
+
+    const headerBg =
+        currentTheme === 'auto'
+            ? 'bg-gray-800 dark:bg-zinc-900/80'
+            : currentTheme === 'Light'
+              ? 'bg-gray-800' // header tetap gelap biar kontras
+              : 'bg-zinc-900/80';
+
+    const cleanup = useMobileNavigation();
+    const handleLogout = () => {
+        cleanup();
+        router.flushAll();
+        localStorage.removeItem('username');
+    };
+    const [showLogout, setShowLogout] = useState(false);
+    const toggleLogout = () => {
+        setShowLogout(!showLogout);
+    };
+
+    useEffect(() => {
+        const root = document.documentElement;
+
+        if (currentTheme === 'Dark') {
+            root.classList.add('dark');
+            localStorage.setItem('theme', 'Dark');
+        } else if (currentTheme === 'Light') {
+            root.classList.remove('dark');
+            localStorage.setItem('theme', 'Light');
+        } else if (currentTheme === 'auto') {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            localStorage.setItem('theme', 'auto');
+
+            if (prefersDark) {
+                root.classList.add('dark');
+            } else {
+                root.classList.remove('dark');
             }
-        };
+        }
+    }, [currentTheme]);
 
     // ===== render
     return (
-        <div className="flex flex-col p-6">
-            <div className="mb-4 flex items-center gap-4">
-                <h2 className="text-xl font-semibold">Kelola Member</h2>
-            </div>
-            <div className={`mb-6 flex items-center justify-between rounded-xl p-6 shadow ${card}`}>
-                <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                    }}
-                    className={`mx-4 w-1/2 rounded-xl border p-3 shadow ${
-                        currentTheme === 'auto'
-                            ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100'
-                            : currentTheme === 'Dark'
-                              ? 'border-zinc-700 bg-zinc-800 text-zinc-100'
-                              : 'border-slate-300 bg-white text-zinc-900'
-                    }`}
-                    placeholder="Cari nama member..."
-                />
-                <button
-                    onClick={() => {
-                        setShowModalTambahMember(true);
-                    }}
-                    className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                >
-                    Tambah Member Baru
-                </button>
-            </div>
+        <>
+            <div className="flex flex-col p-6">
+                <div className="mb-4 flex items-center gap-4">
+                    <h2 className="text-xl font-semibold">Kelola Member</h2>
+                </div>
+                <div className={`mb-6 flex items-center justify-between rounded-xl p-6 shadow ${card}`}>
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                        }}
+                        className={`mx-4 w-1/2 rounded-xl border p-3 shadow ${
+                            currentTheme === 'auto'
+                                ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100'
+                                : currentTheme === 'Dark'
+                                  ? 'border-zinc-700 bg-zinc-800 text-zinc-100'
+                                  : 'border-slate-300 bg-white text-zinc-900'
+                        }`}
+                        placeholder="Cari nama member..."
+                    />
+                    <button
+                        onClick={() => {
+                            setShowModalTambahMember(true);
+                        }}
+                        className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                    >
+                        Tambah Member Baru
+                    </button>
+                </div>
 
-            <div className={`relative min-h-[40vh] overflow-x-auto rounded-xl pb-20 shadow ${card}`}>
-                <div className="overflow-x-auto">
-                    <table className="min-w-full text-left text-sm">
-                        <thead
-                            className={`${currentTheme === 'auto' ? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}
-                        >
-                            <tr className={`border-b ${borderSoft}`}>
-                                <th className="px-6 py-3">ID</th>
-                                <th className="px-6 py-3">Nama</th>
-                                <th className="px-6 py-3">Alamat</th>
-                                <th className="px-6 py-3">Nomor&nbsp;Telepon</th>
-                                <th className="px-6 py-3">Level</th>
-                                <th className="px-6 py-3">Total&nbsp;Transaksi</th>
-                                <th className="px-6 py-3">Tanggal&nbsp;Daftar</th>
-                                <th className="py-3 pr-6 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {loading && (
-                                <tr>
-                                    <td colSpan={8} className={`py-8 text-center ${subText}`}>
-                                        Loading…
-                                    </td>
+                <div className={`relative min-h-[40vh] overflow-x-auto rounded-xl pb-20 shadow ${card}`}>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full text-left text-sm">
+                            <thead
+                                className={`${currentTheme === 'auto' ? 'bg-slate-50 dark:bg-zinc-800' : currentTheme === 'Dark' ? 'bg-zinc-800' : 'bg-slate-50'}`}
+                            >
+                                <tr className={`border-b ${borderSoft}`}>
+                                    <th className="px-6 py-3">ID</th>
+                                    <th className="px-6 py-3">Nama</th>
+                                    <th className="px-6 py-3">Alamat</th>
+                                    <th className="px-6 py-3">Nomor&nbsp;Telepon</th>
+                                    <th className="px-6 py-3">Level</th>
+                                    <th className="px-6 py-3">Total&nbsp;Transaksi</th>
+                                    <th className="px-6 py-3">Tanggal&nbsp;Daftar</th>
+                                    <th className="py-3 pr-6 text-center">Aksi</th>
                                 </tr>
-                            )}
+                            </thead>
 
-                            {!loading && filteredMember.length === 0 && (
-                                <tr>
-                                    <td colSpan={8} className="py-12">
-                                        <div className="text-center">
-                                            <svg className={`mx-auto h-12 w-12 ${subText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                />
-                                            </svg>
-                                            <h3 className="mt-2 text-sm font-medium">Tidak ada Data</h3>
-                                            <p className={`mt-1 text-sm ${subText}`}>Tidak ada data yang sesuai dengan filter.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
-
-                            {!loading &&
-                                pagedMember.map((m) => (
-                                    <tr key={m.id} className={`border-b ${borderSoft} ${rowHover} transition`}>
-                                        <td className="px-6 py-3">{m.id}</td>
-                                        <td className="px-6 py-3">{m.nama}</td>
-                                        <td className="px-6 py-3">{m.alamat}</td>
-                                        <td className="px-6 py-3">{m.telepon}</td>
-                                        <td className="px-6 py-3">
-                                            <select
-                                                className={`rounded border p-2 ${
-                                                    currentTheme === 'auto'
-                                                        ? 'border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-800'
-                                                        : currentTheme === 'Dark'
-                                                          ? 'border-zinc-700 bg-zinc-800'
-                                                          : 'border-slate-300 bg-white'
-                                                }`}
-                                                value={m.level || ''}
-                                                onChange={(e) => handleLevelChange(m.id, e.target.value ? e.target.value : null)}
-                                                disabled={loading}
-                                            >
-                                                <option value="merah">merah</option>
-                                                <option value="kuning">kuning</option>
-                                                <option value="hijau">hijau</option>
-                                            </select>
+                            <tbody>
+                                {loading && (
+                                    <tr>
+                                        <td colSpan={8} className={`py-8 text-center ${subText}`}>
+                                            Loading…
                                         </td>
-                                        <td className="px-6 py-3 text-center">{m.total_transaksi}</td>
-                                        <td className="px-6 py-3">{m.tanggal_daftar}</td>
-                                        <td className="py-3 pr-6">
-                                            <div className="flex justify-center gap-2">
-                                                <button
-                                                    onClick={() => handleDelete(m.id)}
-                                                    className="rounded-md bg-red-600 px-3 py-2 text-white hover:bg-red-700"
-                                                >
-                                                    Hapus
-                                                </button>
-                                                <button
-                                                    onClick={() => openEditModal(m)}
-                                                    className="rounded-md bg-yellow-500 px-3 py-2 text-white hover:bg-yellow-600"
-                                                >
-                                                    Edit
-                                                </button>
+                                    </tr>
+                                )}
+
+                                {!loading && filteredMember.length === 0 && (
+                                    <tr>
+                                        <td colSpan={8} className="py-12">
+                                            <div className="text-center">
+                                                <svg className={`mx-auto h-12 w-12 ${subText}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                    />
+                                                </svg>
+                                                <h3 className="mt-2 text-sm font-medium">Tidak ada Data</h3>
+                                                <p className={`mt-1 text-sm ${subText}`}>Tidak ada data yang sesuai dengan filter.</p>
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
-                        </tbody>
-                    </table>
+                                )}
+
+                                {!loading &&
+                                    pagedMember.map((m) => (
+                                        <tr key={m.id} className={`border-b ${borderSoft} ${rowHover} transition`}>
+                                            <td className="px-6 py-3">{m.id}</td>
+                                            <td className="px-6 py-3">{m.nama}</td>
+                                            <td className="px-6 py-3">{m.alamat}</td>
+                                            <td className="px-6 py-3">{m.telepon}</td>
+                                            <td className="px-6 py-3">
+                                                <select
+                                                    className={`rounded border p-2 ${
+                                                        currentTheme === 'auto'
+                                                            ? 'border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-800'
+                                                            : currentTheme === 'Dark'
+                                                              ? 'border-zinc-700 bg-zinc-800'
+                                                              : 'border-slate-300 bg-white'
+                                                    }`}
+                                                    value={m.level || ''}
+                                                    onChange={(e) => handleLevelChange(m.id, e.target.value ? e.target.value : null)}
+                                                    disabled={loading}
+                                                >
+                                                    <option value="merah">merah</option>
+                                                    <option value="kuning">kuning</option>
+                                                    <option value="hijau">hijau</option>
+                                                </select>
+                                            </td>
+                                            <td className="px-6 py-3 text-center">{m.total_transaksi}</td>
+                                            <td className="px-6 py-3">{m.tanggal_daftar}</td>
+                                            <td className="py-3 pr-6">
+                                                <div className="flex justify-center gap-2">
+                                                    <button
+                                                        onClick={() => handleDelete(m.id)}
+                                                        className="rounded-md bg-red-600 px-3 py-2 text-white hover:bg-red-700"
+                                                    >
+                                                        Hapus
+                                                    </button>
+                                                    <button
+                                                        onClick={() => openEditModal(m)}
+                                                        className="rounded-md bg-yellow-500 px-3 py-2 text-white hover:bg-yellow-600"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* pagination */}
+                    {!loading && filteredMember.length > 0 && (
+                        <div
+                            className={`flex flex-col items-center justify-between border-t px-6 py-4 sm:flex-row ${borderSoft} absolute right-0 bottom-0 left-0 gap-3`}
+                        >
+                            <div className={`text-sm ${subText}`}>
+                                Menampilkan <span className="font-semibold">{startIndex + 1}</span>–<span className="font-semibold">{endIndex}</span>{' '}
+                                dari
+                                <span className="font-semibold"> {totalItems}</span> Member
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    className={`cursor-pointer rounded-lg border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
+                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                    disabled={currentSafe === 1}
+                                    aria-label="Halaman sebelumnya"
+                                >
+                                    Prev
+                                </button>
+
+                                {pageNumbers.map((p, idx) =>
+                                    p === '...' ? (
+                                        <span key={`dots-${idx}`} className={`px-2 select-none ${subText}`}>
+                                            …
+                                        </span>
+                                    ) : (
+                                        <button
+                                            key={p}
+                                            onClick={() => setCurrentPage(p as number)}
+                                            aria-current={currentSafe === p ? 'page' : undefined}
+                                            className={`cursor-pointer rounded-lg border px-3 py-2 text-sm transition-all ${
+                                                currentSafe === p
+                                                    ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-600/90'
+                                                    : currentTheme === 'Dark'
+                                                      ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
+                                                      : 'border-slate-300 hover:bg-blue-600 hover:text-white'
+                                            }`}
+                                        >
+                                            {p}
+                                        </button>
+                                    ),
+                                )}
+
+                                <button
+                                    className={`cursor-pointer rounded-lg border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
+                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                    disabled={currentSafe === totalPages}
+                                    aria-label="Halaman berikutnya"
+                                >
+                                    Next
+                                </button>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <span className={`text-sm ${subText}`}>Per halaman:</span>
+                                <select
+                                    value={pageSize}
+                                    onChange={(e) => setPageSize(Number(e.target.value))}
+                                    className={`rounded-lg border px-2 py-2 text-sm ${
+                                        currentTheme === 'auto'
+                                            ? 'border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-800'
+                                            : currentTheme === 'Dark'
+                                              ? 'border-zinc-700 bg-zinc-800'
+                                              : 'border-slate-300 bg-white'
+                                    }`}
+                                >
+                                    {[10, 25, 50, 100].map((sz) => (
+                                        <option key={sz} value={sz}>
+                                            {sz}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {/* pagination */}
-                {!loading && filteredMember.length > 0 && (
-                    <div
-                        className={`flex flex-col items-center justify-between border-t px-6 py-4 sm:flex-row ${borderSoft} absolute right-0 bottom-0 left-0 gap-3`}
-                    >
-                        <div className={`text-sm ${subText}`}>
-                            Menampilkan <span className="font-semibold">{startIndex + 1}</span>–<span className="font-semibold">{endIndex}</span> dari
-                            <span className="font-semibold"> {totalItems}</span> Member
-                        </div>
+                {/* Modal Tambah */}
+                {showModalTambahMember && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                        <div className={`${card} ${text} w-full max-w-md rounded-lg shadow-lg`}>
+                            <div className="flex items-center justify-between rounded-t border-b border-gray-200 p-4">
+                                <h3 className="text-lg font-semibold">Tambah Member</h3>
+                                <button
+                                    type="button"
+                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-sm text-gray-400 hover:text-gray-700"
+                                    onClick={() => setShowModalTambahMember(false)}
+                                >
+                                    <svg className="h-3 w-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                                        />
+                                    </svg>
+                                    <span className="sr-only">Close modal</span>
+                                </button>
+                            </div>
 
-                        <div className="flex items-center gap-2">
-                            <button
-                                className={`cursor-pointer rounded-lg border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
-                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                                disabled={currentSafe === 1}
-                                aria-label="Halaman sebelumnya"
-                            >
-                                Prev
-                            </button>
+                            <div className="space-y-4 p-4">
+                                <div className="flex flex-col">
+                                    <label htmlFor="nama">Nama Member</label>
+                                    <input
+                                        id="nama"
+                                        type="text"
+                                        value={member.nama}
+                                        onChange={(e) => setMember({ ...member, nama: e.target.value })}
+                                        className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
+                                    />
+                                </div>
 
-                            {pageNumbers.map((p, idx) =>
-                                p === '...' ? (
-                                    <span key={`dots-${idx}`} className={`px-2 select-none ${subText}`}>
-                                        …
-                                    </span>
-                                ) : (
-                                    <button
-                                        key={p}
-                                        onClick={() => setCurrentPage(p as number)}
-                                        aria-current={currentSafe === p ? 'page' : undefined}
-                                        className={`cursor-pointer rounded-lg border px-3 py-2 text-sm transition-all ${
-                                            currentSafe === p
-                                                ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-600/90'
-                                                : currentTheme === 'Dark'
-                                                  ? 'border-zinc-700 hover:bg-blue-600 hover:text-white'
-                                                  : 'border-slate-300 hover:bg-blue-600 hover:text-white'
-                                        }`}
-                                    >
-                                        {p}
-                                    </button>
-                                ),
-                            )}
+                                <div className="flex flex-col">
+                                    <label htmlFor="alamat">Alamat Member</label>
+                                    <textarea
+                                        id="alamat"
+                                        value={member.alamat}
+                                        onChange={(e) => setMember({ ...member, alamat: e.target.value })}
+                                        className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
+                                    />
+                                </div>
 
-                            <button
-                                className={`cursor-pointer rounded-lg border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 ${currentTheme === 'Dark' ? 'border-zinc-700 hover:bg-zinc-800' : 'border-slate-300 hover:bg-slate-50'}`}
-                                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                                disabled={currentSafe === totalPages}
-                                aria-label="Halaman berikutnya"
-                            >
-                                Next
-                            </button>
-                        </div>
+                                <div className="flex flex-col">
+                                    <label htmlFor="telepon">Nomor Telepon Member</label>
+                                    <input
+                                        id="telepon"
+                                        type="text"
+                                        value={member.telepon}
+                                        onChange={(e) => setMember({ ...member, telepon: e.target.value })}
+                                        className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
+                                    />
+                                </div>
+                            </div>
 
-                        <div className="flex items-center gap-2">
-                            <span className={`text-sm ${subText}`}>Per halaman:</span>
-                            <select
-                                value={pageSize}
-                                onChange={(e) => setPageSize(Number(e.target.value))}
-                                className={`rounded-lg border px-2 py-2 text-sm ${
-                                    currentTheme === 'auto'
-                                        ? 'border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-800'
-                                        : currentTheme === 'Dark'
-                                          ? 'border-zinc-700 bg-zinc-800'
-                                          : 'border-slate-300 bg-white'
-                                }`}
-                            >
-                                {[10, 25, 50, 100].map((sz) => (
-                                    <option key={sz} value={sz}>
-                                        {sz}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="p-4">
+                                <button onClick={handleTambahMember} className="w-full rounded-md bg-blue-600 py-2 text-white hover:bg-blue-700">
+                                    Tambahkan
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
+
+                {/* Modal Edit */}
+                {showModalEditMember && editData && (
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleUpdateMember();
+                        }}
+                        className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+                    >
+                        <div className={`${card} ${text} w-full max-w-md rounded-lg shadow-lg`}>
+                            <div className="flex items-center justify-between rounded-t border-b border-gray-200 p-4">
+                                <h3 className="text-lg font-semibold">Edit Member</h3>
+                                <button
+                                    type="button"
+                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-sm text-gray-400 hover:text-gray-700"
+                                    onClick={() => {
+                                        setShowModalEditMember(false);
+                                        setEditData(null);
+                                    }}
+                                >
+                                    <svg className="h-3 w-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                                        />
+                                    </svg>
+                                    <span className="sr-only">Close modal</span>
+                                </button>
+                            </div>
+
+                            <div className="space-y-4 p-4">
+                                <div className="flex flex-col">
+                                    <label htmlFor="nama-edit">Nama Member</label>
+                                    <input
+                                        id="nama-edit"
+                                        type="text"
+                                        value={editData.nama}
+                                        onChange={(e) => setEditData({ ...editData, nama: e.target.value })}
+                                        className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <label htmlFor="alamat-edit">Alamat Member</label>
+                                    <textarea
+                                        id="alamat-edit"
+                                        value={editData.alamat || ''}
+                                        onChange={(e) => setEditData({ ...editData, alamat: e.target.value })}
+                                        className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <label htmlFor="telepon-edit">Nomor Telepon Member</label>
+                                    <input
+                                        id="telepon-edit"
+                                        type="text"
+                                        value={(editData.telepon ?? '').toString()}
+                                        onChange={(e) => setEditData({ ...editData, telepon: e.target.value as any })}
+                                        className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="p-4">
+                                <button type="submit" className="w-full rounded-md bg-blue-600 py-2 text-white hover:bg-blue-700">
+                                    Simpan Perubahan
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                )}
             </div>
-
-            {/* Modal Tambah */}
-            {showModalTambahMember && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-                    <div className={`${card} ${text} w-full max-w-md rounded-lg shadow-lg`}>
-                        <div className="flex items-center justify-between rounded-t border-b border-gray-200 p-4">
-                            <h3 className="text-lg font-semibold">Tambah Member</h3>
-                            <button
-                                type="button"
-                                className="flex h-8 w-8 items-center justify-center rounded-lg text-sm text-gray-400 hover:text-gray-700"
-                                onClick={() => setShowModalTambahMember(false)}
-                            >
-                                <svg className="h-3 w-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
-                                    <path
-                                        stroke="currentColor"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                    />
-                                </svg>
-                                <span className="sr-only">Close modal</span>
-                            </button>
-                        </div>
-
-                        <div className="space-y-4 p-4">
-                            <div className="flex flex-col">
-                                <label htmlFor="nama">Nama Member</label>
-                                <input
-                                    id="nama"
-                                    type="text"
-                                    value={member.nama}
-                                    onChange={(e) => setMember({ ...member, nama: e.target.value })}
-                                    className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
-                                />
-                            </div>
-
-                            <div className="flex flex-col">
-                                <label htmlFor="alamat">Alamat Member</label>
-                                <textarea
-                                    id="alamat"
-                                    value={member.alamat}
-                                    onChange={(e) => setMember({ ...member, alamat: e.target.value })}
-                                    className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
-                                />
-                            </div>
-
-                            <div className="flex flex-col">
-                                <label htmlFor="telepon">Nomor Telepon Member</label>
-                                <input
-                                    id="telepon"
-                                    type="text"
-                                    value={member.telepon}
-                                    onChange={(e) => setMember({ ...member, telepon: e.target.value })}
-                                    className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="p-4">
-                            <button onClick={handleTambahMember} className="w-full rounded-md bg-blue-600 py-2 text-white hover:bg-blue-700">
-                                Tambahkan
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal Edit */}
-            {showModalEditMember && editData && (
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        router.put(
-                            route('member.update', editData.id),
-                            { nama: editData.nama, telepon: String(editData.telepon), alamat: editData.alamat },
-                            {
-                                onSuccess: () => {
-                                    setShowModalEditMember(false);
-                                    setEditData(null);
-                                    Swal.fire('Berhasil', 'Member berhasil diperbarui', 'success');
-                                    fetchMembers();
-                                },
-                                onError: (errors) => {
-                                    const allErrors = errors ? Object.values(errors).flat().join('\n') : 'Terjadi kesalahan';
-                                    Swal.fire('Gagal', allErrors, 'error');
-                                },
-                            },
-                        );
-                    }}
-                    className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-                >
-                    <div className={`${card} ${text} w-full max-w-md rounded-lg shadow-lg`}>
-                        <div className="flex items-center justify-between rounded-t border-b border-gray-200 p-4">
-                            <h3 className="text-lg font-semibold">Edit Member</h3>
-                            <button
-                                type="button"
-                                className="flex h-8 w-8 items-center justify-center rounded-lg text-sm text-gray-400 hover:text-gray-700"
-                                onClick={() => {
-                                    setShowModalEditMember(false);
-                                    setEditData(null);
-                                }}
-                            >
-                                <svg className="h-3 w-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
-                                    <path
-                                        stroke="currentColor"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                    />
-                                </svg>
-                                <span className="sr-only">Close modal</span>
-                            </button>
-                        </div>
-
-                        <div className="space-y-4 p-4">
-                            <div className="flex flex-col">
-                                <label htmlFor="nama-edit">Nama Member</label>
-                                <input
-                                    id="nama-edit"
-                                    type="text"
-                                    value={editData.nama}
-                                    onChange={(e) => setEditData({ ...editData, nama: e.target.value })}
-                                    className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
-                                />
-                            </div>
-                            <div className="flex flex-col">
-                                <label htmlFor="alamat-edit">Alamat Member</label>
-                                <textarea
-                                    id="alamat-edit"
-                                    value={editData.alamat || ''}
-                                    onChange={(e) => setEditData({ ...editData, alamat: e.target.value })}
-                                    className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
-                                />
-                            </div>
-                            <div className="flex flex-col">
-                                <label htmlFor="telepon-edit">Nomor Telepon Member</label>
-                                <input
-                                    id="telepon-edit"
-                                    type="text"
-                                    value={(editData.telepon ?? '').toString()}
-                                    onChange={(e) => setEditData({ ...editData, telepon: e.target.value as any })}
-                                    className={`border border-gray-300 focus:outline-0 ${currentTheme === 'auto' ? 'border-zinc-300 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100' : currentTheme === 'Dark' ? 'border-zinc-700 bg-zinc-800 text-zinc-100' : 'border-slate-300 bg-white text-zinc-900'} rounded-md p-2`}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="p-4">
-                            <button type="submit" className="w-full rounded-md bg-blue-600 py-2 text-white hover:bg-blue-700">
-                                Simpan Perubahan
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            )}
-        </div>
+        </>
     );
 }

@@ -38,6 +38,8 @@ interface Transaksi {
     detail: DetailTransaksi[];
 }
 
+type ThemeMode = 'auto' | 'Light' | 'Dark';
+
 interface DashboardProps extends PageProps {
     total_pemasukan_bulan_ini: number;
     persentasePemasukan: number;
@@ -55,6 +57,7 @@ interface DashboardProps extends PageProps {
     stockGaram: number;
     stockKunyit: number;
     transaksi: Transaksi[];
+    currentTheme: ThemeMode;
 }
 
 export default function Home({
@@ -74,9 +77,9 @@ export default function Home({
     stockGaram,
     stockKunyit,
     transaksi,
+    currentTheme,
 }: DashboardProps) {
     // ===== helper kelas tema (selaras dengan Login) =====
-    const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'auto');
     const [theme, setTheme] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [jenisFilter, setJenisFilter] = useState('masuk');

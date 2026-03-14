@@ -11,7 +11,23 @@ function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 }
 
-export default function Member() {
+type Level = 'merah' | 'kuning' | 'hijau';
+
+interface Member {
+    id: number;
+    nama: string;
+    alamat: string;
+    telepon: number;
+    level: Level;
+    total_transaksi: number;
+    tanggal_daftar: string;
+}
+
+interface MemberProps {
+    members: Member[];
+}
+
+export default function Member({ members }: MemberProps) {
     const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'auto');
     const [theme, setTheme] = useState(false);
 
@@ -35,12 +51,11 @@ export default function Member() {
 
     // ===== state
     const [searchTerm, setSearchTerm] = useState('');
-    const [membersList, setMembersList] = useState<MemberType[]>([]); // <- fix: harus array, bukan string
+    // const [members, setmembers] = useState<MemberType[]>([]); // <- fix: harus array, bukan string
     const [member, setMember] = useState({ nama: '', alamat: '', telepon: '' });
 
     const [editData, setEditData] = useState<MemberType | null>(null);
-    const [vouchers, setVouchers] = useState<Voucher[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [showModalTambahMember, setShowModalTambahMember] = useState(false);
     const [showModalEditMember, setShowModalEditMember] = useState(false);
 
@@ -51,32 +66,13 @@ export default function Member() {
         setCurrentPage(1);
     }, [searchTerm, pageSize]);
 
-    // ===== fetch
-    const fetchMembers = async () => {
-        try {
-            setLoading(true);
-            const res = await fetch('/member/list');
-            if (!res.ok) throw new Error('Gagal mengambil data member');
-            const data = await res.json();
-            setMembersList(Array.isArray(data) ? data : []);
-        } catch (e: any) {
-            Swal.fire('Gagal', e?.message || 'Gagal mengambil data', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchMembers();
-    }, []);
-
     // ===== data view
     const filteredMember = useMemo(() => {
-        const list = membersList || [];
+        const list = members || [];
         if (!searchTerm) return list;
         const q = searchTerm.toLowerCase();
         return list.filter((item) => (item.nama || '').toLowerCase().includes(q));
-    }, [membersList, searchTerm]); // <- fix deps
+    }, [members, searchTerm]); // <- fix deps
 
     // ===== derived pagination
     const totalItems = filteredMember.length;
@@ -96,42 +92,106 @@ export default function Member() {
 
     // ===== handlers
     const handleTambahMember = () => {
+        setLoading(true);
+
         router.post(route('member.store'), member, {
+            preserveScroll: true,
+
             onSuccess: () => {
-                Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Member berhasil ditambahkan.' });
-                setMember({ nama: '', alamat: '', telepon: '' });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Member berhasil ditambahkan',
+                });
+
+                setMember({
+                    nama: '',
+                    alamat: '',
+                    telepon: '',
+                });
+
                 setShowModalTambahMember(false);
-                fetchMembers();
             },
-            onError: (errors: Record<string, string>) => {
-                const allErrors = errors ? Object.values(errors).join('\n') : 'Terjadi kesalahan';
-                Swal.fire({ icon: 'error', title: 'Gagal!', text: allErrors });
+
+            onError: (errors) => {
+                const msg = Object.values(errors).join('\n');
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: msg || 'Terjadi kesalahan',
+                });
+            },
+
+            onFinish: () => {
+                setLoading(false);
             },
         });
+    };
+    const handleUpdateMember = () => {
+        if (!editData) return;
+
+        setLoading(true);
+
+        router.put(
+            route('member.update', editData.id),
+            {
+                nama: editData.nama,
+                alamat: editData.alamat,
+                telepon: String(editData.telepon),
+            },
+            {
+                preserveScroll: true,
+
+                onSuccess: () => {
+                    Swal.fire('Berhasil', 'Member berhasil diperbarui', 'success');
+
+                    setShowModalEditMember(false);
+                    setEditData(null);
+                },
+
+                onError: (errors) => {
+                    const msg = Object.values(errors).join('\n');
+
+                    Swal.fire('Gagal', msg || 'Terjadi kesalahan', 'error');
+                },
+
+                onFinish: () => {
+                    setLoading(false);
+                },
+            },
+        );
     };
 
     const handleDelete = (id: number) => {
         Swal.fire({
-            title: 'Yakin ingin menghapus?',
-            text: 'Data member akan dihapus secara permanen!',
+            title: 'Hapus member?',
+            text: 'Data tidak bisa dikembalikan',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal',
+            confirmButtonText: 'Ya, hapus',
         }).then((result) => {
-            if (result.isConfirmed) {
-                router.delete(route('member.destroy', id), {
-                    onSuccess: () => {
-                        Swal.fire('Terhapus!', 'Member berhasil dihapus.', 'success');
-                        fetchMembers();
-                    },
-                    onError: () => {
-                        Swal.fire('Gagal!', 'Gagal menghapus member.', 'error');
-                    },
-                });
-            }
+            if (!result.isConfirmed) return;
+
+            setLoading(true);
+
+            router.delete(route('member.destroy', id), {
+                preserveScroll: true,
+
+                onSuccess: () => {
+                    Swal.fire('Terhapus', 'Member berhasil dihapus', 'success');
+                },
+
+                onError: () => {
+                    Swal.fire('Gagal', 'Member gagal dihapus', 'error');
+                },
+
+                onFinish: () => {
+                    setLoading(false);
+                },
+            });
         });
     };
 
@@ -145,30 +205,38 @@ export default function Member() {
         setShowModalEditMember(true);
     };
 
-    const handleLevelChange = async (memberId: number, level: string | null) => {
-        try {
-            setLoading(true);
-            const res = await fetch(`/admin/member/${memberId}/level`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': getCsrfToken(),
+    const handleLevelChange = (id: number, level: string) => {
+        setLoading(true);
+
+        router.put(
+            route('member.updateLevel', id),
+            { level },
+            {
+                preserveScroll: true,
+
+                onSuccess: () => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Level member berhasil diperbarui',
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
                 },
-                body: JSON.stringify({ level: level }),
-            });
 
-            if (!res.ok) {
-                const errJson = await res.json().catch(() => ({}));
-                throw new Error(errJson?.message || 'Gagal update voucher');
-            }
+                onError: () => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Level member gagal diperbarui',
+                    });
+                },
 
-            Swal.fire('Berhasil', 'Voucher diskon berhasil diupdate untuk member', 'success');
-            fetchMembers();
-        } catch (e: any) {
-            Swal.fire('Gagal', e?.message || 'Terjadi kesalahan.', 'error');
-        } finally {
-            setLoading(false);
-        }
+                onFinish: () => {
+                    setLoading(false);
+                },
+            },
+        );
     };
 
     const headerBg =
@@ -657,22 +725,7 @@ export default function Member() {
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
-                            router.put(
-                                route('member.update', editData.id),
-                                { nama: editData.nama, telepon: String(editData.telepon), alamat: editData.alamat },
-                                {
-                                    onSuccess: () => {
-                                        setShowModalEditMember(false);
-                                        setEditData(null);
-                                        Swal.fire('Berhasil', 'Member berhasil diperbarui', 'success');
-                                        fetchMembers();
-                                    },
-                                    onError: (errors) => {
-                                        const allErrors = errors ? Object.values(errors).flat().join('\n') : 'Terjadi kesalahan';
-                                        Swal.fire('Gagal', allErrors, 'error');
-                                    },
-                                },
-                            );
+                            handleUpdateMember();
                         }}
                         className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
                     >

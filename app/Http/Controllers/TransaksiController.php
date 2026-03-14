@@ -42,6 +42,7 @@ class TransaksiController extends Controller
             'detail.*.harga' => 'required|numeric|min:0',
             'nama_member' => 'nullable|string',
             'ongkir' => 'nullable|integer',
+            'nominal_bayar' => 'nullable|integer',
         ]);
 
         DB::beginTransaction();
@@ -80,6 +81,7 @@ class TransaksiController extends Controller
                 'member_id' => $member?->id,
                 'diskon_id' => $member?->diskon_id ?? null,
                 'metode_pembayaran' => $request->metode,
+                'nominal_bayar' => $request->nominal_bayar,
                 'status' => $request->status,
                 'created_at' => in_array($request->status, ['lunas', 'pending']) ? now() : null,
                 'waktu_bayar' => $request->status === 'lunas' ? now() : null,

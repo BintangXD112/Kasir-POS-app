@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Member;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+
 
 
 class MemberController extends Controller
@@ -48,7 +50,7 @@ class MemberController extends Controller
                 'level' => 'nullable|string',
             ]);
             $member->update(['level' => $request->level]);
-            return response()->json(['success' => true]);
+            return redirect()->back()->with('success', 'Level berhasil di update');
         }catch (err){
             return response()->json(['status' => 'error', 'message' => err]);
         }
@@ -121,16 +123,16 @@ class MemberController extends Controller
     }
     public function list()
     {
-        return response()->json(Member::with(['tabungan', 'transaksi'])->get());
+        return Inertia::render('member-kasir', [
+            'members' => Member::with(['tabungan','transaksi'])->get()
+        ]);
     }
     public function show($id)
     {
-        $member = Member::with(['diskon', 'tabungan', 'transaksi'])->findOrFail($id);
+        $member = Member::with(['tabungan', 'transaksi'])->findOrFail($id);
         return response()->json([
             'id' => $member->id,
             'nama' => $member->nama,
-            'diskon' => $member->diskon->jumlah_diskon ?? 0,
-            'kode_voucher' => $member->diskon->kode_voucher ?? null,
             'saldo' => $member->tabungan->saldo ?? 0,
             'total_transaksi' => $member->transaksi->count() ?? 0,
             'telepon' => $member->telepon,

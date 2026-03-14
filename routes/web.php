@@ -52,10 +52,8 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     Route::post('/member', [MemberController::class, 'store'])->name('member.store');
     Route::put('/member/{id}', [MemberController::class, 'update'])->name('member.update');
     Route::get('/members/{id}', [MemberController::class, 'show'])->name('member.show');
-    Route::get('/member/list', [MemberController::class, 'list']);
-    Route::get('/member', function () {
-    return Inertia::render('member-kasir');
-    });
+    Route::get('/member', [MemberController::class, 'list'])->name('member.list');
+    Route::put('/member{id}/level', [MemberController::class, 'updateLevel'])->name('member.updateLevel');
 
     // ...stock...
     Route::get('/stock', [PembelianStokController::class, 'index']);
@@ -86,7 +84,7 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
     // Rekap Hutang Member (kasir & admin)
     Route::get('/bayar', [HutangController::class, 'index'])->name('hutang.index');
     Route::post('/hutang/{id}/lunas', [HutangController::class, 'lunas'])->name('hutang.lunas');
-    Route::post('/hutang/{id}/lunas', [HutangController::class, 'supplier'])->name('hutang.supplier');
+    Route::post('/hutang/{id}/lunas/supplier', [HutangController::class, 'supplier'])->name('hutang.supplier');
     Route::post('/hutang/{memberId}/lunas-semua', [HutangController::class, 'lunasSemuaMember'])->name('hutang.lunas-semua');
     Route::get('/laporan-keuangan-supplier', [KasirController::class, 'laporanKeuanganSupplier'])->name('laporan.supplier');
     Route::get('/laporan/member/export', [RekapController::class, 'exportMember'])->name('laporan.member.export');
@@ -101,8 +99,8 @@ Route::middleware(['auth', \App\Http\Middleware\HandleInertiaRequests::class])->
 
         // Member Management
         Route::prefix('member')->group(function () {
-            Route::get('/', [MemberController::class, 'indexJson'])->name('member.index');
-            Route::put('{id}/level', [MemberController::class, 'updateLevel'])->name('member.voucher.update');
+            Route::get('/', [MemberController::class, 'list'])->name('member.list');
+            Route::put('/member{id}/level', [MemberController::class, 'updateLevel'])->name('member.updateLevel');
         });
         
 

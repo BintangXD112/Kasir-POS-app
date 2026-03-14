@@ -32,6 +32,7 @@ interface Props {
     pembelian: Pembelian[];
     produk: Produk[];
     suppliers: Supplier[];
+    total_hari_ini: number;
     total_bulan_ini: number;
 }
 
@@ -45,6 +46,7 @@ export default function PembelianStokComponent({
     pembelian = [],
     produk = [],
     suppliers = [],
+    total_hari_ini = 0,
     total_bulan_ini = 0,
 }: Props) {
     const [search, setSearch] = useState("");
@@ -162,10 +164,6 @@ export default function PembelianStokComponent({
     };
     const pageNumbers = getPageNumbers(currentSafe, totalPages);
 
-    const totalPengeluaran = pembelian.reduce(
-      (s, p) => s + Number(p.total_harga || 0),
-      0
-    );
     const totalUnit = pembelian.reduce((s, p) => s + p.jumlah, 0);
 
     const selectedProduk = produk.find(p => p.id === Number(form.produk_id));
@@ -324,8 +322,8 @@ export default function PembelianStokComponent({
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className={`${card} rounded-xl p-5`}>
-                        <p className={`text-sm ${subText} mb-1`}>Total Pengeluaran</p>
-                        <p className="text-2xl font-bold text-blue-500">{formatCurrency(totalPengeluaran)}</p>
+                        <p className={`text-sm ${subText} mb-1`}>Pengeluaran Hari Ini</p>
+                        <p className="text-2xl font-bold text-blue-500">{formatCurrency(total_hari_ini)}</p>
                     </div>
                     <div className={`${card} rounded-xl p-5`}>
                         <p className={`text-sm ${subText} mb-1`}>Pengeluaran Bulan Ini</p>

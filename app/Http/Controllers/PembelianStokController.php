@@ -27,16 +27,18 @@ class PembelianStokController extends Controller
         $produk    = Produk::select('id', 'nama', 'stok', 'harga')->orderBy('nama')->get();
         $suppliers = Supplier::select('id', 'nama_supplier')->orderBy('nama_supplier')->get();
 
-        // Summary: total pengeluaran bulan ini
+        $today = now()->toDateString();
         $startOfMonth = now()->startOfMonth();
         $endOfMonth   = now()->endOfMonth();
         $totalBulanIni = PembelianStok::whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('total_harga');
+        $totalHariIni = PembelianStok::whereDate('created_at', $today)->sum('total_harga');
 
         return Inertia::render('kasir-stok', [
             'pembelian'       => $pembelian,
             'produk'          => $produk,
             'suppliers'       => $suppliers,
+            'total_hari_ini' => $totalHariIni,
             'total_bulan_ini' => $totalBulanIni,
             'auth'            => ['user' => Auth::user()],
         ]);
